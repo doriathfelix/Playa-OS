@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  /* ── Palette sable & mer */
+  --bg:#F4F3EF;
+  --bg2:#ECEAE4;
+  --card:#FFFFFF;
+  --card2:#FAFAF8;
+  --sep:rgba(60,54,44,0.10);
+  --sep2:rgba(60,54,44,0.16);
+
+  /* ── Typographie */
+  --t1:#18181A;
+  --t2:#3A3830;
+  --t3:#7C7A72;
+  --t4:#A8A59D;
+  --t5:#D4D1CA;
+
+  /* ── Services */
+  --s1:#1A7A3E; --s1bg:#EDF7F1; --s1bd:#7DC4A0; --s1t:#0D5C2E;
+  --s2:#C47A0A; --s2bg:#FEF6E8; --s2bd:#F0C070; --s2t:#8A5200;
+  --so:#6B48C8; --sobg:#F0EDF9; --sobd:#B9ABEA; --sot:#3E2590;
+  --rtbg:#E8F4FD; --rtbd:#6BBDE0; --rtt:#0A6EA6;
+
+  /* ── Couleurs système */
+  --green:#16A34A; --gbg:#ECFDF5; --gb:#86EFAC; --gt:#14532D;
+  --orange:#D97706; --obg:#FFFBEB; --ob:#FCD34D; --ot:#92400E;
+  --red:#DC2626;  --rbg:#FEF2F2; --rb:#FCA5A5; --rt:#991B1B;
+  --blue:#2563EB; --bbg:#EFF6FF; --bbd:#93C5FD; --bt:#1E3A8A;
+  --purple:#7C3AED; --pbg:#F5F3FF; --pb:#C4B5FD; --pt:#4C1D95;
+  --teal:#0284C7; --tbg:#F0F9FF; --tbd:#7DD3FC; --tt:#0C4A6E;
+  --gold:#D97706; --gdbg:#FFFBEB; --gdb:#FDE68A; --gdt:#78350F;
+
+  /* ── Ombres */
+  --shadow:0 1px 4px rgba(24,20,10,0.07);
+  --shadow-md:0 4px 16px rgba(24,20,10,0.09),0 1px 4px rgba(24,20,10,0.05);
+  --shadow-lg:0 12px 32px rgba(24,20,10,0.12);
+
+  /* ── Radius */
+  --r:12px; --r-sm:8px; --r-lg:16px; --r-xl:20px;
+}
