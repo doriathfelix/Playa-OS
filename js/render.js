@@ -74,9 +74,9 @@ function renderSidebar(){
       ? `<span style="display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:var(--rtbg);border:0.5px solid var(--rtbd);color:var(--rtt);flex-shrink:0">${r.tr}⛱</span>`
       : '';
 
-    // Ligne du bas : commentaire
+    // Ligne du bas : note (commentaire client + note interne)
     const commentLine = r.comment
-      ? `<div class="rc-sub" style="margin-top:3px;font-size:11px;color:var(--t3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.comment}</div>`
+      ? `<div class="rc-sub" style="margin-top:3px;font-size:11px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">💬 ${r.comment}</div>`
       : '';
 
     // Badge en attente
@@ -119,6 +119,15 @@ function renderSidebar(){
     d.addEventListener('dragstart',e=>{dragId=r.id;e.dataTransfer.effectAllowed='move'});
     d.addEventListener('dragend',()=>dragId=null);
     d.addEventListener('click',()=>showDetail(r.id));
+
+    // Long-press tablette → fiche rapide (actions)
+    let _lpTimer=null;
+    const _lpStart=()=>{ _lpTimer=setTimeout(()=>{ _lpTimer=null; showResaActionSheet(r); },520); };
+    const _lpCancel=()=>{ if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;} };
+    d.addEventListener('touchstart',_lpStart,{passive:true});
+    d.addEventListener('touchend',_lpCancel,{passive:true});
+    d.addEventListener('touchmove',_lpCancel,{passive:true});
+
     list.appendChild(d);
   });
 }
@@ -237,6 +246,7 @@ function openPlanEditor(){
     <button id="plan-grid-btn" style="padding:6px 11px;border-radius:8px;border:1px solid var(--sep2);background:var(--bg);font-size:11px;font-weight:700;cursor:pointer;color:var(--t2);font-family:inherit">▦ Grille</button>
     <button id="plan-reset-btn" style="padding:6px 11px;border-radius:8px;border:0.5px solid var(--sep2);background:var(--bg);font-size:11px;font-weight:700;cursor:pointer;color:var(--rt);font-family:inherit">↺ Reset</button>
     <button id="plan-save-btn" style="padding:7px 16px;border-radius:8px;border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">✓ Sauvegarder</button>
+    <button id="plan-close-btn" style="padding:6px 13px;border-radius:8px;border:0.5px solid var(--sep2);background:var(--bg);font-size:13px;font-weight:700;cursor:pointer;color:var(--t3);font-family:inherit;margin-left:auto" title="Fermer sans sauvegarder">✕</button>
   `;
   ov.appendChild(hdr);
 
@@ -309,17 +319,26 @@ function openPlanEditor(){
 
   renderEditorTables(canvas, ()=>snapEnabled);
 
-  document.getElementById('plan-save-btn').onclick = ()=>{
-    saveTablePositions();
+  const closePlanEditor = () => {
     ov.remove();
     moveMode=false;
     const moveBtn=document.getElementById('move-btn');
     if(moveBtn){ moveBtn.className='tbtn'; moveBtn.textContent='✥ Déplacer'; }
     const moveBanner=document.getElementById('move-banner');
     if(moveBanner) moveBanner.classList.remove('on');
+  };
+
+  document.getElementById('plan-save-btn').onclick = ()=>{
+    saveTablePositions();
+    closePlanEditor();
     render();
     toast('Plan de salle sauvegardé ✓');
   };
+
+  document.getElementById('plan-close-btn').onclick = ()=>{ closePlanEditor(); };
+
+  const planEscHandler = (e)=>{ if(e.key==='Escape'){ closePlanEditor(); document.removeEventListener('keydown',planEscHandler); } };
+  document.addEventListener('keydown', planEscHandler);
 
   document.getElementById('plan-reset-btn').onclick = ()=>{
     if(!confirm('Réinitialiser le plan de salle par défaut ?')) return;
@@ -555,14 +574,14 @@ function getEditorDefaultPositions(){
   p[21]={x:20,y:342}; p[22]={x:98,y:342};
   p[23]={x:20,y:420}; p[24]={x:98,y:420};
   p[25]={x:20,y:510}; p[26]={x:20,y:588};
-  // Salle droite (col 1)
-  p[1]={x:260,y:130}; p[2]={x:338,y:130}; p[3]={x:416,y:130}; p[4]={x:494,y:130};
-  p[5]={x:260,y:208}; p[6]={x:338,y:208};
-  p[8]={x:260,y:286}; p[7]={x:338,y:286};   // T7 repositionné : côte à côte avec T8
-  p[9]={x:260,y:364}; p[10]={x:338,y:364};
-  p[11]={x:260,y:442}; p[12]={x:338,y:442}; // T11+T12 : 1ère rangée du bloc 2×2
-  p[13]={x:260,y:520}; p[14]={x:338,y:520}; // T13+T14 : 2ème rangée du bloc 2×2
-  p[27]={x:260,y:620}; p[28]={x:338,y:620}; p[29]={x:416,y:620}; p[30]={x:494,y:620};
+  // Salle droite (col 1) — décalée à droite pour laisser place aux salons à gauche
+  p[1]={x:350,y:130}; p[2]={x:428,y:130}; p[3]={x:506,y:130}; p[4]={x:584,y:130};
+  p[5]={x:350,y:208}; p[6]={x:428,y:208};
+  p[8]={x:350,y:286}; p[7]={x:428,y:286};
+  p[9]={x:350,y:364}; p[10]={x:428,y:364};
+  p[11]={x:350,y:442}; p[12]={x:428,y:442};
+  p[13]={x:350,y:520}; p[14]={x:428,y:520};
+  p[27]={x:350,y:620}; p[28]={x:428,y:620}; p[29]={x:506,y:620}; p[30]={x:584,y:620};
   return p;
 }
 
@@ -606,6 +625,41 @@ function getDefaultPositions(){
 // ══════════════════════════════════════════
 // RENDER TABLES — plan spatial fidèle au croquis
 // ══════════════════════════════════════════
+
+// Cellule salon interactive — visuel old-style (fond blanc, bordure tiretée, label centré)
+// avec drag & drop + drop target comme une table ordinaire
+function makeSalonCell(id, h, tMap){
+  const d = TABLE_DATA[id]; if(!d) return null;
+  const r = tMap[id];
+  const svcCls = r?(r.svc==='s1'?' tbl-s1':r.svc==='s2'?' tbl-s2':r.svc==='soir'?' tbl-soir':''):'';
+  const cell = document.createElement('div');
+  cell.className = 'TBL sm' + (r?' occ'+svcCls:'');
+  cell.style.cssText = `width:84px;height:${h}px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px`;
+  cell.dataset.tid = id;
+  if(r){
+    cell.innerHTML = `<div class="tbl-num" style="font-size:10px;line-height:1.2">${d.lbl}</div><div class="tbl-name">${r.name}</div><div class="pax-bubble">${r.pax}</div>`;
+  } else {
+    cell.innerHTML = `<div class="tbl-num" style="font-size:10px;line-height:1.2;color:var(--t3)">${d.lbl}</div>`;
+  }
+  cell.draggable = !!r && !moveMode;
+  cell.addEventListener('dragstart', e => {
+    if(moveMode||!r) return;
+    dragId = r.id; e.dataTransfer.effectAllowed = 'move';
+    setTimeout(()=>{ cell.className='TBL sm'; cell.draggable=false; cell.innerHTML=`<div class="tbl-num" style="font-size:10px;line-height:1.2;color:var(--t3)">${d.lbl}</div>`; },0);
+  });
+  cell.addEventListener('dragover', e=>{ e.preventDefault(); cell.classList.add('dropping'); });
+  cell.addEventListener('dragleave', ()=>cell.classList.remove('dropping'));
+  cell.addEventListener('drop', e=>{
+    e.preventDefault(); cell.classList.remove('dropping');
+    if(!dragId) return; saveUndo();
+    const dr = gr().find(x=>x.id===dragId); if(!dr) return;
+    gr().forEach(x=>{ if(x.id!==dr.id&&x.tableId===id){ x.placed=false; x.tableId=null; } });
+    dr.placed=true; dr.tableId=id; dragId=null; selectedId=dr.id; render();
+  });
+  cell.addEventListener('click', ()=>{ if(r) showDetail(r.id); });
+  return cell;
+}
+
 function makeCell(id, tMap){
   const d = TABLE_DATA[id]; if(!d) return null;
   const r = tMap[id];
@@ -641,17 +695,18 @@ function makeCell(id, tMap){
   }
   if(d.p) cls+=' prio';
   cell.className=cls; cell.dataset.tid=id;
-  cell.title=`T${id} · ${capStr(d)}${d.note?' · '+d.note:''}`;
+  const disp = d.lbl || id;
+  cell.title=`${disp} · ${capStr(d)}${d.note?' · '+d.note:''}`;
   if(r){
-    cell.innerHTML=`<div class="tbl-num">${id}</div><div class="tbl-name">${r.name}</div><div class="pax-bubble${r.urgent?' urg':''}">${r.pax}</div>`;
+    cell.innerHTML=`<div class="tbl-num">${disp}</div><div class="tbl-name">${r.name}</div><div class="pax-bubble${r.urgent?' urg':''}">${r.pax}</div>`;
   } else {
-    cell.innerHTML=`<div class="tbl-num">${id}</div><div class="tbl-cap">${capStr(d)}</div>`;
+    cell.innerHTML=`<div class="tbl-num">${disp}</div><div class="tbl-cap">${capStr(d)}</div>`;
   }
   cell.draggable = !!r && !moveMode;
   cell.addEventListener('dragstart',e=>{
     if(moveMode){ e.preventDefault(); return; }
     if(!r)return; dragId=r.id; e.dataTransfer.effectAllowed='move';
-    setTimeout(()=>{cell.className=`TBL ${sz}${d.p?' prio':''}`;cell.draggable=false;cell.innerHTML=`<div class="tbl-num">${id}</div><div class="tbl-cap">${capStr(d)}</div>`;},0);
+    setTimeout(()=>{cell.className=`TBL ${sz}${d.p?' prio':''}`;cell.draggable=false;cell.innerHTML=`<div class="tbl-num">${disp}</div><div class="tbl-cap">${capStr(d)}</div>`;},0);
   });
   cell.addEventListener('dragend',()=>cell.classList.remove('move-dragging'));
   cell.addEventListener('dragover',e=>{
@@ -708,102 +763,100 @@ function renderTables(){
 
 function renderTablesDefaultLayout(){
   const fc=document.getElementById('floor-container'); fc.innerHTML='';
-  const resas=gr(); const tMap={};
-  resas.forEach(r=>{if(r.placed&&r.tableId)tMap[r.tableId]=r;});
+
+  // tMap : S1 prioritaire, S2 en complément, Soir visible aussi
+  const tMap={};
+  reservations.soir.forEach(r=>{if(r.placed&&r.tableId&&!r.ns)tMap[r.tableId]=r;});
+  reservations.s2.forEach(r=>{if(r.placed&&r.tableId&&!r.ns)tMap[r.tableId]=r;});
+  reservations.s1.forEach(r=>{if(r.placed&&r.tableId&&!r.ns)tMap[r.tableId]=r;});
 
   const card=document.createElement('div'); card.className='floor-card';
 
-  // helper : crée une section labellisée
-  function section(label, ...rows){
-    const zb=document.createElement('div');zb.className='zone-block';
-    const lbl=document.createElement('div');lbl.className='zone-label';lbl.textContent=label;
-    zb.appendChild(lbl);
-    rows.forEach(r=>zb.appendChild(r));
-    return zb;
-  }
-
-  // helper : une ligne de tables
   function trow(...ids){
     const d=document.createElement('div');d.className='tables-row';
-    ids.forEach(id=>{
-      const c=makeCell(id,tMap);
-      if(c) d.appendChild(c);
-    });
+    ids.forEach(id=>{const c=makeCell(id,tMap);if(c)d.appendChild(c);});
     return d;
   }
 
-  // Layout 2 colonnes fidèle au croquis
+  // Layout 3 colonnes : Salons | Terrasse+Bar | Salle+Terrasse2+TableHaute
   const layout=document.createElement('div');
   layout.style.cssText='display:flex;gap:14px;align-items:flex-start';
 
-  // ── COLONNE GAUCHE : Terrasse
+  // ── COLONNE 1 : Salons (à gauche)
+  const colSalons=document.createElement('div');
+  colSalons.style.cssText='display:flex;flex-direction:column;gap:6px;flex-shrink:0;width:88px';
+  const slnHdr=document.createElement('div');slnHdr.className='zone-label';slnHdr.textContent='Salons';
+  colSalons.appendChild(slnHdr);
+  // Spacer pour aligner Salon 1 avec T19 (saute T16+T17+T18 : 3×68 + 2 gaps×6 = 216px)
+  const slnSpacer=document.createElement('div');slnSpacer.style.cssText='height:216px;flex-shrink:0';
+  colSalons.appendChild(slnSpacer);
+  // Salon 1 : T19 → milieu T21 (108px), Salon 2 : milieu T21 → T23 (108px)
+  [1001,1002].forEach(id=>{const c=makeSalonCell(id,68,tMap);if(c)colSalons.appendChild(c);});
+  // Séparateur aligné avec le sep terrasse/barVue
+  const slnSep=document.createElement('div');slnSep.style.cssText='height:0.5px;background:var(--sep);margin:4px 0';
+  colSalons.appendChild(slnSep);
+  // Zone-label invisible pour aligner Salon 3 avec T25
+  const slnBvGhost=document.createElement('div');slnBvGhost.className='zone-label';
+  slnBvGhost.style.visibility='hidden';slnBvGhost.textContent=' ';
+  colSalons.appendChild(slnBvGhost);
+  // Salon 3 : T25 level (68px), Salon 4 : T26 level (68px)
+  [1003,1004].forEach(id=>{const c=makeSalonCell(id,68,tMap);if(c)colSalons.appendChild(c);});
+  layout.appendChild(colSalons);
+
+  const vsep=document.createElement('div');
+  vsep.style.cssText='width:0.5px;background:var(--sep);align-self:stretch;flex-shrink:0;margin:0 2px';
+  layout.appendChild(vsep);
+
+  // ── COLONNE 2 : Terrasse + Bar avec vue
   const colLeft=document.createElement('div');
   colLeft.style.cssText='display:flex;flex-direction:column;gap:6px;flex-shrink:0';
-
   const terrLabel=document.createElement('div');terrLabel.className='zone-label';terrLabel.textContent='Terrasse';
   colLeft.appendChild(terrLabel);
   const terrIds=zoneIds('terrasse',[16,17,18,19,20,21,22,23,24]);
-  // 16 seul, 17 seul, 18 seul, puis 19+20, 21+22, 23+24 côte à côte
   [[terrIds[0]],[terrIds[1]],[terrIds[2]],
    [terrIds[3],terrIds[4]],[terrIds[5],terrIds[6]],[terrIds[7],terrIds[8]]]
   .forEach(pair=>colLeft.appendChild(trow(...pair.filter(x=>x!==undefined))));
-
-  // T25 T26 — Bar avec vue
   const sep25=document.createElement('div');sep25.style.cssText='height:0.5px;background:var(--sep);margin:4px 0';
   colLeft.appendChild(sep25);
   const bvLabel=document.createElement('div');bvLabel.className='zone-label';bvLabel.textContent='Bar avec vue';
   colLeft.appendChild(bvLabel);
   const bvIds=zoneIds('barVue',[25,26]);
   bvIds.forEach(id=>colLeft.appendChild(trow(id)));
-
   layout.appendChild(colLeft);
 
-  // Séparateur vertical
-  const vsep=document.createElement('div');
-  vsep.style.cssText='width:0.5px;background:var(--sep);align-self:stretch;flex-shrink:0;margin:0 2px';
-  layout.appendChild(vsep);
+  const vsep2=document.createElement('div');
+  vsep2.style.cssText='width:0.5px;background:var(--sep);align-self:stretch;flex-shrink:0;margin:0 2px';
+  layout.appendChild(vsep2);
 
-  // ── COLONNE DROITE
+  // ── COLONNE 3 : Salle + Terrasse 2 + Table haute
   const colRight=document.createElement('div');
   colRight.style.cssText='display:flex;flex-direction:column;gap:6px;flex:1;min-width:0';
-
-  // BAR comptoir en haut
   const barWrap=document.createElement('div');
   barWrap.style.cssText='background:var(--bg);border-radius:8px;padding:5px 12px;text-align:center;border:0.5px solid var(--sep);font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:2px';
   barWrap.textContent='Bar';
   colRight.appendChild(barWrap);
-
-  // Entrée à droite
   const entLabel=document.createElement('div');
   entLabel.style.cssText='font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.09em;text-align:right;margin-bottom:2px';
   entLabel.textContent='Entrée ↓';
   colRight.appendChild(entLabel);
-
-  // INTÉRIEUR
   const intLabel=document.createElement('div');intLabel.className='zone-label';intLabel.textContent='Salle';
   colRight.appendChild(intLabel);
-  // Rangée 1 : T1 T2 T3 T4
   colRight.appendChild(trow(1,2,3,4));
-  // Rangée 2 : T5 T6 (T7 retiré de cette rangée)
   colRight.appendChild(trow(5,6));
-  // Rangée 3 : T8 + T7 côte à côte (T7 repositionné)
   colRight.appendChild(trow(8,7));
-  // Rangée T9 T10
   colRight.appendChild(trow(9,10));
-  // T11 T12 — 1ère rangée du bloc 2×2
-  colRight.appendChild(trow(11,12));
-
-  // TERRASSE 2 — T13 T14 forment la 2ème rangée du bloc 2×2 avec T11/T12
-  const terr2Label=document.createElement('div');terr2Label.className='zone-label';terr2Label.style.marginTop='2px';terr2Label.textContent='Terrasse 2';
+  const terr2Label=document.createElement('div');terr2Label.className='zone-label';terr2Label.style.marginTop='4px';terr2Label.textContent='Terrasse 2';
   colRight.appendChild(terr2Label);
-  colRight.appendChild(trow(13,14));
-
-  // TABLE HAUTE (T27 T28 T29 T30 en ligne)
+  colRight.appendChild(trow(11,12));
+  const row1314=document.createElement('div');row1314.className='tables-row';
+  const s13=makeSalonCell(13,68,tMap);if(s13)row1314.appendChild(s13);
+  const c14=makeCell(14,tMap);if(c14)row1314.appendChild(c14);
+  colRight.appendChild(row1314);
   const thLabel=document.createElement('div');thLabel.className='zone-label';thLabel.style.marginTop='6px';thLabel.textContent='Table haute';
   colRight.appendChild(thLabel);
   colRight.appendChild(trow(27,28,29,30));
-
   layout.appendChild(colRight);
+
   card.appendChild(layout);
   fc.appendChild(card);
 }
@@ -858,8 +911,8 @@ function renderTransats(){
   function slotToCol(slot){
     const pos = slot - Math.floor(slot/100)*100;
     if(pos >= 1 && pos <= 7) return 1 + pos;
-    if(pos >= 8 && pos <= 12) return 2 + pos;
-    return 3 + pos;
+    if(pos >= 8 && pos <= 13) return 2 + pos;  // 12bis = pos 13 → col 15
+    return 3 + pos;                              // d: pos 14 → col 17
   }
   function slotToRow(slot){
     const rb = Math.floor(slot/100)*100;
@@ -867,7 +920,17 @@ function renderTransats(){
   }
   function slotBlk(slot){
     const pos = slot - Math.floor(slot/100)*100;
-    return pos <= 7 ? 'g' : pos <= 12 ? 'm' : 'd';
+    return pos <= 7 ? 'g' : pos <= 13 ? 'm' : 'd';
+  }
+  function slotLabel(slot){
+    // BEDs : labels visuels décalés (220→"219", 221→"220", 222→"221"), row-100 BEDs restent tels quels
+    const BED_LABEL = {220:'219', 221:'220', 222:'221'};
+    if(BED_SLOTS.includes(slot)) return BED_LABEL[slot] || String(slot);
+    const base = Math.floor(slot/100)*100;
+    const pos = slot - base;
+    if(pos === 13) return String(base + 12) + 'bis';  // ex: 213 → "212bis"
+    if(pos >= 14) return String(base + pos - 1);      // ex: 214 → "213", 219 → "218"
+    return String(slot);
   }
 
   // ── Container grid
@@ -878,7 +941,7 @@ function renderTransats(){
       ${LABEL_W}px
       repeat(7, ${TR_W}px)
       ${ALLEY_W}px
-      repeat(5, ${TR_W}px)
+      repeat(6, ${TR_W}px)
       ${ALLEY_W}px
       repeat(8, ${TR_W}px)
       ${EXTRA_W}px;
@@ -900,7 +963,7 @@ function renderTransats(){
     // Rangée 200 : col 24 est occupée par BED 221 — pas de bouton Extra ici
     if(row.id !== 200){
       const extra = document.createElement('div');
-      extra.style.cssText = `grid-column:24; grid-row:${i+1}; display:flex; align-items:center; padding-left:8px`;
+      extra.style.cssText = `grid-column:25; grid-row:${i+1}; display:flex; align-items:center; padding-left:8px`;
       const btn = document.createElement('button');
       btn.textContent = '+ Extra';
       btn.style.cssText = `background:none; border:none; color:var(--teal); font-size:11px; font-weight:600; cursor:pointer; padding:5px 8px; border-radius:6px; font-family:inherit; transition:background .12s`;
@@ -919,9 +982,13 @@ function renderTransats(){
   const resaBlocks = []; // Chaque bloc = un groupe de cellules contiguës dans un bloc g/m/d
 
   placedResas.forEach(resa => {
+    // BED : 1 slot = 2 personnes → 1 seule cellule quelle que soit resa.tr
+    const isBedResa = resa.slot && BED_SLOTS.includes(resa.slot);
     const slots = (resa.extraSlots && resa.extraSlots.length)
       ? resa.extraSlots
-      : Array.from({length: resa.tr || 1}, (_, i) => (resa.slot || 0) + i);
+      : isBedResa
+        ? [resa.slot]
+        : Array.from({length: resa.tr || 1}, (_, i) => (resa.slot || 0) + i);
 
     const byBlk = {};
     slots.forEach(s => {
@@ -953,9 +1020,12 @@ function renderTransats(){
   // ── Marquer les slots couverts (pour ne pas rendre de cellule libre dessous)
   const coveredSlots = new Set();
   placedResas.forEach(resa => {
+    const isBedResa = resa.slot && BED_SLOTS.includes(resa.slot);
     const slots = (resa.extraSlots && resa.extraSlots.length)
       ? resa.extraSlots
-      : Array.from({length: resa.tr || 1}, (_, i) => (resa.slot || 0) + i);
+      : isBedResa
+        ? [resa.slot]
+        : Array.from({length: resa.tr || 1}, (_, i) => (resa.slot || 0) + i);
     slots.forEach(s => coveredSlots.add(s));
   });
 
@@ -963,7 +1033,7 @@ function renderTransats(){
   TR_ROWS.forEach((row, ri) => {
     const rowBase = row.id;
     // Rangée 200 : 21 positions (201-218 normaux + 219/220/221 BEDs)
-    const maxPos = rowBase === 200 ? 21 : 20;
+    const maxPos = rowBase === 100 ? 3 : rowBase === 200 ? 22 : 21;  // 200: BEDs à 220/221/222 → pos 22
     for(let pos = 1; pos <= maxPos; pos++){
       // Rangée 100 : seuls les slots 101, 102, 103 existent (104-120 → salons ou supprimés)
       if(rowBase === 100 && pos > 3) continue;
@@ -975,12 +1045,13 @@ function renderTransats(){
       const isBed = BED_SLOTS.includes(slot);
       const cell = document.createElement('div');
       const isFuseSel = fuseMode && fuseTrTargets.includes(slot);
-      cell.className = 'TR' + (isFuseSel ? ' TR-fuse-sel' : '') + (isBed ? ' TR-bed' : '');
+      // BED : même couleur que les transats normaux, juste le label "BED" pour les distinguer
+      cell.className = 'TR' + (isFuseSel ? ' TR-fuse-sel' : '');
       cell.style.cssText = `grid-column:${col}; grid-row:${ri+1};`;
       cell.dataset.slot = slot;
       cell.innerHTML = isBed
-        ? `<div class="tr-num" style="color:var(--bed-t,#92400E);font-size:8px;font-weight:800;line-height:1.25;text-align:center">BED<br>${slot}</div>`
-        : `<div class="tr-num">${slot}</div>`;
+        ? `<div class="tr-num" style="font-size:8px;font-weight:800;line-height:1.25;text-align:center">BED<br>${slotLabel(slot)}</div>`
+        : `<div class="tr-num">${slotLabel(slot)}</div>`;
 
       cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('TR-drop'); });
       cell.addEventListener('dragleave', () => cell.classList.remove('TR-drop'));
@@ -989,14 +1060,19 @@ function renderTransats(){
         cell.classList.remove('TR-drop');
         if(!dragId) return;
         const dr = gr().find(x => x.id === dragId); if(!dr) return;
-        const needed = dr.tr || dr.pax || 1;
-        const blk = slotBlk(slot);
-        const rowBlk = trSlots(rowBase)[blk];
-        const si = rowBlk.indexOf(slot);
         let ok = true;
-        for(let k = 0; k < needed; k++){
-          const s = rowBlk[si + k];
-          if(s === undefined || (sm[s] && sm[s].id !== dr.id)){ ok = false; break; }
+        if(isBed){
+          // BED : capacité 2 par cellule → logique table (1 cellule = 1 resa, pas de débordement)
+          ok = !sm[slot] || sm[slot].id === dr.id;
+        } else {
+          const needed = dr.tr || dr.pax || 1;
+          const blk = slotBlk(slot);
+          const rowBlk = trSlots(rowBase)[blk];
+          const si = rowBlk.indexOf(slot);
+          for(let k = 0; k < needed; k++){
+            const s = rowBlk[si + k];
+            if(s === undefined || (sm[s] && sm[s].id !== dr.id)){ ok = false; break; }
+          }
         }
         if(!ok){
           cell.style.background = 'var(--rbg)';
@@ -1004,12 +1080,8 @@ function renderTransats(){
           return;
         }
         saveUndo();
-        dr.placed = true;
-        dr.slot = slot;
-        dr.extraSlots = null;
-        dragId = null;
-        selectedId = dr.id;
-        render();
+        dr.placed = true; dr.slot = slot; dr.extraSlots = null;
+        dragId = null; selectedId = dr.id; render();
       });
       cell.addEventListener('click', () => { if(fuseMode) tapFuse(slot); });
       grid.appendChild(cell);
@@ -1565,10 +1637,15 @@ if(pathD){
   }
 
   // ── Salons spéciaux — rangée 100 (Salon 1-4, largeur 2 transats chacun)
+  // Salons = réservations du plan de salle (tableId 1001-1004), lecture seule dans cette vue
   const salonResaMap = {};
-  reservations.transats
-    .filter(r => r.placed && !r.ns && isSalonSlot(r.slot))
-    .forEach(r => { salonResaMap[r.slot] = r; });
+  ['s1','s2','soir'].forEach(svc => {
+    (reservations[svc]||[]).forEach(r => {
+      if(r.placed && !r.ns && r.tableId >= 1001 && r.tableId <= 1004){
+        if(!salonResaMap[r.tableId]) salonResaMap[r.tableId] = r;
+      }
+    });
+  });
 
   SALON_SLOTS.forEach(salon => {
     const sr = salonResaMap[salon.id];
@@ -1616,32 +1693,7 @@ if(pathD){
           <div style="font-size:9px;color:var(--t4);margin-top:1px">2 pers.</div>
         </div>
       `;
-      cell.addEventListener('dragover', e => {
-        e.preventDefault();
-        cell.style.borderColor = 'var(--teal)';
-        cell.style.background = 'var(--rtbg)';
-      });
-      cell.addEventListener('dragleave', () => {
-        cell.style.borderColor = 'var(--sep)';
-        cell.style.background = 'var(--bg)';
-      });
-      cell.addEventListener('drop', e => {
-        e.preventDefault();
-        cell.style.borderColor = 'var(--sep)';
-        cell.style.background = 'var(--bg)';
-        if(!dragId) return;
-        const dr = reservations.transats.find(x => x.id === dragId);
-        if(!dr) return;
-        if(salonResaMap[salon.id]) return; // déjà occupé
-        saveUndo();
-        dr.placed = true;
-        dr.slot = salon.id;
-        dr.extraSlots = null;
-        if(!dr.tr || dr.tr < 1) dr.tr = 2;
-        dragId = null;
-        selectedId = dr.id;
-        render();
-      });
+      // Lecture seule — les salons côté transats reflètent le plan de salle
     }
 
     grid.appendChild(cell);
@@ -1731,6 +1783,10 @@ function showDetail(id){
     });
   }
 
+  // Récap jour + Fiche client
+  addRpBtn(rpA,'📋 Récap','rp-btn-recap',()=>showRecapModal(r));
+  addRpBtn(rpA,'👤 Fiche client','rp-btn-client',()=>showClientModal(r));
+
   // Modifier
   addRpBtn(rpA,'✎ Modifier','rp-btn-edit',()=>openEditModal(id));
 
@@ -1753,6 +1809,110 @@ function addRpBtn(container, label, cls, onclick){
   b.textContent=label;
   b.onclick=onclick;
   container.appendChild(b);
+}
+
+// ── Modal overlay générique
+function openOverlay(buildContent){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+  document.addEventListener('keydown',function esc(e){if(e.key==='Escape'){overlay.remove();document.removeEventListener('keydown',esc);}});
+  const box=document.createElement('div');
+  box.style.cssText='background:var(--card);border-radius:16px;border:0.5px solid var(--sep);padding:24px 28px;min-width:320px;max-width:500px;width:90vw;max-height:85vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.28)';
+  buildContent(box, ()=>overlay.remove());
+  overlay.appendChild(box); document.body.appendChild(overlay);
+}
+
+function showRecapModal(r){
+  openOverlay((box, close)=>{
+    const svcLabel=r.svc==='s1'?'Service 1':r.svc==='s2'?'Service 2':r.svc==='soir'?'Soir':'Transats';
+    const placedLine = r.placed
+      ? (currentTab===2 ? (r.slot>=1000?'Extra':String(r.slot)) : 'Table '+r.tableId)
+      : '—';
+    // Cherche la sous-resa transat liée (zenchef_id + '_tr')
+    const linkedTr = r.zenchef_id
+      ? [...reservations.s1,...reservations.s2,...reservations.soir,...reservations.transats]
+          .find(x=>x.zenchef_id===r.zenchef_id+'_tr')
+      : null;
+    const trTotal = r.tr || (linkedTr ? linkedTr.tr : 0) || 0;
+    const row=(label,val)=>val?`<div class="det-row"><div class="det-label">${label}</div><div class="det-val">${val}</div></div>`:'';
+    box.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div style="font-size:15px;font-weight:800;color:var(--t1)">📋 Récap — ${r.name}</div>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3);line-height:1">✕</button>
+      </div>
+      ${row('Date', currentDate)}
+      ${row('Heure', r.time)}
+      ${row('PAX', r.pax)}
+      ${row('Service', svcLabel)}
+      ${trTotal>0?row('⛱ Transats', trTotal+' transat'+(trTotal>1?'s':'')):''}
+      ${row('Placement', placedLine)}
+      ${r.phone?row('Tél',r.phone):''}
+      ${r.email?row('Email',`<span style="font-size:11px">${r.email}</span>`):''}
+      ${r.comment?`<div class="det-row" style="align-items:flex-start"><div class="det-label" style="padding-top:2px">Note</div><div class="det-val" style="font-size:12px;color:var(--t3);white-space:pre-wrap;word-break:break-word">${r.comment}</div></div>`:''}
+    `;
+  });
+}
+
+function showClientModal(r){
+  openOverlay((box, close)=>{
+    box.innerHTML=`<div style="font-size:15px;font-weight:800;color:var(--t1);margin-bottom:16px">👤 ${r.name}</div>
+      ${r.phone?`<div style="font-size:12px;color:var(--t3);margin-bottom:4px">📞 ${r.phone}</div>`:''}
+      ${r.email?`<div style="font-size:12px;color:var(--t3);margin-bottom:12px">✉ ${r.email}</div>`:''}
+      <div style="font-size:12px;color:var(--t3);text-align:center;padding:12px 0">Recherche dans l'historique…</div>`;
+
+    // Scan async (setTimeout pour laisser le modal s'afficher)
+    setTimeout(()=>{
+      const history=[];
+      const keys=Object.keys(localStorage).filter(k=>k.startsWith('playa_zc_'));
+      for(const key of keys){
+        try{
+          const parsed=JSON.parse(localStorage.getItem(key));
+          const data=parsed.data||[];
+          data.forEach(b=>{
+            const match=(r.phone&&b.phone_number===r.phone)||(r.email&&b.email===r.email&&r.email)||
+              (!r.phone&&!r.email&&b.lastname&&r.name.toLowerCase().includes(b.lastname.toLowerCase())&&b.lastname.length>2);
+            if(match) history.push({date:b.shift_date||b.day||key.replace('playa_zc_',''),time:(b.time||'').substring(0,5),pax:b.nb_guests||1,status:b.status||''});
+          });
+        }catch(e){}
+      }
+      history.sort((a,b)=>b.date.localeCompare(a.date));
+      const totalVisits=history.length;
+      const totalPax=history.reduce((s,x)=>s+x.pax,0);
+      const noShows=history.filter(x=>['noshow','no_show_cancelled'].includes(x.status)).length;
+      const histHTML=history.slice(0,30).map(h=>`
+        <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid var(--sep2)">
+          <div style="font-size:11px;font-weight:700;color:var(--t3);min-width:84px">${h.date}</div>
+          <div style="font-size:12px;color:var(--t2);min-width:38px">${h.time}</div>
+          <div style="font-size:13px;font-weight:800;color:var(--t1)">${h.pax} PAX</div>
+          <div style="margin-left:auto;font-size:10px;font-weight:700;color:${['noshow','no_show_cancelled'].includes(h.status)?'var(--red)':'var(--green)'}">${['noshow','no_show_cancelled'].includes(h.status)?'No-show':'✓'}</div>
+        </div>`).join('');
+      box.innerHTML=`
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="font-size:15px;font-weight:800;color:var(--t1)">👤 ${r.name}</div>
+          <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3);line-height:1">✕</button>
+        </div>
+        ${r.phone?`<div style="font-size:12px;color:var(--t3);margin-bottom:4px">📞 ${r.phone}</div>`:''}
+        ${r.email?`<div style="font-size:12px;color:var(--t3);margin-bottom:14px">✉ ${r.email}</div>`:''}
+        <div style="display:flex;gap:12px;margin-bottom:16px">
+          <div style="flex:1;background:var(--bg);border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:24px;font-weight:900;color:var(--blue)">${totalVisits}</div>
+            <div style="font-size:9px;color:var(--t3);font-weight:700;margin-top:3px;text-transform:uppercase;letter-spacing:.06em">Visites</div>
+          </div>
+          <div style="flex:1;background:var(--bg);border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:24px;font-weight:900;color:var(--blue)">${totalVisits?Math.round(totalPax/totalVisits):0}</div>
+            <div style="font-size:9px;color:var(--t3);font-weight:700;margin-top:3px;text-transform:uppercase;letter-spacing:.06em">PAX moy.</div>
+          </div>
+          ${noShows?`<div style="flex:1;background:var(--rbg);border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:24px;font-weight:900;color:var(--red)">${noShows}</div>
+            <div style="font-size:9px;color:var(--red);font-weight:700;margin-top:3px;text-transform:uppercase;letter-spacing:.06em">No-shows</div>
+          </div>`:''}
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Historique${history.length>30?' (30 dernières)':''}</div>
+        ${history.length?histHTML:'<div style="color:var(--t4);font-size:12px;padding:12px 0;text-align:center">Aucun historique trouvé dans le cache</div>'}
+      `;
+    },50);
+  });
 }
 
 // ── Modification d'une résa existante
@@ -1787,6 +1947,102 @@ function openEditModal(id){
 
   document.getElementById('modal-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('f-name').focus(),100);
+}
+
+// ══════════════════════════════════════════
+// ACTION SHEET — UX Tablette
+// ══════════════════════════════════════════
+function showActionSheet(title, actions){
+  const ex=document.getElementById('action-sheet-overlay'); if(ex) ex.remove();
+  if(navigator.vibrate) navigator.vibrate(14);
+
+  const ov=document.createElement('div');
+  ov.id='action-sheet-overlay';
+  ov.style.cssText='position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.38);display:flex;align-items:flex-end;justify-content:center';
+
+  const sheet=document.createElement('div');
+  sheet.style.cssText='background:var(--card);border-radius:20px 20px 0 0;width:100%;max-width:520px;padding-bottom:env(safe-area-inset-bottom,12px);box-shadow:0 -8px 48px rgba(0,0,0,.22);transform:translateY(100%);transition:transform .24s cubic-bezier(.2,.85,.4,1)';
+
+  // Handle
+  const bar=document.createElement('div');
+  bar.style.cssText='width:40px;height:4px;background:var(--sep2);border-radius:2px;margin:12px auto 0';
+  sheet.appendChild(bar);
+
+  // Titre
+  if(title){
+    const ttl=document.createElement('div');
+    ttl.style.cssText='font-size:13px;font-weight:800;color:var(--t2);padding:14px 20px 10px;border-bottom:0.5px solid var(--sep)';
+    ttl.textContent=title;
+    sheet.appendChild(ttl);
+  }
+
+  // Boutons d'action
+  actions.forEach(({label,icon,color,action})=>{
+    const btn=document.createElement('button');
+    btn.style.cssText=`width:100%;padding:17px 22px;border:none;background:transparent;text-align:left;font-size:16px;font-weight:500;color:${color||'var(--t1)'};cursor:pointer;display:flex;align-items:center;gap:14px;font-family:inherit;border-bottom:0.5px solid var(--sep)`;
+    btn.innerHTML=`<span style="width:26px;font-size:19px;text-align:center">${icon||''}</span><span>${label}</span>`;
+    btn.addEventListener('click',()=>{ ov.remove(); action(); });
+    sheet.appendChild(btn);
+  });
+
+  // Annuler
+  const cancel=document.createElement('button');
+  cancel.style.cssText='width:calc(100% - 24px);margin:10px 12px;padding:16px;border-radius:14px;border:none;background:var(--bg);font-size:16px;font-weight:700;color:var(--t2);cursor:pointer;font-family:inherit;display:block';
+  cancel.textContent='Annuler';
+  cancel.addEventListener('click',()=>ov.remove());
+  sheet.appendChild(cancel);
+
+  ov.appendChild(sheet);
+  ov.addEventListener('click',(e)=>{ if(e.target===ov) ov.remove(); });
+  document.addEventListener('keydown',function esc(e){ if(e.key==='Escape'){ov.remove();document.removeEventListener('keydown',esc);} });
+  document.body.appendChild(ov);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ sheet.style.transform='translateY(0)'; }));
+}
+
+function showResaActionSheet(r){
+  const actions=[];
+  if(!r.ns){
+    if(r.placed){
+      actions.push({label:currentTab===2?'Libérer le transat':'Libérer la table',icon:'↩',action:()=>{ saveUndo();r.placed=false;r.tableId=null;r.slot=null;render(); }});
+    }
+    actions.push({label:'No-show',icon:'✗',color:'var(--orange)',action:()=>{ saveUndo();r.ns=true;r.placed=false;r.tableId=null;r.slot=null;render(); }});
+  } else {
+    actions.push({label:'Rétablir',icon:'↩',action:()=>{ saveUndo();r.ns=false;render(); }});
+  }
+  actions.push({label:'Modifier',icon:'✎',action:()=>openEditModal(r.id)});
+  actions.push({label:'Supprimer',icon:'🗑',color:'var(--red)',action:()=>{
+    if(!confirm('Supprimer '+r.name+' ?')) return;
+    saveUndo();
+    reservations[tk()]=reservations[tk()].filter(x=>x.id!==r.id);
+    selectedId=null; render();
+  }});
+  showActionSheet(r.name+' · '+r.pax+' PAX', actions);
+}
+
+// ══════════════════════════════════════════
+// SWIPE DATE — UX Tablette
+// ══════════════════════════════════════════
+function initSwipeGestures(){
+  let sx=0,sy=0,startEl=null;
+  const SWIPE_MIN=90, SWIPE_RATIO=2;
+  // Zones où le swipe est ignoré (sidebar, right panel, modals)
+  const isIgnored=(el)=>el.closest('#sidebar,#right-panel,#plan-editor-overlay,#action-sheet-overlay,.modal-box,#cal-box,#rush-overlay');
+
+  document.addEventListener('touchstart',(e)=>{
+    startEl=e.target;
+    sx=e.touches[0].clientX;
+    sy=e.touches[0].clientY;
+  },{passive:true});
+
+  document.addEventListener('touchend',(e)=>{
+    if(isIgnored(startEl)) return;
+    const dx=e.changedTouches[0].clientX-sx;
+    const dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>SWIPE_MIN && Math.abs(dx)>Math.abs(dy)*SWIPE_RATIO){
+      if(navigator.vibrate) navigator.vibrate(10);
+      changeDate(dx<0?1:-1);
+    }
+  },{passive:true});
 }
 
 function showFusedDetail(fg){

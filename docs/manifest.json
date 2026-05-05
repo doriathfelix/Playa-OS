@@ -1,0 +1,13 @@
+{
+  "name": "Playa OS",
+  "short_name": "Playa OS",
+  "description": "Gestion de service Â· La Playa en Camargue",
+  "start_url": "/Playa-OS/",
+  "scope": "/Playa-OS/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ECEEF2",
+  "theme_color": "#0EA5E9",
+  "lang": "fr",
+  "icons": []
+}

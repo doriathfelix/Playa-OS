@@ -26,11 +26,14 @@ function buildSlotMap(){
   gr().forEach(r => {
     if(!r.placed) return;
     if(r.extraSlots && r.extraSlots.length){
-      // Marquer UNIQUEMENT les slots réels (pas de rectangle englobant)
-      // Les "trous" dans le rectangle restent disponibles pour d'autres resas
       r.extraSlots.forEach(s => m[s] = r);
     } else if(r.slot){
-      for(let i=0;i<(r.tr||1);i++) m[r.slot+i]=r;
+      // BED : 1 cellule = 2 personnes → ne marquer qu'un seul slot
+      if(BED_SLOTS.includes(r.slot)){
+        m[r.slot] = r;
+      } else {
+        for(let i=0;i<(r.tr||1);i++) m[r.slot+i]=r;
+      }
     }
   });
   return m;
@@ -43,9 +46,10 @@ function buildCurrentOrder(){
   return {
     terrasse:[16,17,18,19,20,21,22,23,24],
     barVue:[25,26],
-    salle:[1,2,3,4,5,6,7,8,9,10,11],
-    terrasse2:[12,13,14],
-    tableHaute:[27,28,29,30]
+    salle:[1,2,3,4,5,6,7,8,9,10],
+    terrasse2:[11,12,13,14],
+    tableHaute:[27,28,29,30],
+    salonSalle:[1001,1002,1003,1004]
   };
 }
 function swapTablePositions(idA,idB){

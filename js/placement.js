@@ -131,11 +131,23 @@ function confirmFuse(){
 // ══════════════════════════════════════════
 // AUTO-PLACEMENT INTELLIGENT
 // ══════════════════════════════════════════
+
+// Lance l'auto-placement pour un service précis, sans changer l'onglet affiché
+function autoPlaceFor(svcKey){
+  saveUndo();
+  const prevTab = currentTab;
+  currentTab = TAB_KEYS.indexOf(svcKey); // context temporaire pour tk()/gr()
+  const resas   = reservations[svcKey].filter(r => !r.placed && !r.ns && !r.waiting);
+  const skipped = reservations[svcKey].filter(r => !r.ns && r.waiting).length;
+  svcKey === 'transats' ? autoTransats(resas, skipped) : autoTables(resas, skipped);
+  currentTab = prevTab;
+  render();
+}
+
 function autoPlace(){
   saveUndo();
   const resas=gr().filter(r=>!r.placed&&!r.ns&&!r.waiting);
   const skipped=gr().filter(r=>!r.ns&&r.waiting).length;
-  // autoTables/autoTransats gèrent leur propre toast avec le détail complet
   currentTab===2 ? autoTransats(resas, skipped) : autoTables(resas, skipped);
   render();
 }
@@ -144,9 +156,10 @@ function autoPlace(){
 const TABLE_ZONES = {
   terrasse:    [16,17,18,19,20,21,22,23,24],
   barVue:      [25,26],
-  salle:       [1,2,3,4,5,6,7,8,9,10,11],
-  terrasse2:   [12,13,14],
-  tableHaute:  [27,28,29,30]
+  salle:       [1,2,3,4,5,6,7,8,9,10],
+  terrasse2:   [11,12,13,14],
+  tableHaute:  [27,28,29,30],
+  salonSalle:  [1001,1002,1003,1004],
 };
 
 // Combinaisons de fusion autorisées avec capacité RÉELLE (incluant chaises supplémentaires
@@ -272,12 +285,14 @@ function autoTables(resas, skipped=0){
 // findHorizontal : cherche needed slots contigus dans UN MÊME bloc g/m/d
 // - preferCenter : priorité aux rangées centrales (200, 300)
 // - avoidSingletons : optimiser pour ne pas laisser de trou d'1 slot
-function findHorizontal(sm, needed, preferCenter, avoidSingletons){
+function findHorizontal(sm, needed, preferCenter, avoidSingletons, forceRow){
   if(needed < 1) return null;
 
-  const rowOrder = preferCenter
-    ? [TR_ROWS[1], TR_ROWS[2], TR_ROWS[0], TR_ROWS[3], TR_ROWS[4]].filter(Boolean)
-    : TR_ROWS;
+  const rowOrder = forceRow
+    ? TR_ROWS.filter(r => r.id === forceRow)
+    : preferCenter
+      ? [TR_ROWS[1], TR_ROWS[2], TR_ROWS[0], TR_ROWS[3], TR_ROWS[4]].filter(Boolean)
+      : TR_ROWS;
 
   const candidates = [];
 
@@ -411,6 +426,27 @@ function findVertical(sm, needed){
 function placeTransat(r, sm, opts){
   opts = opts || {};
   const needed = r.tr || r.pax || 1;
+  const forceRow = r.row_transats || null;
+
+  // ─── Rangée forcée par note client — priorité absolue ───
+  if(forceRow){
+    const horiz = findHorizontal(sm, needed, false, false, forceRow);
+    if(horiz){
+      r.placed = true; r.slot = horiz.start; r.extraSlots = null;
+      horiz.slots.forEach(s => sm[s] = r);
+      return true;
+    }
+    // Rangée forcée pleine → placer autant que possible dans la rangée, sinon fallback normal
+    for(let partial = needed - 1; partial >= 1; partial--){
+      const h = findHorizontal(sm, partial, false, false, forceRow);
+      if(h){
+        r.placed = true; r.slot = h.start; r.extraSlots = null; r.tr = partial;
+        h.slots.forEach(s => sm[s] = r);
+        return true;
+      }
+    }
+    // Rangée forcée vraiment pleine → fallback sans contrainte
+  }
 
   // ─── Grands groupes (≥ 7 PAX) : VERTICAL COMPACT OBLIGATOIRE ───
   if(needed >= 7){
@@ -542,22 +578,42 @@ function findCompactVertical(sm, needed, avoidSingletons){
 function autoTransats(resas, skipped=0){
   const sm = buildSlotMap();
 
-  // STRATÉGIE D'OPTIMISATION GLOBALE EN 3 PHASES :
-  //
-  // Phase 1 : GROS GROUPES (≥ 7 PAX) → rectangle compact au centre
-  //           Les gros prennent les emplacements les plus stratégiques
-  //
-  // Phase 2 : MOYENS (4-6 PAX) → horizontal prioritaire, préférer les rangées centrales
-  //
-  // Phase 3 : PETITS (≤ 3 PAX) → comblent les trous, évitent de laisser des singletons isolés
-  //           Priorité aux placements collés à une resa existante
-  //
-  // PRINCIPE CLÉ : un transat seul isolé = mauvaise optimisation (un couple qui arrive ne peut s'y asseoir).
-  // Donc on cherche à ne JAMAIS laisser de slot unique entre deux resas.
+  // ─── Phase 0 : BEDS — placer exclusivement sur BED_SLOTS (lit double = 2 PAX max) ───
+  // Les BED_SLOTS ne peuvent accueillir qu'UNE resa bed chacun.
+  // Les transats ordinaires ne doivent JAMAIS atterrir sur ces slots.
+  const bedResas     = resas.filter(r => r.bed);
+  const transatResas = resas.filter(r => !r.bed);
 
-  const grands = resas.filter(r => (r.tr||r.pax||1) >= 7);
-  const moyens = resas.filter(r => { const n=r.tr||r.pax||1; return n>=4 && n<=6; });
-  const petits = resas.filter(r => (r.tr||r.pax||1) <= 3);
+  let bedPlaced = 0, bedFailed = 0;
+  bedResas.sort((a,b) => {
+    if(a.booked_at && b.booked_at) return new Date(a.booked_at) - new Date(b.booked_at);
+    return 0;
+  });
+  bedResas.forEach(r => {
+    const freeSlot = BED_SLOTS.find(s => !sm[s]);
+    if(freeSlot !== undefined){
+      r.placed = true; r.slot = freeSlot;
+      sm[freeSlot] = r;
+      bedPlaced++;
+    } else {
+      bedFailed++;
+    }
+  });
+
+  // Bloquer les BED_SLOTS encore libres — les transats normaux ne peuvent pas les utiliser
+  const blockedBeds = BED_SLOTS.filter(s => !sm[s]);
+  blockedBeds.forEach(s => { sm[s] = true; }); // sentinel occupé
+
+  // ─── Phases 1-3 : transats ordinaires ───
+  // STRATÉGIE D'OPTIMISATION GLOBALE EN 3 PHASES :
+  // Phase 1 : GROS GROUPES (≥ 7 PAX) → rectangle compact au centre
+  // Phase 2 : MOYENS (4-6 PAX) → horizontal prioritaire, préférer les rangées centrales
+  // Phase 3 : PETITS (≤ 3 PAX) → comblent les trous, évitent de laisser des singletons isolés
+  // PRINCIPE CLÉ : un transat seul isolé = mauvaise optimisation.
+
+  const grands = transatResas.filter(r => (r.tr||r.pax||1) >= 7);
+  const moyens = transatResas.filter(r => { const n=r.tr||r.pax||1; return n>=4 && n<=6; });
+  const petits = transatResas.filter(r => (r.tr||r.pax||1) <= 3);
 
   function sortByPriority(arr){
     arr.sort((a,b) => {
@@ -587,8 +643,7 @@ function autoTransats(resas, skipped=0){
   });
 
   // Phase 3 : PETITS (remplissage intelligent)
-  // Trier les petits par taille décroissante : d'abord 3, puis 2, puis 1
-  // Les singletons (1 PAX) en dernier car ils créent des trous
+  // Trier par taille décroissante : d'abord 3, puis 2, puis 1
   petits.sort((a,b) => {
     const sizeA = a.tr||a.pax||1, sizeB = b.tr||b.pax||1;
     if(sizeA !== sizeB) return sizeB - sizeA;
@@ -600,6 +655,9 @@ function autoTransats(resas, skipped=0){
     if(placeTransat(r, sm, {avoidSingletons:true})) placed++;
     else { failed++; failedList.push(r); }
   });
+
+  // Libérer les sentinelles BED_SLOTS
+  blockedBeds.forEach(s => { delete sm[s]; });
 
   // Phase 4 (optimisation finale) : détecter les singletons isolés et proposer une réorganisation
   // Pour l'instant on se contente du tri intelligent ci-dessus

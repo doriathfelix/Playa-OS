@@ -48,7 +48,9 @@ $js = ($jsOrder | ForEach-Object {
 
 # Assemblage sans here-string pour eviter les problemes d'encodage
 $nl = "`n"
-$head = '<!DOCTYPE html>' + $nl +
+
+# Head local (pas de manifest — ouverture directe en fichier)
+$headLocal = '<!DOCTYPE html>' + $nl +
         '<html lang="fr">' + $nl +
         '<head>' + $nl +
         '<meta charset="UTF-8">' + $nl +
@@ -59,17 +61,56 @@ $head = '<!DOCTYPE html>' + $nl +
         '<style>' + $nl + $css + $nl + '</style>' + $nl +
         '</head>' + $nl
 
+# Head web (avec manifest PWA — pour GitHub Pages)
+$headWeb  = '<!DOCTYPE html>' + $nl +
+        '<html lang="fr">' + $nl +
+        '<head>' + $nl +
+        '<meta charset="UTF-8">' + $nl +
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">' + $nl +
+        '<meta name="apple-mobile-web-app-capable" content="yes">' + $nl +
+        '<meta name="apple-mobile-web-app-status-bar-style" content="default">' + $nl +
+        '<meta name="theme-color" content="#0EA5E9">' + $nl +
+        '<link rel="manifest" href="manifest.json">' + $nl +
+        '<title>Playa OS</title>' + $nl +
+        '<style>' + $nl + $css + $nl + '</style>' + $nl +
+        '</head>' + $nl
+
 $body = '<body>' + $nl +
         $bodyContent + $nl +
         '<script>' + $nl + $js + $nl + '</script>' + $nl +
         '</body>' + $nl +
         '</html>'
 
-$output = $head + $body
-
 # Ecriture UTF-8 sans BOM
 $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
-[System.IO.File]::WriteAllText("$root/playa-os-build.html", $output, $utf8NoBom)
 
+# Build local (fichier direct)
+[System.IO.File]::WriteAllText("$root/playa-os-build.html", ($headLocal + $body), $utf8NoBom)
 Write-Host "OK - playa-os-build.html cree"
+
+# Build web → docs/index.html (GitHub Pages)
+$docsDir = "$root/docs"
+if(!(Test-Path $docsDir)){ New-Item -ItemType Directory -Path $docsDir | Out-Null }
+[System.IO.File]::WriteAllText("$docsDir/index.html", ($headWeb + $body), $utf8NoBom)
+Write-Host "OK - docs/index.html cree (GitHub Pages)"
+
+# Manifest PWA
+$manifest = @'
+{
+  "name": "Playa OS",
+  "short_name": "Playa OS",
+  "description": "Gestion de service · La Playa en Camargue",
+  "start_url": "/Playa-OS/",
+  "scope": "/Playa-OS/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ECEEF2",
+  "theme_color": "#0EA5E9",
+  "lang": "fr",
+  "icons": []
+}
+'@
+[System.IO.File]::WriteAllText("$docsDir/manifest.json", $manifest, $utf8NoBom)
+Write-Host "OK - docs/manifest.json cree"
+
 Start-Process "$root/playa-os-build.html"

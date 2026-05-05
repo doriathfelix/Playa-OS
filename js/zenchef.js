@@ -136,14 +136,28 @@ function formatDateFR(dateStr){
 async function setDate(dateStr){
   currentDate = dateStr;
   updateDateDisplay(dateStr);
-  // Vider les resas immédiatement + render vide
+
+  // ── Chemin ultra-rapide : pool mémoire frais → aucun accès réseau/localStorage
+  const fromPool = memoryPoolGet(dateStr);
+  if(fromPool !== undefined){
+    reservations = {s1:[], s2:[], transats:[], soir:[]};
+    fused = {s1:[],s2:[],transats:[],soir:[]};
+    selectedId = null;
+    saveUndo();
+    applyBookings(fromPool, dateStr);
+    lastSyncAt = new Date();
+    updateSyncAge();
+    render();
+    return;
+  }
+
+  // ── Chemin normal : pas de pool → vider + charger (réseau ou localStorage)
   reservations = {s1:[], s2:[], transats:[], soir:[]};
   fused = {s1:[],s2:[],transats:[],soir:[]};
   selectedId = null;
   lastSyncAt = null;
   updateSyncAge();
-  render(); // affiche l'écran vide pendant le chargement
-  // Puis recharger depuis Zenchef
+  render(); // écran vide pendant chargement
   await syncZenchef(dateStr);
 }
 
@@ -194,19 +208,40 @@ function zcMarkFullFetch(){
 }
 
 // ── Convertit un booking Zenchef en resa PlayaOS
-// ── Extrait le nb de transats depuis texte libre
-// Extrait le nb de transats depuis n'importe quel champ texte libre
+// ── Détecte si le texte demande un bed/lit (BED_SLOTS) et combien
+// "bed double", "double bed", "lit double", "bed" seul → 1 slot bed
+// "2 beds" → 2 slots bed
+// NOTE : "sunbed" est exclu (= transat ordinaire, traité par parseTransatsFromText)
+function parseBedFromText(txt){
+  if(!txt) return 0;
+  const t = txt.toLowerCase();
+  // Exclure "sunbed" pour ne pas confondre
+  const noSunbed = t.replace(/sunbeds?/gi, '');
+  // "bed double" / "double bed" / "lit double" = 1 slot
+  if(/\b(bed\s*double|double\s*bed|lit\s*double)\b/.test(noSunbed)) return 1;
+  // "2 beds", "3 beds"
+  const m = noSunbed.match(/(\d+)\s*x?\s*beds?\b/);
+  if(m) return parseInt(m[1]);
+  // "bed" seul
+  if(/\bbed\b/.test(noSunbed)) return 1;
+  return 0;
+}
+
+// ── Extrait le nb de transats ordinaires depuis n'importe quel champ texte libre
+// Formes supportées : "6 transats", "8transats", "2T", "T:2", "T 4",
+//                     "3 matelas", "chaise longue x2", "sunbed", etc.
 function parseTransatsFromText(txt){
   if(!txt) return 0;
-  // Patterns : "6 transats", "2x transats", "3 matelas", "2 beds", "transat x4", etc.
   const patterns = [
-    /(\d+)\s*x?\s*transats?/i,
-    /transats?\s*[x:]\s*(\d+)/i,
+    /(\d+)\s*x?\s*transats?/i,           // "6 transats", "8transats", "2x transats"
+    /transats?\s*[x:=]?\s*(\d+)/i,       // "transats: 4", "transat=3"
+    /\bT\s*[:=]?\s*(\d+)/,               // "T: 2", "T=2", "T2", "T 4"
+    /(\d+)\s*T\b/,                        // "2T", "8T"
     /(\d+)\s*x?\s*matelas?/i,
-    /(\d+)\s*x?\s*beds?\b/i,
     /(\d+)\s*x?\s*chaises?\s*(?:longues?|de\s*plage)/i,
+    /(\d+)\s*x?\s*chaise\s*longue/i,
+    /(\d+)\s*x?\s*sunbeds?/i,
     /(\d+)\s*x?\s*parasols?/i,
-    /(\d+)\s*x?\s*sunbed/i,
   ];
   for(const p of patterns){
     const m = txt.match(p);
@@ -281,29 +316,37 @@ function zcToResa(b){
   const cf = b.custom_field || {};
   const typeExp = cf['quel-type-dexperience'] || '';
 
-  // ── Tous les champs texte libres (commentaires, notes internes, champs custom…)
-  // On cherche les infos transats PARTOUT pour ne rien rater
-  const allTextFields = [
-    b.comment, b.note, b.internal_note, b.extra_comment, b.customer_comment,
-    b.preparation, b.occasion, b.special_request,
-    cf['commentaire'], cf['note'], cf['demande-speciale'], cf['special-request'],
-    cf['information-complementaire'], cf['information-complementaires'],
-  ].filter(Boolean).join(' | ');
+  // ── Tous les champs texte libres — scan exhaustif de TOUS les champs string du booking
+  // (couvre "note sur la réservation" et tout champ ajouté manuellement via l'UI Zenchef)
+  const allTextFromB = Object.values(b).filter(v => typeof v === 'string' && v.trim()).join(' | ');
+  const allTextFromCf = Object.values(cf).filter(v => typeof v === 'string' && v.trim()).join(' | ');
+  const allTextFields = [allTextFromB, allTextFromCf].filter(Boolean).join(' | ');
 
-  // Nb transats : priorité au champ structuré, puis scan de tous les textes
-  const nbTransatsForm = parseInt(cf['de-combien-de-transats-avez-vous-besoin']) || 0;
+  // Nb transats : tous les champs texte libres prennent le dessus sur le formulaire structuré
   const nbTransatsText = parseTransatsFromText(allTextFields);
-  const nbTransats = nbTransatsForm > 0 ? nbTransatsForm : nbTransatsText;
+  const nbTransatsForm = parseInt(cf['de-combien-de-transats-avez-vous-besoin']) || 0;
+  let nbTransats = nbTransatsText > 0 ? nbTransatsText : nbTransatsForm;
 
-  // Rangée préférentielle : "1ere ligne" → 500, "proche resto" → 200, etc.
+  // Beds (lit double) — détectés séparément, ne comptent pas comme transats ordinaires
+  const nbBeds = parseBedFromText(allTextFields);
+  const isBed  = nbBeds > 0;
+
+  // Si type "repas à table + transat" sans nb indiqué → autant de transats que de PAX
+  const isTablePlusTransat = typeExp.toLowerCase().includes('table') && typeExp.toLowerCase().includes('transat');
+  if(isTablePlusTransat && nbTransats === 0 && !isBed) nbTransats = b.nb_guests || 1;
+
+  // Rangée préférentielle : scan de tous les champs texte
   const preferredRow = parsePreferredRowFromText(allTextFields);
   // Préférence extrémité : "en extrémité", "au bout" → slot 1 ou 20
   const preferExtremite = parseExtremiteFromText(allTextFields);
 
   const heureTransats = cf['horaire-souhaite-pour-les-transats-entre-10h-et-14h30'] || null;
-  const comment = b.comment || b.note || '';
+  // Note affichée : champs texte libre uniquement (pas les dropdowns structurés comme typeExp)
+  const noteDisplay = [
+    b.comment, b.note, b.internal_note, b.extra_comment, b.customer_comment,
+    b.preparation, b.occasion, b.special_request,
+  ].filter(v => v && typeof v === 'string' && v.trim()).join(' · ');
   const isRepasTransat = typeExp.toLowerCase().includes('transat');
-  const isTablePlusTransat = typeExp.toLowerCase().includes('table') && typeExp.toLowerCase().includes('transat');
   // Convention La Playa : uniquement 13h00 pile = repas transat
   const is13h00 = (b.time || '').startsWith('13:00');
   const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || (is13h00 && !isTablePlusTransat);
@@ -345,6 +388,8 @@ function zcToResa(b){
     _cancelled: isCancelled,
     _isTablePlusTransat: isTablePlusTransat,
     _nbTransats: nbTransats,
+    _isBed: isBed,
+    _nbBeds: nbBeds,
     _preferredRow: preferredRow,
     _preferExtremite: preferExtremite,
     _svc: svcFinal,
@@ -358,7 +403,7 @@ function zcToResa(b){
       pax: b.nb_guests || 1,
       time,
       date: b.shift_date || b.day || null,
-      comment: b.comment || '',
+      comment: noteDisplay,
       tags: [],
       svc: svcFinal,
       repas_transat: isRepasTransatFinal,
@@ -399,13 +444,23 @@ const zcDateRange = (data) => {
 };
 const zcFilter = (data, date) => (data||[]).filter(b=>(b.shift_date||b.day||'').startsWith(date));
 
+// ── Pool mémoire — évite tout accès localStorage/réseau pour les changements de date
+// Rempli après chaque fetch complet. Tant qu'il est frais, setDate() est instantané.
+let _memoryPool = null; // { ts: Number, byDate: { 'YYYY-MM-DD': [bookings] } }
+
+function memoryPoolGet(date){
+  if(!_memoryPool) return undefined; // undefined = pas de pool
+  if(Date.now() - _memoryPool.ts > ZC_CACHE_TTL_NOW) return undefined; // pool périmé
+  // La date peut être absente du pool (= 0 resas ce jour-là) → on retourne []
+  return _memoryPool.byDate[date] !== undefined ? _memoryPool.byDate[date] : [];
+}
+
 // ── Fetch TOUTES les pages et cache TOUTES les dates trouvées en une seule passe
 // L'API Zenchef trie par date de CRÉATION → on ne peut pas chercher par date de service.
 // Solution : on fetch tout, on groupe par date, on cache tout.
-// Résultat : après ce premier fetch, TOUT changement de date est instantané (cache local).
+// Résultat : après ce premier fetch, TOUT changement de date est instantané (cache mémoire).
 let _fetchAllInProgress = null; // singleton — évite les doublons si appelé deux fois
 async function fetchAllPagesAndCacheAll(onProgress){
-  // Si déjà en cours, on attend la même promesse
   if(_fetchAllInProgress) return _fetchAllInProgress;
 
   _fetchAllInProgress = (async () => {
@@ -425,12 +480,17 @@ async function fetchAllPagesAndCacheAll(onProgress){
       if(onProgress) onProgress(Math.min(start + BATCH - 1, totalPages), totalPages);
     }
 
-    // Grouper par date de service et tout cacher d'un coup
+    // Grouper par date de service
     const byDate = {};
     allData.forEach(b => {
       const d = (b.shift_date || b.day || '').substring(0, 10);
       if(d){ if(!byDate[d]) byDate[d]=[]; byDate[d].push(b); }
     });
+
+    // Stocker en mémoire (accès instantané pour setDate)
+    _memoryPool = { ts: Date.now(), byDate };
+
+    // Persister dans localStorage (survit aux rechargements de page)
     const ts = Date.now();
     let cacheErrors = 0;
     Object.entries(byDate).forEach(([d, bk]) => {
@@ -450,17 +510,19 @@ async function fetchAllPagesAndCacheAll(onProgress){
 
 // ── Retourne les bookings d'une date — cache instantané ou fetch complet
 async function fetchZcForDate(date, onProgress){
-  // 1. Cache valide → retour immédiat
+  // 1. Cache localStorage valide → retour immédiat
   const cached = zcCacheGet(date);
   if(cached !== null) return cached;
 
-  // 2. Un fetch complet récent a eu lieu mais cette date n'était pas dedans → 0 resas
-  if(zcFullFetchAge() < ZC_CACHE_TTL_NOW){
-    console.log('Zenchef: ' + date + ' non trouvée dans le pool récent → 0 resas');
-    return [];
+  // 2. Pool mémoire frais → source de vérité fiable (construit depuis un fetch réel)
+  //    Si la date n'est pas dedans, elle a réellement 0 résa.
+  //    NB : on N'utilise PAS zcFullFetchAge ici car le timestamp localStorage peut survivre
+  //    à un reload même si les entrées de dates ont expiré → faux zéros.
+  if(_memoryPool && Date.now() - _memoryPool.ts <= ZC_CACHE_TTL_NOW){
+    return _memoryPool.byDate[date] || [];
   }
 
-  // 3. Fetch complet (cache toutes les dates)
+  // 3. Aucune source fraîche → fetch complet (cache toutes les dates en mémoire + localStorage)
   const byDate = await fetchAllPagesAndCacheAll(onProgress);
   return byDate[date] || [];
 }
@@ -491,9 +553,7 @@ function applyBookings(bookings, date){
       reservations[tab].push({...conv.resa, tableId: null});
     }
     added++;
-    // Créer une sous-resa transats dès qu'il y a des transats détectés ET que ce n'est pas déjà
-    // un repas transat pur (sinon double-compte). Inclut : table+transat, et toute resa avec
-    // transats mentionnés dans les commentaires (même sans champ structuré Zenchef).
+    // Sous-resa transats ordinaires (table+transat, ou transats mentionnés dans les commentaires)
     if(!conv.resa.repas_transat && conv._nbTransats > 0){
       const trResa = mkResa({
         zenchef_id: String(b.id) + '_tr',
@@ -511,10 +571,34 @@ function applyBookings(bookings, date){
         ns: conv.resa.ns,
         zenchef_status: conv.resa.zenchef_status,
         placed: false, slot: null,
-        row_transats: conv._preferredRow,      // rangée préférentielle (ex: 500 = 1ere ligne)
-        pref_extremite: conv._preferExtremite, // veut extrémité
+        row_transats: conv._preferredRow,
+        pref_extremite: conv._preferExtremite,
       });
       reservations.transats.push(trResa);
+    }
+    // Sous-resa bed (lit double) — routée vers BED_SLOTS (101-103, 219-221)
+    if(!conv.resa.repas_transat && conv._isBed){
+      const bedResa = mkResa({
+        zenchef_id: String(b.id) + '_bed',
+        source: 'zenchef',
+        name: conv.resa.name,
+        phone: conv.resa.phone,
+        email: conv.resa.email,
+        pax: conv.resa.pax,
+        time: conv.resa.time,
+        date: conv.resa.date,
+        comment: conv.resa.comment,
+        svc,
+        repas_transat: false,
+        tr: conv._nbBeds,
+        bed: true,
+        ns: conv.resa.ns,
+        zenchef_status: conv.resa.zenchef_status,
+        placed: false, slot: null,
+        row_transats: null,
+        pref_extremite: false,
+      });
+      reservations.transats.push(bedResa);
     }
   });
   return { added, dupes, cancelled };
@@ -527,7 +611,7 @@ async function syncZenchef(date){
   const ageEl = document.getElementById('sync-age');
   if(!date) date = currentDate;
 
-  // ── ÉTAPE 1 : afficher le cache instantanément si dispo
+  // ── ÉTAPE 1 : cache localStorage valide → retour immédiat
   const cached = zcCacheGet(date);
   if(cached){
     reservations = {s1:[], s2:[], transats:[], soir:[]};
@@ -538,22 +622,25 @@ async function syncZenchef(date){
     lastSyncAt = new Date();
     render();
     if(ageEl){ ageEl.textContent='cache'; ageEl.className='sync-age fresh'; }
-    // Mise à jour silencieuse en arrière-plan — rechauffe TOUTES les dates d'un coup
-    if(btn){ btn.style.opacity='0.5'; btn.style.pointerEvents='none'; }
-    if(icon) icon.style.animation = 'spin 1s linear infinite';
-    fetchAllPagesAndCacheAll().then(byDate=>{
-      const bookings = byDate[date] || [];
-      reservations = {s1:[], s2:[], transats:[], soir:[]};
-      fused = {s1:[],s2:[],transats:[],soir:[]};
-      selectedId = null;
-      applyBookings(bookings, date);
-      lastSyncAt = new Date();
-      updateSyncAge();
-      render();
-    }).catch(()=>{}).finally(()=>{
-      if(btn){ btn.style.opacity='1'; btn.style.pointerEvents='auto'; }
-      if(icon){ icon.style.animation=''; icon.textContent='⟳'; }
-    });
+
+    // Mise à jour en arrière-plan UNIQUEMENT si le pool est périmé (> 10 min)
+    if(zcFullFetchAge() > ZC_CACHE_TTL_NOW){
+      if(btn){ btn.style.opacity='0.5'; btn.style.pointerEvents='none'; }
+      if(icon) icon.style.animation = 'spin 1s linear infinite';
+      fetchAllPagesAndCacheAll().then(byDate=>{
+        const bookings = byDate[date] || [];
+        reservations = {s1:[], s2:[], transats:[], soir:[]};
+        fused = {s1:[],s2:[],transats:[],soir:[]};
+        selectedId = null;
+        applyBookings(bookings, date);
+        lastSyncAt = new Date();
+        updateSyncAge();
+        render();
+      }).catch(()=>{}).finally(()=>{
+        if(btn){ btn.style.opacity='1'; btn.style.pointerEvents='auto'; }
+        if(icon){ icon.style.animation=''; icon.textContent='⟳'; }
+      });
+    }
     return;
   }
 

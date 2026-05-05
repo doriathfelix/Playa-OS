@@ -446,5 +446,228 @@ ${unplacedHtml}
   openPrintWindow(html);
 }
 
-// Compat
-function downloadPlan(){ printFloorPlan(); }
+// ══════════════════════════════════════════
+// PLAN DE SALLE JOUR — 2 colonnes S1 / S2
+// Format identique au plan papier : grille complète, double en-tête DATE/RÉSERVATIONS
+// ══════════════════════════════════════════
+function printServiceSheet() {
+  const dateStr = fmtDateLong(currentDate);
+
+  const TABLE_ORDER = [
+    {id:1,lbl:'1'},{id:2,lbl:'2'},{id:3,lbl:'3'},{id:4,lbl:'4'},
+    {id:5,lbl:'5'},{id:6,lbl:'6'},{id:7,lbl:'7'},{id:8,lbl:'8'},
+    {id:9,lbl:'9'},{id:10,lbl:'10'},{id:11,lbl:'11'},{id:12,lbl:'12'},
+    {id:13,lbl:'SALON 13',long:true},
+    {id:14,lbl:'14'},{id:15,lbl:'15'},{id:16,lbl:'16'},{id:17,lbl:'17'},
+    {id:18,lbl:'18'},{id:19,lbl:'19'},{id:20,lbl:'20'},{id:21,lbl:'21'},
+    {id:22,lbl:'22'},{id:23,lbl:'23'},{id:24,lbl:'24'},
+    {id:25,lbl:'BAR PLAGE 25',long:true},{id:26,lbl:'BAR PLAGE 26',long:true},
+    {id:27,lbl:'TABLE HAUTE 27',long:true},{id:28,lbl:'TABLE HAUTE 28',long:true},
+    {id:29,lbl:'TABLE HAUTE 29',long:true},{id:30,lbl:'TABLE HAUTE 30',long:true},
+    {id:1001,lbl:'SALON 1',long:true,tranat:true},{id:1002,lbl:'SALON 2',long:true,tranat:true},
+    {id:1003,lbl:'SALON 3',long:true,tranat:true},{id:1004,lbl:'SALON 4',long:true,tranat:true},
+  ];
+
+  function buildResaMap(svcKey) {
+    const m = {};
+    reservations[svcKey].filter(r => r.placed && !r.ns).forEach(r => { if (r.tableId) m[r.tableId] = r; });
+    (reservations.transats||[]).filter(r => r.placed && !r.ns && r.svc===svcKey && r.slot>=1001 && r.slot<=1004)
+      .forEach(r => { m[r.slot] = r; });
+    return m;
+  }
+
+  function trCount(r) {
+    if (!r || !r.repas_transat) return '';
+    return (r.tr && r.tr > 0) ? String(r.tr) : '✓';
+  }
+
+  function buildTableHtml(map, fusedGroups, timeLabel) {
+    const done = new Set();
+    let rows = '';
+    TABLE_ORDER.forEach(entry => {
+      const id = entry.id;
+      if (done.has(id)) return;
+      const fg = !entry.tranat && (fusedGroups||[]).find(f => f.tids.includes(id));
+      if (fg && !done.has(fg.tids[0])) {
+        const r = fg.tids.map(t => map[t]).find(x => x) || null;
+        rows += dataRow(fg.tids.join('+'), r);
+        fg.tids.forEach(t => done.add(t));
+        return;
+      }
+      done.add(id);
+      rows += dataRow(entry.lbl, map[id]||null);
+    });
+    return `<table class="plan">
+      <thead>
+        <tr><th class="h-date">DATE : ${dateStr}</th><th class="h-time">${timeLabel}</th><th class="h-resas">RÉSERVATIONS</th></tr>
+        <tr><th class="h-tbl">TABLE</th><th class="h-cov">COV.</th><th class="h-nom">NOM</th></tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
+
+  function dataRow(lbl, r, isLong) {
+    if (!r) return `<tr><td class="d-tbl">${lbl}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
+    const tbadge = (r.tr > 0) ? `<span class="t-badge">T</span>` : '';
+    return `<tr class="occ"><td class="d-tbl">${lbl}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`;
+  }
+
+  const mapS1 = buildResaMap('s1');
+  const mapS2 = buildResaMap('s2');
+
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>Plan de salle — La Playa</title>
+<style>
+@page { size: A4 portrait; margin: 5mm 6mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.no-print { padding: 8px 0 10px; display: flex; gap: 8px; }
+@media print { .no-print { display: none !important; } }
+.btn { padding: 7px 16px; border-radius: 6px; font-size: 12px; font-weight: 700;
+  cursor: pointer; border: 1.5px solid #111; }
+.btn-pri { background: #111; color: #fff; }
+.btn-sec { background: #fff; color: #111; }
+
+/* Deux colonnes remplissant toute la page */
+.wrap { display: flex; gap: 5mm; height: 287mm; } /* 297 - 5*2 */
+.col  { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* Table grille papier — remplit toute la hauteur de la colonne */
+.plan { width: 100%; border-collapse: collapse; table-layout: fixed; flex: 1; height: 100%; }
+.plan th, .plan td { border: 0.75px solid #000; }
+
+/* En-tête ligne 1 */
+.h-date { font-size: 6pt; font-weight: 600; padding: 2px 3px; width: 26%; text-align: left; }
+.h-time { font-size: 7pt; font-weight: 700; padding: 2px 3px; text-align: center; width: 11%; }
+.h-resas { font-size: 9pt; font-weight: 900; padding: 3px 4px; text-align: center; letter-spacing: .04em; }
+
+/* En-tête ligne 2 */
+.h-tbl { font-size: 6pt; font-weight: 700; text-transform: uppercase; padding: 2px 3px; text-align: center; width: 26%; letter-spacing: .04em; }
+.h-cov { font-size: 6pt; font-weight: 700; text-transform: uppercase; padding: 2px 3px; text-align: center; width: 11%; letter-spacing: .04em; }
+.h-nom { font-size: 6pt; font-weight: 700; text-transform: uppercase; padding: 2px 3px; text-align: center; letter-spacing: .04em; }
+
+/* Lignes de données — hauteur automatique pour remplir la page (34 lignes) */
+.plan tbody { height: 100%; }
+.plan tbody tr { height: 7.7mm; }
+.plan td { vertical-align: middle; padding: 0 3px; }
+.d-tbl  { text-align: center; font-size: 11pt; font-weight: 700; line-height: 1.2; }
+.d-cov  { text-align: center; font-size: 11pt; font-weight: 700; }
+.d-nom  { font-size: 9pt; font-weight: 600; padding-left: 5px !important; }
+.occ td { background: #FAFAFA; }
+.t-badge { display:inline-block; border:1px solid #000; border-radius:50%;
+  width:11px; height:11px; text-align:center; line-height:10px;
+  font-size:6.5pt; font-weight:800; margin-left:5px; vertical-align:middle; }
+</style></head><body>
+<div class="no-print">
+  <button class="btn btn-pri" onclick="window.print()">⎙ Imprimer</button>
+  <button class="btn btn-sec" onclick="window.close()">Fermer</button>
+</div>
+<div class="wrap">
+  <div class="col">${buildTableHtml(mapS1, fused.s1, '12h – 14h')}</div>
+  <div class="col">${buildTableHtml(mapS2, fused.s2, '14h15 – 15h30')}</div>
+</div>
+</body></html>`;
+
+  openPrintWindow(html);
+}
+
+// ══════════════════════════════════════════
+// PLAN DE SALLE SOIR — 1 colonne, même format grille que le plan Jour
+// ══════════════════════════════════════════
+function printSoirSheet() {
+  const dateStr = fmtDateLong(currentDate);
+
+  const TABLE_ORDER_SOIR = [
+    {id:1,lbl:'1'},{id:2,lbl:'2'},{id:3,lbl:'3'},{id:4,lbl:'4'},
+    {id:5,lbl:'5'},{id:6,lbl:'6'},{id:7,lbl:'7'},{id:8,lbl:'8'},
+    {id:9,lbl:'9'},{id:10,lbl:'10'},{id:11,lbl:'11'},{id:12,lbl:'12'},
+    {id:13,lbl:'SALON 13',long:true},
+    {id:14,lbl:'14'},{id:15,lbl:'15'},{id:16,lbl:'16'},{id:17,lbl:'17'},
+    {id:18,lbl:'18'},{id:19,lbl:'19'},{id:20,lbl:'20'},{id:21,lbl:'21'},
+    {id:22,lbl:'22'},{id:23,lbl:'23'},{id:24,lbl:'24'},
+    {id:25,lbl:'BAR PLAGE 25',long:true},{id:26,lbl:'BAR PLAGE 26',long:true},
+    {id:27,lbl:'TABLE HAUTE 27',long:true},{id:28,lbl:'TABLE HAUTE 28',long:true},
+    {id:29,lbl:'TABLE HAUTE 29',long:true},{id:30,lbl:'TABLE HAUTE 30',long:true},
+    {id:1001,lbl:'SALON 1',long:true,tranat:true},{id:1002,lbl:'SALON 2',long:true,tranat:true},
+    {id:1003,lbl:'SALON 3',long:true,tranat:true},{id:1004,lbl:'SALON 4',long:true,tranat:true},
+  ];
+
+  const mapSoir = {};
+  reservations.soir.filter(r => r.placed && !r.ns).forEach(r => { if (r.tableId) mapSoir[r.tableId] = r; });
+  (reservations.transats||[]).filter(r => r.placed && !r.ns && r.svc==='soir' && r.slot>=1001 && r.slot<=1004)
+    .forEach(r => { mapSoir[r.slot] = r; });
+
+  function dataRow(lbl, r) {
+    if (!r) return `<tr><td class="d-tbl">${lbl}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
+    const tbadge = (r.tr > 0) ? `<span class="t-badge">T</span>` : '';
+    return `<tr class="occ"><td class="d-tbl">${lbl}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`;
+  }
+
+  let rows = '';
+  const done = new Set();
+  TABLE_ORDER_SOIR.forEach(entry => {
+    const id = entry.id;
+    if (done.has(id)) return;
+    const fg = !entry.tranat && (fused.soir||[]).find(f => f.tids.includes(id));
+    if (fg && !done.has(fg.tids[0])) {
+      const r = fg.tids.map(t => mapSoir[t]).find(x => x) || null;
+      rows += dataRow(fg.tids.join('+'), r);
+      fg.tids.forEach(t => done.add(t));
+      return;
+    }
+    done.add(id);
+    rows += dataRow(entry.lbl, mapSoir[id]||null);
+  });
+
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>Plan de salle Soir — La Playa</title>
+<style>
+@page { size: A4 portrait; margin: 5mm 14mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.no-print { padding: 8px 0 10px; display: flex; gap: 8px; }
+@media print { .no-print { display: none !important; } }
+.btn { padding: 7px 16px; border-radius: 6px; font-size: 12px; font-weight: 700;
+  cursor: pointer; border: 1.5px solid #111; }
+.btn-pri { background: #111; color: #fff; }
+.btn-sec { background: #fff; color: #111; }
+.plan { width: 100%; border-collapse: collapse; table-layout: fixed; height: 100%; }
+.plan th, .plan td { border: 0.75px solid #000; }
+.h-date { font-size: 6pt; font-weight: 600; padding: 2px 3px; width: 26%; text-align: left; }
+.h-time { font-size: 7pt; font-weight: 700; padding: 2px 3px; text-align: center; width: 11%; }
+.h-resas { font-size: 9pt; font-weight: 900; padding: 3px 4px; text-align: center; letter-spacing: .04em; }
+.h-tbl { font-size: 6pt; font-weight: 700; text-transform: uppercase; padding: 2px 3px; text-align: center; width: 26%; letter-spacing: .04em; }
+.h-cov { font-size: 6pt; font-weight: 700; text-transform: uppercase; padding: 2px 3px; text-align: center; width: 11%; letter-spacing: .04em; }
+.h-nom { font-size: 6pt; font-weight: 700; text-transform: uppercase; padding: 2px 3px; text-align: center; letter-spacing: .04em; }
+.plan tbody tr { height: 7.7mm; }
+.plan td { vertical-align: middle; padding: 0 3px; }
+.d-tbl  { text-align: center; font-size: 11pt; font-weight: 700; line-height: 1.2; }
+.d-cov  { text-align: center; font-size: 11pt; font-weight: 700; }
+.d-nom  { font-size: 9pt; font-weight: 600; padding-left: 5px !important; }
+.occ td { background: #FAFAFA; }
+.t-badge { display:inline-block; border:1px solid #000; border-radius:50%;
+  width:11px; height:11px; text-align:center; line-height:10px;
+  font-size:6.5pt; font-weight:800; margin-left:5px; vertical-align:middle; }
+</style></head><body>
+<div class="no-print">
+  <button class="btn btn-pri" onclick="window.print()">⎙ Imprimer</button>
+  <button class="btn btn-sec" onclick="window.close()">Fermer</button>
+</div>
+<table class="plan">
+  <thead>
+    <tr><th class="h-date">DATE : ${dateStr}</th><th class="h-time">19h30</th><th class="h-resas">RÉSERVATIONS</th></tr>
+    <tr><th class="h-tbl">TABLE</th><th class="h-cov">COV.</th><th class="h-nom">NOM</th></tr>
+  </thead>
+  <tbody>${rows}</tbody>
+</table>
+</body></html>`;
+
+  openPrintWindow(html);
+}
+
+// Le bouton ⎙ dans la topbar
+function downloadPlan(){ printServiceSheet(); }
