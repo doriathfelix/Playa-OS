@@ -1,0 +1,36 @@
+name: Build & Deploy Playa OS
+
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - 'docs/**'       # évite la boucle infinie quand CI commit docs/
+      - '.github/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build (PowerShell)
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: Commit & push docs/
+        run: |
+          git config user.name  "Playa OS CI"
+          git config user.email "ci@playa-os.app"
+          git add docs/
+          if git diff --staged --quiet; then
+            echo "docs/ inchangé, rien à pousser."
+          else
+            git commit -m "build: auto-deploy [skip ci]"
+            git push
+          fi

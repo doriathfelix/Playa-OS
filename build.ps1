@@ -113,4 +113,5 @@ $manifest = @'
 [System.IO.File]::WriteAllText("$docsDir/manifest.json", $manifest, $utf8NoBom)
 Write-Host "OK - docs/manifest.json cree"
 
-Start-Process "$root/playa-os-build.html"
+# Ouvrir uniquement en local (pas en CI)
+if(-not $env:CI){ Start-Process "$root/playa-os-build.html" }

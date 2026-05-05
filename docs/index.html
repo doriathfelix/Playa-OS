@@ -5469,9 +5469,10 @@ function memoryPoolGet(date){
 // ── Fetch TOUTES les pages et cache TOUTES les dates trouvées en une seule passe
 // L'API Zenchef trie par date de CRÉATION → on ne peut pas chercher par date de service.
 // Solution : on fetch tout, on groupe par date, on cache tout.
-// Résultat : après ce premier fetch, TOUT changement de date est instantané (cache mémoire).
-let _fetchAllInProgress = null; // singleton — évite les doublons si appelé deux fois
-async function fetchAllPagesAndCacheAll(onProgress){
+// onProgress(cur, total)  : avancement pages
+// onDateReady(date, bkgs) : appelé dès qu'on a des données pour une date ciblée (affichage progressif)
+let _fetchAllInProgress = null;
+async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate){
   if(_fetchAllInProgress) return _fetchAllInProgress;
 
   _fetchAllInProgress = (async () => {
@@ -5481,37 +5482,44 @@ async function fetchAllPagesAndCacheAll(onProgress){
     const totalPages = Math.max(1, Math.ceil(total / 250));
     if(onProgress) onProgress(1, totalPages);
 
-    const BATCH = 10;
-    let allData = [...p1data];
+    const byDate = {};
+    const addToBD = (rows) => {
+      rows.forEach(b => {
+        const d = (b.shift_date || b.day || '').substring(0, 10);
+        if(d){ if(!byDate[d]) byDate[d]=[]; byDate[d].push(b); }
+      });
+    };
+    addToBD(p1data);
+
+    // Notifier si la date cible est déjà dans la page 1
+    if(onDateReady && targetDate && byDate[targetDate])
+      onDateReady(targetDate, byDate[targetDate]);
+
+    const BATCH = 6; // batches plus petits → notifications plus fréquentes
     for(let start = 2; start <= totalPages; start += BATCH){
       const pageNums = [];
       for(let p = start; p < start + BATCH && p <= totalPages; p++) pageNums.push(p);
       const results = await Promise.all(pageNums.map(p => fetchZcPage(p).then(r => r.data || [])));
-      results.forEach(rows => allData = allData.concat(rows));
+      results.forEach(rows => addToBD(rows));
       if(onProgress) onProgress(Math.min(start + BATCH - 1, totalPages), totalPages);
+      // Affichage progressif : si on vient de recevoir des données pour la date ciblée
+      if(onDateReady && targetDate && byDate[targetDate])
+        onDateReady(targetDate, byDate[targetDate]);
     }
 
-    // Grouper par date de service
-    const byDate = {};
-    allData.forEach(b => {
-      const d = (b.shift_date || b.day || '').substring(0, 10);
-      if(d){ if(!byDate[d]) byDate[d]=[]; byDate[d].push(b); }
-    });
-
-    // Stocker en mémoire (accès instantané pour setDate)
+    // Stocker en mémoire
     _memoryPool = { ts: Date.now(), byDate };
 
-    // Persister dans localStorage (survit aux rechargements de page)
+    // Persister dans localStorage
     const ts = Date.now();
     let cacheErrors = 0;
     Object.entries(byDate).forEach(([d, bk]) => {
       try{ localStorage.setItem('playa_zc_' + d, JSON.stringify({ts, data:bk})); }
       catch(e){ cacheErrors++; }
     });
-    if(cacheErrors > 0) console.warn('Zenchef cache: ' + cacheErrors + ' dates non sauvegardées (localStorage plein ?)');
+    if(cacheErrors > 0) console.warn('ZC cache: ' + cacheErrors + ' dates non sauvegardées (localStorage plein)');
     zcMarkFullFetch();
-
-    console.log('Zenchef pool: ' + allData.length + ' bookings · ' + totalPages + ' pages · ' + Object.keys(byDate).length + ' dates cachées');
+    console.log('ZC pool: ' + Object.values(byDate).flat().length + ' bookings · ' + totalPages + ' pages · ' + Object.keys(byDate).length + ' dates');
     return byDate;
   })();
 
@@ -5520,21 +5528,18 @@ async function fetchAllPagesAndCacheAll(onProgress){
 }
 
 // ── Retourne les bookings d'une date — cache instantané ou fetch complet
-async function fetchZcForDate(date, onProgress){
+async function fetchZcForDate(date, onProgress, onDateReady){
   // 1. Cache localStorage valide → retour immédiat
   const cached = zcCacheGet(date);
   if(cached !== null) return cached;
 
   // 2. Pool mémoire frais → source de vérité fiable (construit depuis un fetch réel)
-  //    Si la date n'est pas dedans, elle a réellement 0 résa.
-  //    NB : on N'utilise PAS zcFullFetchAge ici car le timestamp localStorage peut survivre
-  //    à un reload même si les entrées de dates ont expiré → faux zéros.
   if(_memoryPool && Date.now() - _memoryPool.ts <= ZC_CACHE_TTL_NOW){
     return _memoryPool.byDate[date] || [];
   }
 
-  // 3. Aucune source fraîche → fetch complet (cache toutes les dates en mémoire + localStorage)
-  const byDate = await fetchAllPagesAndCacheAll(onProgress);
+  // 3. Aucune source fraîche → fetch complet progressif
+  const byDate = await fetchAllPagesAndCacheAll(onProgress, onDateReady, date);
   return byDate[date] || [];
 }
 
@@ -5615,11 +5620,45 @@ function applyBookings(bookings, date){
   return { added, dupes, cancelled };
 }
 
+// ── Helpers UI sync
+function zcSetProgress(pct){ // pct = 0-100 ou null (masquer)
+  let bar = document.getElementById('zc-progress-bar');
+  if(pct === null){
+    if(bar) bar.style.width='0';
+    return;
+  }
+  if(!bar){
+    const wrap = document.getElementById('sync-btn');
+    if(!wrap) return;
+    bar = document.createElement('div');
+    bar.id = 'zc-progress-bar';
+    bar.style.cssText = 'position:absolute;bottom:0;left:0;height:2px;background:var(--blue);border-radius:0 0 6px 6px;transition:width .3s ease;pointer-events:none';
+    wrap.style.position = 'relative';
+    wrap.style.overflow = 'hidden';
+    wrap.appendChild(bar);
+  }
+  bar.style.width = pct + '%';
+}
+
+function zcSetLabel(txt, cls){
+  const el = document.getElementById('sync-age');
+  if(!el) return;
+  el.textContent = txt;
+  el.className = 'sync-age' + (cls ? ' ' + cls : '');
+}
+
+function zcSetSpinner(on){
+  const icon = document.getElementById('sync-icon');
+  const btn  = document.getElementById('sync-btn');
+  if(icon) icon.style.animation = on ? 'spin 1s linear infinite' : '';
+  if(btn){
+    btn.style.opacity = on ? '0.75' : '1';
+    btn.style.pointerEvents = on ? 'none' : 'auto';
+  }
+}
+
 // ── Sync principale
 async function syncZenchef(date){
-  const btn = document.getElementById('sync-btn');
-  const icon = document.getElementById('sync-icon');
-  const ageEl = document.getElementById('sync-age');
   if(!date) date = currentDate;
 
   // ── ÉTAPE 1 : cache localStorage valide → retour immédiat
@@ -5631,62 +5670,88 @@ async function syncZenchef(date){
     saveUndo();
     applyBookings(cached, date);
     lastSyncAt = new Date();
+    updateSyncAge();
     render();
-    if(ageEl){ ageEl.textContent='cache'; ageEl.className='sync-age fresh'; }
 
-    // Mise à jour en arrière-plan UNIQUEMENT si le pool est périmé (> 10 min)
+    // Refresh silencieux en arrière-plan si pool périmé
     if(zcFullFetchAge() > ZC_CACHE_TTL_NOW){
-      if(btn){ btn.style.opacity='0.5'; btn.style.pointerEvents='none'; }
-      if(icon) icon.style.animation = 'spin 1s linear infinite';
-      fetchAllPagesAndCacheAll().then(byDate=>{
-        const bookings = byDate[date] || [];
+      zcSetSpinner(true);
+      zcSetLabel('actualisation…');
+      fetchAllPagesAndCacheAll(
+        (cur, total) => { zcSetProgress(Math.round(cur/total*100)); },
+        null, date
+      ).then(byDate=>{
+        const bkgs = byDate[date] || [];
         reservations = {s1:[], s2:[], transats:[], soir:[]};
         fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
-        applyBookings(bookings, date);
+        applyBookings(bkgs, date);
         lastSyncAt = new Date();
         updateSyncAge();
         render();
       }).catch(()=>{}).finally(()=>{
-        if(btn){ btn.style.opacity='1'; btn.style.pointerEvents='auto'; }
-        if(icon){ icon.style.animation=''; icon.textContent='⟳'; }
+        zcSetSpinner(false);
+        zcSetProgress(null);
       });
     }
     return;
   }
 
-  // ── ÉTAPE 2 : pas de cache → chargement normal avec indicateur
-  if(btn) { btn.style.opacity='0.6'; btn.style.pointerEvents='none'; }
-  if(icon) icon.style.animation = 'spin 1s linear infinite';
-  if(ageEl) { ageEl.textContent='chargement...'; ageEl.className='sync-age'; }
+  // ── ÉTAPE 2 : pas de cache → fetch complet avec affichage progressif
+  zcSetSpinner(true);
+  zcSetProgress(0);
+  zcSetLabel('connexion Zenchef…');
+  reservations = {s1:[], s2:[], transats:[], soir:[]};
+  fused = {s1:[],s2:[],transats:[],soir:[]};
+  selectedId = null;
+  render();
+
+  let firstDataShown = false;
 
   try {
-    const ageEl2 = document.getElementById('sync-age');
-    const bookings = await fetchZcForDate(date, (cur, total)=>{
-      if(ageEl2) ageEl2.textContent = 'page ' + cur + '/' + total;
-    });
-    zcCacheSet(date, bookings);
-    console.log('Zenchef: ' + bookings.length + ' resas pour ' + date);
+    const bookings = await fetchZcForDate(
+      date,
+      // onProgress : mise à jour de la barre
+      (cur, total) => {
+        zcSetProgress(Math.round(cur/total*100));
+        zcSetLabel('chargement ' + cur + '/' + total + ' pages…');
+      },
+      // onDateReady : affichage immédiat dès que cette date a des données
+      (d, bkgs) => {
+        if(firstDataShown) return; // déjà affiché
+        firstDataShown = true;
+        reservations = {s1:[], s2:[], transats:[], soir:[]};
+        fused = {s1:[],s2:[],transats:[],soir:[]};
+        selectedId = null;
+        applyBookings(bkgs, date);
+        lastSyncAt = new Date();
+        render();
+        zcSetLabel('mise à jour…');
+      }
+    );
 
-    saveUndo();
+    zcCacheSet(date, bookings);
     const { added, dupes, cancelled } = applyBookings(bookings, date);
     lastSyncAt = new Date();
     updateSyncAge();
     render();
-    // Le fetch complet vient d'être fait → toutes les dates sont déjà cachées
-    // (fetchZcForDate a appelé fetchAllPagesAndCacheAll en interne)
-    const msg = 'Zenchef ' + formatDateFR(date) + ' : ' + added + ' resas' +
-      (dupes > 0 ? ' · ' + dupes + ' doublons' : '') +
-      (cancelled > 0 ? ' · ' + cancelled + ' annulees' : '');
-    toast(msg);
+    const msg = formatDateFR(date) + ' · ' + added + ' resas' +
+      (cancelled > 0 ? ' · ' + cancelled + ' annulées' : '') +
+      (dupes > 0 ? ' · ' + dupes + ' doublons' : '');
+    toast('✓ Zenchef — ' + msg);
 
   } catch(e){
-    toast('Erreur sync Zenchef : ' + e.message);
-    console.error(e);
+    zcSetLabel('⚠ erreur réseau', 'stale');
+    console.error('Zenchef sync error:', e);
+    // Bouton retry visible
+    const ageEl = document.getElementById('sync-age');
+    if(ageEl){
+      ageEl.innerHTML = '⚠ échec — <span style="text-decoration:underline;cursor:pointer" onclick="syncZenchef()">réessayer</span>';
+    }
   }
 
-  if(btn) { btn.style.opacity='1'; btn.style.pointerEvents='auto'; }
-  if(icon) { icon.style.animation=''; icon.textContent='⟳'; }
+  zcSetSpinner(false);
+  zcSetProgress(null);
 }
 
 // ── Mise à jour de l'indicateur "il y a X min"
