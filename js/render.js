@@ -2000,6 +2000,7 @@ function showActionSheet(title, actions){
 }
 
 function showResaActionSheet(r){
+  if(touchDragActive) return; // user is dragging, not long-pressing
   const actions=[];
   if(!r.ns){
     if(r.placed){
@@ -2043,6 +2044,121 @@ function initSwipeGestures(){
       changeDate(dx<0?1:-1);
     }
   },{passive:true});
+}
+
+// ══════════════════════════════════════════
+// TOUCH DRAG — UX Tablette
+// Long press (400ms) sur une carte sidebar → drag vers table/transat
+// ══════════════════════════════════════════
+function initTouchDrag(){
+  let src = null; // { id, el, startX, startY, timer, dragReady }
+  let ghost = null;
+  let lastTarget = null;
+
+  function startGhost(el, x, y){
+    if(navigator.vibrate) navigator.vibrate(30);
+    touchDragActive = true;
+    dragId = src.id;
+    const rect = el.getBoundingClientRect();
+    ghost = el.cloneNode(true);
+    ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;opacity:.88;z-index:9999;pointer-events:none;border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.22);transform:scale(1.05) translateY(-4px);transition:none`;
+    document.body.appendChild(ghost);
+    el.style.opacity = '.3';
+  }
+
+  function cleanup(){
+    if(ghost){ ghost.remove(); ghost = null; }
+    if(src){ src.el.style.opacity = ''; }
+    if(lastTarget){ lastTarget.classList.remove('dropping','TR-drop'); lastTarget = null; }
+    touchDragActive = false;
+    dragId = null;
+    src = null;
+  }
+
+  function elUnder(x, y){
+    if(ghost) ghost.style.display = 'none';
+    const el = document.elementFromPoint(x, y);
+    if(ghost) ghost.style.display = '';
+    if(!el) return null;
+    return el.closest('[data-tid]') || el.closest('[data-slot]');
+  }
+
+  document.addEventListener('touchstart', e => {
+    const card = e.target.closest('.rc[data-id]');
+    if(!card) return;
+    const id = card.dataset.id;
+    if(!id) return;
+    const t = e.touches[0];
+    src = {
+      id, el: card,
+      startX: t.clientX, startY: t.clientY, dragReady: false,
+      timer: setTimeout(() => {
+        if(src && src.id === id){ src.dragReady = true; }
+      }, 400)
+    };
+  }, {passive:true});
+
+  document.addEventListener('touchmove', e => {
+    if(!src) return;
+    const t = e.touches[0];
+    const dx = t.clientX - src.startX, dy = t.clientY - src.startY;
+    const dist = Math.hypot(dx, dy);
+
+    if(!touchDragActive){
+      if(src.dragReady && dist > 12){
+        // Long press done + finger moving → start drag
+        startGhost(src.el, t.clientX, t.clientY);
+      } else if(!src.dragReady && dist > 14){
+        // Moved too early → cancel (let scroll happen)
+        clearTimeout(src.timer);
+        src = null;
+      }
+      return;
+    }
+
+    e.preventDefault();
+    ghost.style.left = (t.clientX - ghost.offsetWidth / 2) + 'px';
+    ghost.style.top  = (t.clientY - 30) + 'px';
+
+    const target = elUnder(t.clientX, t.clientY);
+    if(lastTarget && lastTarget !== target) lastTarget.classList.remove('dropping','TR-drop');
+    if(target){
+      if(target.dataset.tid)  target.classList.add('dropping');
+      else if(target.dataset.slot) target.classList.add('TR-drop');
+      lastTarget = target;
+    } else { lastTarget = null; }
+  }, {passive:false});
+
+  function onTouchEnd(e){
+    if(!src){ return; }
+    clearTimeout(src.timer);
+
+    if(!touchDragActive){ src = null; return; }
+
+    const t = e.changedTouches[0];
+    const target = elUnder(t.clientX, t.clientY);
+    const savedId = dragId;
+    cleanup();
+
+    if(!target || !savedId) return;
+    const dr = gr().find(r => r.id === savedId);
+    if(!dr) return;
+
+    if(target.dataset.tid){
+      const tid = parseInt(target.dataset.tid);
+      saveUndo();
+      gr().forEach(x => { if(x.id !== dr.id && x.tableId === tid){ x.placed=false; x.tableId=null; } });
+      dr.placed = true; dr.tableId = tid; selectedId = dr.id;
+    } else if(target.dataset.slot){
+      const slot = parseInt(target.dataset.slot);
+      saveUndo();
+      dr.placed = true; dr.slot = slot; dr.extraSlots = null; selectedId = dr.id;
+    }
+    render();
+  }
+
+  document.addEventListener('touchend', onTouchEnd, {passive:true});
+  document.addEventListener('touchcancel', () => { clearTimeout(src && src.timer); cleanup(); }, {passive:true});
 }
 
 function showFusedDetail(fg){

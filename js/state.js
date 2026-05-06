@@ -3,6 +3,7 @@
 // ══════════════════════════════════════════
 let currentTab = 0;
 let dragId = null;
+let touchDragActive = false;
 let selectedId = null;
 let fuseMode = false;
 let fuseTargets = []; // pour tables (ids)

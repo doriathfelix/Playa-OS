@@ -24,4 +24,6 @@ setTimeout(()=>{ warmZenchefCache(); }, 3000);
 
 // Gestes tablette : swipe gauche/droite = changer de date
 initSwipeGestures();
+// Drag tactile : long press sur carte sidebar → poser sur table/transat
+initTouchDrag();
 

@@ -611,21 +611,14 @@ function applyBookings(bookings, date){
 
 // ── Helpers UI sync
 function zcSetProgress(pct){ // pct = 0-100 ou null (masquer)
-  let bar = document.getElementById('zc-progress-bar');
+  const bar = document.getElementById('zc-load-bar');
+  if(!bar) return;
   if(pct === null){
-    if(bar) bar.style.width='0';
+    bar.style.width = '100%';
+    setTimeout(() => { bar.style.display = 'none'; bar.style.width = '0'; }, 350);
     return;
   }
-  if(!bar){
-    const wrap = document.getElementById('sync-btn');
-    if(!wrap) return;
-    bar = document.createElement('div');
-    bar.id = 'zc-progress-bar';
-    bar.style.cssText = 'position:absolute;bottom:0;left:0;height:2px;background:var(--blue);border-radius:0 0 6px 6px;transition:width .3s ease;pointer-events:none';
-    wrap.style.position = 'relative';
-    wrap.style.overflow = 'hidden';
-    wrap.appendChild(bar);
-  }
+  bar.style.display = 'block';
   bar.style.width = pct + '%';
 }
 
