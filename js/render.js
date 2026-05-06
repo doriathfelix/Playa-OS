@@ -764,11 +764,10 @@ function renderTables(){
 function renderTablesDefaultLayout(){
   const fc=document.getElementById('floor-container'); fc.innerHTML='';
 
-  // tMap : S1 prioritaire, S2 en complément, Soir visible aussi
+  // tMap : UNIQUEMENT le service courant (cohérent avec renderTablesCustomLayout)
+  // Chaque onglet voit son propre plan — autoplace S1 n'affecte pas S2
   const tMap={};
-  reservations.soir.forEach(r=>{if(r.placed&&r.tableId&&!r.ns)tMap[r.tableId]=r;});
-  reservations.s2.forEach(r=>{if(r.placed&&r.tableId&&!r.ns)tMap[r.tableId]=r;});
-  reservations.s1.forEach(r=>{if(r.placed&&r.tableId&&!r.ns)tMap[r.tableId]=r;});
+  gr().forEach(r=>{if(r.placed&&r.tableId&&!r.ns)tMap[r.tableId]=r;});
 
   const card=document.createElement('div'); card.className='floor-card';
 

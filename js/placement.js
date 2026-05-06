@@ -136,9 +136,12 @@ function confirmFuse(){
 function autoPlaceFor(svcKey){
   saveUndo();
   const prevTab = currentTab;
-  currentTab = TAB_KEYS.indexOf(svcKey); // context temporaire pour tk()/gr()
-  const resas   = reservations[svcKey].filter(r => !r.placed && !r.ns && !r.waiting);
-  const skipped = reservations[svcKey].filter(r => !r.ns && r.waiting).length;
+  currentTab = TAB_KEYS.indexOf(svcKey);
+  const all = reservations[svcKey];
+  const resas = svcKey === 'transats'
+    ? all.filter(r => !r.placed && !r.ns && !r.waiting)
+    : all.filter(r => !r.placed && !r.ns && !r.waiting && r.svc === svcKey);
+  const skipped = all.filter(r => !r.ns && r.waiting).length;
   svcKey === 'transats' ? autoTransats(resas, skipped) : autoTables(resas, skipped);
   currentTab = prevTab;
   render();
@@ -146,9 +149,18 @@ function autoPlaceFor(svcKey){
 
 function autoPlace(){
   saveUndo();
-  const resas=gr().filter(r=>!r.placed&&!r.ns&&!r.waiting);
-  const skipped=gr().filter(r=>!r.ns&&r.waiting).length;
-  currentTab===2 ? autoTransats(resas, skipped) : autoTables(resas, skipped);
+  const svcKey = tk(); // 's1' | 's2' | 'transats' | 'soir'
+  const all = gr();
+
+  // Filtre strict : on ne place QUE les resas appartenant au service actif.
+  // Évite que des resas mal classées (svc !== svcKey) soient placées par erreur.
+  // Exception : onglet Transats → toutes les resas de reservations.transats sont valides.
+  const resas = currentTab === 2
+    ? all.filter(r => !r.placed && !r.ns && !r.waiting)
+    : all.filter(r => !r.placed && !r.ns && !r.waiting && r.svc === svcKey);
+
+  const skipped = all.filter(r => !r.ns && r.waiting).length;
+  currentTab === 2 ? autoTransats(resas, skipped) : autoTables(resas, skipped);
   render();
 }
 
