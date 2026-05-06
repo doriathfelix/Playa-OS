@@ -1,7 +1,7 @@
 {
   "name": "Playa OS",
   "short_name": "Playa OS",
-  "description": "Gestion de service Â· La Playa en Camargue",
+  "description": "Gestion de service · La Playa en Camargue",
   "start_url": "/Playa-OS/",
   "scope": "/Playa-OS/",
   "display": "standalone",
