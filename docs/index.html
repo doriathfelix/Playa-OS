@@ -2202,6 +2202,7 @@ function renderTransats(){
   const fc = document.getElementById('floor-container'); fc.innerHTML='';
   const sm = buildSlotMap();
   const card = document.createElement('div'); card.className='beach-card';
+  card.style.minWidth = 'max-content';
   card.innerHTML='<div class="beach-shore-label">▲ RESTAURANT</div>';
 
   const TR_W = 48, TR_H = 42, GAP = 5, ALLEY_W = 22, LABEL_W = 62, EXTRA_W = 84, ROW_GAP = 16;
