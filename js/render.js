@@ -122,7 +122,7 @@ function renderSidebar(){
 
     // Long-press tablette → fiche rapide (actions)
     let _lpTimer=null;
-    const _lpStart=()=>{ _lpTimer=setTimeout(()=>{ _lpTimer=null; showResaActionSheet(r); },520); };
+    const _lpStart=()=>{ _lpTimer=setTimeout(()=>{ _lpTimer=null; showResaActionSheet(r); },900); };
     const _lpCancel=()=>{ if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;} };
     d.addEventListener('touchstart',_lpStart,{passive:true});
     d.addEventListener('touchend',_lpCancel,{passive:true});
@@ -725,21 +725,6 @@ function makeCell(id, tMap){
     dr.placed=true; dr.tableId=id; dragId=null; selectedId=dr.id; render();
   });
   cell.addEventListener('click',()=>{if(fuseMode){tapFuse(id);return;}if(r)showDetail(r.id);});
-
-  // Appui long (500ms) → ouvrir l'éditeur de plan
-  let longPressTimer = null;
-  const startLongPress = ()=>{
-    longPressTimer = setTimeout(()=>{
-      openPlanEditor();
-    }, 600);
-  };
-  const cancelLongPress = ()=>{ if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer=null; } };
-  cell.addEventListener('touchstart', startLongPress, {passive:true});
-  cell.addEventListener('touchend', cancelLongPress, {passive:true});
-  cell.addEventListener('touchmove', cancelLongPress, {passive:true});
-  cell.addEventListener('mousedown', startLongPress);
-  cell.addEventListener('mouseup', cancelLongPress);
-  cell.addEventListener('mouseleave', cancelLongPress);
 
   return cell;
 }
@@ -2020,31 +2005,6 @@ function showResaActionSheet(r){
   showActionSheet(r.name+' · '+r.pax+' PAX', actions);
 }
 
-// ══════════════════════════════════════════
-// SWIPE DATE — UX Tablette
-// ══════════════════════════════════════════
-function initSwipeGestures(){
-  let sx=0,sy=0,startEl=null;
-  const SWIPE_MIN=90, SWIPE_RATIO=2;
-  // Zones où le swipe est ignoré (sidebar, right panel, modals)
-  const isIgnored=(el)=>el.closest('#sidebar,#right-panel,#plan-editor-overlay,#action-sheet-overlay,.modal-box,#cal-box,#rush-overlay');
-
-  document.addEventListener('touchstart',(e)=>{
-    startEl=e.target;
-    sx=e.touches[0].clientX;
-    sy=e.touches[0].clientY;
-  },{passive:true});
-
-  document.addEventListener('touchend',(e)=>{
-    if(isIgnored(startEl)) return;
-    const dx=e.changedTouches[0].clientX-sx;
-    const dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)>SWIPE_MIN && Math.abs(dx)>Math.abs(dy)*SWIPE_RATIO){
-      if(navigator.vibrate) navigator.vibrate(10);
-      changeDate(dx<0?1:-1);
-    }
-  },{passive:true});
-}
 
 // ══════════════════════════════════════════
 // TOUCH DRAG — UX Tablette
@@ -2080,7 +2040,7 @@ function initTouchDrag(){
     const el = document.elementFromPoint(x, y);
     if(ghost) ghost.style.display = '';
     if(!el) return null;
-    return el.closest('[data-tid]') || el.closest('[data-slot]');
+    return el.closest('[data-tid]') || el.closest('[data-slot]') || el.closest('[data-fgid]');
   }
 
   document.addEventListener('touchstart', e => {
@@ -2123,7 +2083,7 @@ function initTouchDrag(){
     const target = elUnder(t.clientX, t.clientY);
     if(lastTarget && lastTarget !== target) lastTarget.classList.remove('dropping','TR-drop');
     if(target){
-      if(target.dataset.tid)  target.classList.add('dropping');
+      if(target.dataset.tid || target.dataset.fgid) target.classList.add('dropping');
       else if(target.dataset.slot) target.classList.add('TR-drop');
       lastTarget = target;
     } else { lastTarget = null; }
@@ -2144,7 +2104,13 @@ function initTouchDrag(){
     const dr = gr().find(r => r.id === savedId);
     if(!dr) return;
 
-    if(target.dataset.tid){
+    if(target.dataset.fgid){
+      const fg = (fused[tk()]||[]).find(g => g.id === target.dataset.fgid);
+      if(!fg) return;
+      saveUndo();
+      fg.tids.forEach(tid => { gr().forEach(x => { if(x.id !== dr.id && x.tableId === tid){ x.placed=false; x.tableId=null; } }); });
+      dr.placed = true; dr.tableId = fg.tids[0]; selectedId = dr.id;
+    } else if(target.dataset.tid){
       const tid = parseInt(target.dataset.tid);
       saveUndo();
       gr().forEach(x => { if(x.id !== dr.id && x.tableId === tid){ x.placed=false; x.tableId=null; } });

@@ -1423,7 +1423,7 @@ function renderSidebar(){
 
     // Long-press tablette → fiche rapide (actions)
     let _lpTimer=null;
-    const _lpStart=()=>{ _lpTimer=setTimeout(()=>{ _lpTimer=null; showResaActionSheet(r); },520); };
+    const _lpStart=()=>{ _lpTimer=setTimeout(()=>{ _lpTimer=null; showResaActionSheet(r); },900); };
     const _lpCancel=()=>{ if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;} };
     d.addEventListener('touchstart',_lpStart,{passive:true});
     d.addEventListener('touchend',_lpCancel,{passive:true});
@@ -2026,21 +2026,6 @@ function makeCell(id, tMap){
     dr.placed=true; dr.tableId=id; dragId=null; selectedId=dr.id; render();
   });
   cell.addEventListener('click',()=>{if(fuseMode){tapFuse(id);return;}if(r)showDetail(r.id);});
-
-  // Appui long (500ms) → ouvrir l'éditeur de plan
-  let longPressTimer = null;
-  const startLongPress = ()=>{
-    longPressTimer = setTimeout(()=>{
-      openPlanEditor();
-    }, 600);
-  };
-  const cancelLongPress = ()=>{ if(longPressTimer){ clearTimeout(longPressTimer); longPressTimer=null; } };
-  cell.addEventListener('touchstart', startLongPress, {passive:true});
-  cell.addEventListener('touchend', cancelLongPress, {passive:true});
-  cell.addEventListener('touchmove', cancelLongPress, {passive:true});
-  cell.addEventListener('mousedown', startLongPress);
-  cell.addEventListener('mouseup', cancelLongPress);
-  cell.addEventListener('mouseleave', cancelLongPress);
 
   return cell;
 }
@@ -3321,31 +3306,6 @@ function showResaActionSheet(r){
   showActionSheet(r.name+' · '+r.pax+' PAX', actions);
 }
 
-// ══════════════════════════════════════════
-// SWIPE DATE — UX Tablette
-// ══════════════════════════════════════════
-function initSwipeGestures(){
-  let sx=0,sy=0,startEl=null;
-  const SWIPE_MIN=90, SWIPE_RATIO=2;
-  // Zones où le swipe est ignoré (sidebar, right panel, modals)
-  const isIgnored=(el)=>el.closest('#sidebar,#right-panel,#plan-editor-overlay,#action-sheet-overlay,.modal-box,#cal-box,#rush-overlay');
-
-  document.addEventListener('touchstart',(e)=>{
-    startEl=e.target;
-    sx=e.touches[0].clientX;
-    sy=e.touches[0].clientY;
-  },{passive:true});
-
-  document.addEventListener('touchend',(e)=>{
-    if(isIgnored(startEl)) return;
-    const dx=e.changedTouches[0].clientX-sx;
-    const dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)>SWIPE_MIN && Math.abs(dx)>Math.abs(dy)*SWIPE_RATIO){
-      if(navigator.vibrate) navigator.vibrate(10);
-      changeDate(dx<0?1:-1);
-    }
-  },{passive:true});
-}
 
 // ══════════════════════════════════════════
 // TOUCH DRAG — UX Tablette
@@ -3381,7 +3341,7 @@ function initTouchDrag(){
     const el = document.elementFromPoint(x, y);
     if(ghost) ghost.style.display = '';
     if(!el) return null;
-    return el.closest('[data-tid]') || el.closest('[data-slot]');
+    return el.closest('[data-tid]') || el.closest('[data-slot]') || el.closest('[data-fgid]');
   }
 
   document.addEventListener('touchstart', e => {
@@ -3424,7 +3384,7 @@ function initTouchDrag(){
     const target = elUnder(t.clientX, t.clientY);
     if(lastTarget && lastTarget !== target) lastTarget.classList.remove('dropping','TR-drop');
     if(target){
-      if(target.dataset.tid)  target.classList.add('dropping');
+      if(target.dataset.tid || target.dataset.fgid) target.classList.add('dropping');
       else if(target.dataset.slot) target.classList.add('TR-drop');
       lastTarget = target;
     } else { lastTarget = null; }
@@ -3445,7 +3405,13 @@ function initTouchDrag(){
     const dr = gr().find(r => r.id === savedId);
     if(!dr) return;
 
-    if(target.dataset.tid){
+    if(target.dataset.fgid){
+      const fg = (fused[tk()]||[]).find(g => g.id === target.dataset.fgid);
+      if(!fg) return;
+      saveUndo();
+      fg.tids.forEach(tid => { gr().forEach(x => { if(x.id !== dr.id && x.tableId === tid){ x.placed=false; x.tableId=null; } }); });
+      dr.placed = true; dr.tableId = fg.tids[0]; selectedId = dr.id;
+    } else if(target.dataset.tid){
       const tid = parseInt(target.dataset.tid);
       saveUndo();
       gr().forEach(x => { if(x.id !== dr.id && x.tableId === tid){ x.placed=false; x.tableId=null; } });
@@ -5580,23 +5546,23 @@ async function fetchZcPage(page, dateFilter){
 }
 
 // ── Voie rapide : fetch filtré par date (1-2 requêtes si l'API supporte date_min/date_max)
-// Renvoie les bookings si le filtre a fonctionné, null sinon (total > 400 = filtre ignoré)
+// Renvoie { filtered:true, bookings } ou { filtered:false, p1data, totalPages } pour réutilisation
 async function fetchZcDateFiltered(date, onProgress){
   const p1 = await fetchZcPage(1, date);
   const data = p1.data || [];
   const total = p1.paginator?.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / 250));
-  if(total > 400) return null; // API a ignoré le filtre → total = toutes les resas
+  if(total > 400) return { filtered: false, p1data: data, totalPages };
   if(onProgress) onProgress(1, totalPages);
-  if(totalPages === 1) return data;
-  // Quelques pages max (jour très chargé) → tout en parallèle
+  if(totalPages === 1) return { filtered: true, bookings: data };
+  // Quelques pages max (jour très chargé) → tout en parallèle (max 2-3 pages)
   const rest = await Promise.all(
     Array.from({length: totalPages - 1}, (_, i) =>
       fetchZcPage(i + 2, date).then(r => r.data || [])
     )
   );
   if(onProgress) onProgress(totalPages, totalPages);
-  return [...data, ...rest.flat()];
+  return { filtered: true, bookings: [...data, ...rest.flat()] };
 }
 
 // ── Helpers
@@ -5624,14 +5590,21 @@ function memoryPoolGet(date){
 // onProgress(cur, total)  : avancement pages
 // onDateReady(date, bkgs) : appelé dès qu'on a des données pour une date ciblée (affichage progressif)
 let _fetchAllInProgress = null;
-async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate){
+// p1Prefetch : { p1data, totalPages } pour réutiliser la page 1 déjà chargée par fetchZcDateFiltered
+async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1Prefetch){
   if(_fetchAllInProgress) return _fetchAllInProgress;
 
   _fetchAllInProgress = (async () => {
-    const p1full = await fetchZcPage(1);
-    const p1data = p1full.data || [];
-    const total  = p1full.paginator?.total || 0;
-    const totalPages = Math.max(1, Math.ceil(total / 250));
+    let p1data, totalPages;
+    if(p1Prefetch){
+      p1data = p1Prefetch.p1data;
+      totalPages = p1Prefetch.totalPages;
+    } else {
+      const p1full = await fetchZcPage(1);
+      p1data = p1full.data || [];
+      const total = p1full.paginator?.total || 0;
+      totalPages = Math.max(1, Math.ceil(total / 250));
+    }
     if(onProgress) onProgress(1, totalPages);
 
     const byDate = {};
@@ -5647,18 +5620,18 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate){
     if(onDateReady && targetDate && byDate[targetDate])
       onDateReady(targetDate, byDate[targetDate]);
 
-    if(totalPages > 1){
-      // Toutes les pages restantes en parallèle — pas de batching séquentiel
-      const results = await Promise.all(
-        Array.from({length: totalPages - 1}, (_, i) =>
-          fetchZcPage(i + 2).then(r => r.data || [])
-        )
+    const BATCH = 12; // batches de 12 — 2× plus rapide que 6 sans saturer l'API
+    for(let start = 2; start <= totalPages; start += BATCH){
+      const pageNums = Array.from(
+        {length: Math.min(BATCH, totalPages - start + 1)},
+        (_, i) => start + i
       );
+      const results = await Promise.all(pageNums.map(p => fetchZcPage(p).then(r => r.data || [])));
       results.forEach(rows => addToBD(rows));
+      if(onProgress) onProgress(Math.min(start + BATCH - 1, totalPages), totalPages);
+      if(onDateReady && targetDate && byDate[targetDate])
+        onDateReady(targetDate, byDate[targetDate]);
     }
-    if(onProgress) onProgress(totalPages, totalPages);
-    if(onDateReady && targetDate && byDate[targetDate])
-      onDateReady(targetDate, byDate[targetDate]);
 
     // Stocker en mémoire
     _memoryPool = { ts: Date.now(), byDate };
@@ -9128,8 +9101,6 @@ setTimeout(()=>{ syncZenchef(); startAutoSync(); }, 800);
 // dès que la date initiale est chargée → les changements de date suivants seront instantanés
 setTimeout(()=>{ warmZenchefCache(); }, 3000);
 
-// Gestes tablette : swipe gauche/droite = changer de date
-initSwipeGestures();
 // Drag tactile : long press sur carte sidebar → poser sur table/transat
 initTouchDrag();
 
