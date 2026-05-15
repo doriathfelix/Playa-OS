@@ -5546,23 +5546,23 @@ async function fetchZcPage(page, dateFilter){
 }
 
 // ── Voie rapide : fetch filtré par date (1-2 requêtes si l'API supporte date_min/date_max)
-// Renvoie { filtered:true, bookings } ou { filtered:false, p1data, totalPages } pour réutilisation
+// Renvoie les bookings si le filtre a fonctionné, null sinon (total > 400 = filtre ignoré)
 async function fetchZcDateFiltered(date, onProgress){
   const p1 = await fetchZcPage(1, date);
   const data = p1.data || [];
   const total = p1.paginator?.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / 250));
-  if(total > 400) return { filtered: false, p1data: data, totalPages };
+  if(total > 400) return null; // API a ignoré le filtre → total = toutes les resas
   if(onProgress) onProgress(1, totalPages);
-  if(totalPages === 1) return { filtered: true, bookings: data };
-  // Quelques pages max (jour très chargé) → tout en parallèle (max 2-3 pages)
+  if(totalPages === 1) return data;
+  // Quelques pages max (jour très chargé) → tout en parallèle
   const rest = await Promise.all(
     Array.from({length: totalPages - 1}, (_, i) =>
       fetchZcPage(i + 2, date).then(r => r.data || [])
     )
   );
   if(onProgress) onProgress(totalPages, totalPages);
-  return { filtered: true, bookings: [...data, ...rest.flat()] };
+  return [...data, ...rest.flat()];
 }
 
 // ── Helpers
@@ -5590,21 +5590,14 @@ function memoryPoolGet(date){
 // onProgress(cur, total)  : avancement pages
 // onDateReady(date, bkgs) : appelé dès qu'on a des données pour une date ciblée (affichage progressif)
 let _fetchAllInProgress = null;
-// p1Prefetch : { p1data, totalPages } pour réutiliser la page 1 déjà chargée par fetchZcDateFiltered
-async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1Prefetch){
+async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate){
   if(_fetchAllInProgress) return _fetchAllInProgress;
 
   _fetchAllInProgress = (async () => {
-    let p1data, totalPages;
-    if(p1Prefetch){
-      p1data = p1Prefetch.p1data;
-      totalPages = p1Prefetch.totalPages;
-    } else {
-      const p1full = await fetchZcPage(1);
-      p1data = p1full.data || [];
-      const total = p1full.paginator?.total || 0;
-      totalPages = Math.max(1, Math.ceil(total / 250));
-    }
+    const p1full = await fetchZcPage(1);
+    const p1data = p1full.data || [];
+    const total  = p1full.paginator?.total || 0;
+    const totalPages = Math.max(1, Math.ceil(total / 250));
     if(onProgress) onProgress(1, totalPages);
 
     const byDate = {};
@@ -5620,18 +5613,18 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1P
     if(onDateReady && targetDate && byDate[targetDate])
       onDateReady(targetDate, byDate[targetDate]);
 
-    const BATCH = 12; // batches de 12 — 2× plus rapide que 6 sans saturer l'API
-    for(let start = 2; start <= totalPages; start += BATCH){
-      const pageNums = Array.from(
-        {length: Math.min(BATCH, totalPages - start + 1)},
-        (_, i) => start + i
+    if(totalPages > 1){
+      // Toutes les pages restantes en parallèle — pas de batching séquentiel
+      const results = await Promise.all(
+        Array.from({length: totalPages - 1}, (_, i) =>
+          fetchZcPage(i + 2).then(r => r.data || [])
+        )
       );
-      const results = await Promise.all(pageNums.map(p => fetchZcPage(p).then(r => r.data || [])));
       results.forEach(rows => addToBD(rows));
-      if(onProgress) onProgress(Math.min(start + BATCH - 1, totalPages), totalPages);
-      if(onDateReady && targetDate && byDate[targetDate])
-        onDateReady(targetDate, byDate[targetDate]);
     }
+    if(onProgress) onProgress(totalPages, totalPages);
+    if(onDateReady && targetDate && byDate[targetDate])
+      onDateReady(targetDate, byDate[targetDate]);
 
     // Stocker en mémoire
     _memoryPool = { ts: Date.now(), byDate };
