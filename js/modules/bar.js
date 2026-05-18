@@ -31,52 +31,133 @@ function renderBar(c){
   }
 
   function renderCocktailsTab(){
-    const ck = [
-      {name:'Mojito maison', emoji:'🍹', pv:12, cost:2.10, glass:'Highball 30cl', dose:[['Rhum blanc Barbancourt','4 cl'],['Menthe fraîche','8 feuilles'],['Citron vert','1/2 fruit'],['Sucre canne','2 bsp'],['Eau gazeuse','compléter']], tech:'Muddler menthe + sucre + jus citron. Ajouter rhum. Glace pilée. Compléter eau gazeuse. Remuer doucement. Brin menthe déco.', tip:'#1 des ventes. Menthe du jour impérative, jamais fanée. Verre frappé avant service.'},
-      {name:'Spritz Provençal', emoji:'🌞', pv:11, cost:2.30, glass:'Balon 40cl', dose:[['Apérol','6 cl'],['Prosecco DOC','9 cl'],['Eau gazeuse','2 cl'],['Thym frais','1 branche'],['Orange','1 tranche']], tech:'Verre rempli de glaçons. Apérol puis prosecco. Eau gazeuse. Thym frotté + branche. Tranche orange.', tip:'Utiliser glaçons ronds. Servir bien frais. Thym = signature La Playa.'},
-      {name:'Tomate-Pastis glacé', emoji:'🌿', pv:10, cost:1.80, glass:'Verre à pastis', dose:[['Pastis 51','3 cl'],['Grenadine maison','1 cl'],['Glace pilée','bien remplie'],['Eau fraîche','compléter'],['Tomate cerise','1 pièce']], tech:'Verser grenadine au fond. Ajouter pastis. Remplir de glace pilée. Compléter d\'eau bien fraîche. Tomate cerise piquée.', tip:'Signature du Sud. Demander si "sec" ou "allongé". Toujours servir carafe d\'eau à côté.'},
-      {name:'Gin Basilic Framboise', emoji:'🍸', pv:14, cost:3.20, glass:'Copa 50cl', dose:[['Gin Monkey 47','5 cl'],['Framboises fraîches','4 pièces'],['Basilic','5 feuilles'],['Citron vert','1/4'],['Tonic Fever-Tree','compléter']], tech:'Frapper gin + citron + framboises au shaker. Verser sur glaçons dans copa. Compléter tonic. Basilic frotté + framboise déco.', tip:'Cocktail premium. Annoncer l\'origine Monkey 47. Servir avec paille bambou.'},
-      {name:'Aperol Spritz', emoji:'🍊', pv:10, cost:2.00, glass:'Balon', dose:[['Apérol','6 cl'],['Prosecco','9 cl'],['Eau gazeuse','3 cl'],['Orange','1 tranche']], tech:'Recette classique italienne. Glace, Apérol, Prosecco, eau, orange.', tip:'Alternative plus classique au Spritz Provençal.'},
-      {name:'Margarita de plage', emoji:'🌊', pv:13, cost:2.80, glass:'Coupe margarita', dose:[['Tequila reposado','5 cl'],['Triple sec','2 cl'],['Citron vert','3 cl jus'],['Sel de Camargue','bord verre']], tech:'Bord verre humide + sel Camargue. Shaker tequila + triple sec + citron. Verser sur glace.', tip:'Sel de Camargue = signature locale. Bien équilibré.'}
+    const spirits = [
+      {
+        name: 'Rhum', emoji: '🥃', color: '#92400E', bg: '#FEF3C7', bd: '#D97706',
+        cocktails: [
+          {
+            name: 'Mojito', badge: '+ fruits rouges', method: 'En direct',
+            dose: [['Menthes fraîches','≈ 10 feuilles'],['Citron vert','≈ 6 quarts'],['Cassonade','—'],['Glace pilée','—'],['Rhum blanc + ambré','topping'],['Purée de fruits rouges','—']],
+            tech: 'Écraser la menthe et les quarts de citron avec la cassonade. Remplir de glace pilée. Topping rhum blanc + ambré. Ajouter la purée de fruits rouges.'
+          },
+          {
+            name: 'Piña Colada', badge: '', method: 'Au blender',
+            dose: [['Ananas frais','4 morceaux'],['Crème de coco','2 c.c'],['Rhum','6 cl'],['Jus d\'ananas','7 cl'],['Sirop de vanille','2 cl (opt.)']],
+            tech: 'Mixer tous les ingrédients avec de la glace au blender jusqu\'à consistance onctueuse. Servir immédiatement.'
+          },
+          {
+            name: 'Passion Playa', badge: 'NEW', method: 'Au shaker',
+            dose: [['Rhum brun','4 cl'],['Jus de citron','2 cl'],['Sirop de vanille','1 cl'],['Cannelle','1 c.c'],['Jus de passion','5 cl'],['Jus d\'ananas','5 cl']],
+            tech: 'Mettre tous les ingrédients dans le shaker avec glace. Shaker vigoureusement. Filtrer et servir.'
+          },
+          {
+            name: 'Maï Thaï moderne', badge: '', method: 'Au shaker',
+            dose: [['Rhum brun','4 cl'],['Jus de citron','2 cl'],['Sirop d\'orgeat','1,5 cl'],['Jus d\'ananas','5 cl']],
+            tech: 'Shaker tous les ingrédients avec glace. Filtrer et servir sur glace.'
+          }
+        ]
+      },
+      {
+        name: 'Vodka', emoji: '🍸', color: '#1E3A5F', bg: '#EFF6FF', bd: '#2563EB',
+        cocktails: [
+          {
+            name: 'Expresso Martini', badge: '', method: 'Au shaker',
+            dose: [['Vodka','4 cl'],['Kahlua','2 cl'],['Expresso','1x (refroidi)'],['Sirop de sucre','1 cl (opt.)']],
+            tech: 'Préparer l\'expresso à l\'avance et laisser refroidir. Shaker vodka + kahlua + expresso + sirop avec glace. Filtrer en double dans une coupe martini froide.'
+          },
+          {
+            name: 'Moscow Mule', badge: '', method: 'En direct',
+            dose: [['Vodka','4 cl'],['Jus de citron','2 cl'],['Ginger beer','top']],
+            tech: 'Verser vodka + jus de citron sur glace dans un mug. Compléter avec le ginger beer. Ne pas mélanger.'
+          },
+          {
+            name: 'Porn Star', badge: '', method: 'Au shaker',
+            dose: [['Vodka','4 cl'],['Purée de passion','2 cl'],['Jus de citron','2 cl'],['Sirop de vanille','1 cl'],['Jus de passion','5 cl']],
+            tech: 'Shaker tous les ingrédients avec glace. Filtrer et servir.'
+          }
+        ]
+      },
+      {
+        name: 'Gin', emoji: '🌿', color: '#14532D', bg: '#F0FDF4', bd: '#16A34A',
+        cocktails: [
+          {
+            name: 'Bramble', badge: '', method: 'Au shaker',
+            dose: [['Gin','4 cl'],['Sirop de sucre','1,5 cl'],['Jus de citron','2 cl'],['Liqueur de Chambord','1,5 cl']],
+            tech: 'Shaker gin + sirop + citron avec glace. Filtrer sur glace pilée. Verser la liqueur de Chambord en dernier par-dessus (effet dégradé).'
+          },
+          {
+            name: 'Gin Tonic', badge: '', method: 'En direct',
+            dose: [['Gin','5 cl'],['Citron jaune','1 tranche'],['Tonic','top'],['Concombre / poivre','option']],
+            tech: 'Verser le gin sur glaçons dans un verre ballon. Compléter avec le tonic. Décorer avec la tranche de citron. Version alternative : concombre + poivre.'
+          },
+          {
+            name: 'Gin Basil Smash', badge: '', method: 'Au shaker',
+            dose: [['Gin','5 cl'],['Sirop basilic maison','3,5 cl'],['Jus de citron','2 cl']],
+            tech: 'Shaker gin + sirop basilic maison + jus de citron avec glace. Filtrer finement et servir dans un verre sur glace.'
+          }
+        ]
+      }
     ];
 
-    const grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:14px';
-    ck.forEach(c => {
-      const marge = Math.round(((c.pv - c.cost) / c.pv) * 100);
-      const card = document.createElement('div');
-      card.style.cssText = 'background:var(--card);border:1px solid var(--sep);border-radius:14px;overflow:hidden';
-      card.innerHTML = `
-        <div style="padding:14px 16px;display:flex;align-items:flex-start;gap:14px;border-bottom:0.5px solid var(--sep);background:linear-gradient(135deg,#FAF5FF,#F3E8FF)">
-          <div style="font-size:42px;line-height:1">${c.emoji}</div>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:800;color:#581C87">${c.name}</div>
-            <div style="font-size:11px;color:#6B21A8;margin-top:2px">${c.glass}</div>
-            <div style="display:flex;gap:8px;margin-top:6px">
-              <span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:12px;background:#9333EA;color:#fff;font-family:'DM Mono',monospace">${c.pv}€</span>
-              <span style="font-size:10px;font-weight:600;padding:3px 9px;border-radius:12px;background:#fff;color:#581C87">Food cost ${c.cost}€</span>
-              <span style="font-size:10px;font-weight:700;padding:3px 9px;border-radius:12px;background:#DCFCE7;color:#166534;font-family:'DM Mono',monospace">${marge}% marge</span>
+    const METHOD_CLR = {
+      'Au shaker': { bg:'#F5F3FF', tx:'#581C87' },
+      'Au blender': { bg:'#FFF7ED', tx:'#9A3412' },
+      'En direct': { bg:'#F0FDF4', tx:'#14532D' }
+    };
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;gap:20px';
+
+    spirits.forEach(spirit => {
+      const section = document.createElement('div');
+
+      const header = document.createElement('div');
+      header.style.cssText = `display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:12px;background:${spirit.bg};border:1.5px solid ${spirit.bd};margin-bottom:12px`;
+      header.innerHTML = `
+        <span style="font-size:28px;line-height:1">${spirit.emoji}</span>
+        <span style="font-size:16px;font-weight:900;color:${spirit.color};letter-spacing:-.02em">${spirit.name}</span>
+        <span style="font-size:11px;font-weight:600;color:${spirit.color};opacity:.6;margin-left:4px">${spirit.cocktails.length} cocktails</span>
+      `;
+      section.appendChild(header);
+
+      const grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px';
+
+      spirit.cocktails.forEach(ck => {
+        const mc = METHOD_CLR[ck.method] || METHOD_CLR['Au shaker'];
+        const card = document.createElement('div');
+        card.style.cssText = 'background:var(--card);border:1px solid var(--sep);border-radius:14px;overflow:hidden';
+        card.innerHTML = `
+          <div style="padding:13px 15px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--sep);background:${spirit.bg}">
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+                <span style="font-size:15px;font-weight:900;color:${spirit.color}">${ck.name}</span>
+                ${ck.badge ? `<span style="font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;background:${spirit.bd};color:#fff;text-transform:uppercase;letter-spacing:.06em">${ck.badge}</span>` : ''}
+              </div>
+              <div style="margin-top:5px">
+                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:${mc.bg};color:${mc.tx}">${ck.method}</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div style="padding:12px 16px;border-bottom:0.5px solid var(--bg)">
-          <div style="font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Recette</div>
-          <table style="width:100%;border-collapse:collapse;font-size:11.5px">
-            ${c.dose.map(d=>`<tr><td style="padding:4px 0;color:var(--t2)">${d[0]}</td><td style="padding:4px 0;text-align:right;font-weight:700;color:var(--t1);font-family:'DM Mono',monospace">${d[1]}</td></tr>`).join('')}
-          </table>
-        </div>
-        <div style="padding:12px 16px;border-bottom:0.5px solid var(--bg);background:#FFFBEB">
-          <div style="font-size:10px;font-weight:700;color:#78350F;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">👨‍🍳 Technique</div>
-          <div style="font-size:11.5px;color:#78350F;line-height:1.5">${c.tech}</div>
-        </div>
-        <div style="padding:12px 16px;background:#F0F9FF">
-          <div style="font-size:10px;font-weight:700;color:#0C4A6E;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">💡 Astuce Playa</div>
-          <div style="font-size:11.5px;color:#0C4A6E;line-height:1.5">${c.tip}</div>
-        </div>
-      `;
-      grid.appendChild(card);
+          <div style="padding:11px 15px">
+            <div style="font-size:10px;font-weight:700;color:var(--t4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px">Recette</div>
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+              ${ck.dose.map(d=>`<tr style="border-bottom:0.5px solid var(--bg)"><td style="padding:5px 0;color:var(--t2)">${d[0]}</td><td style="padding:5px 0;text-align:right;font-weight:800;color:var(--t1);font-family:'DM Mono',monospace;white-space:nowrap">${d[1]}</td></tr>`).join('')}
+            </table>
+          </div>
+          <div style="padding:11px 15px;background:#FFFBEB;border-top:0.5px solid var(--bg)">
+            <div style="font-size:10px;font-weight:700;color:#78350F;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">👨‍🍳 Technique</div>
+            <div style="font-size:11.5px;color:#78350F;line-height:1.55">${ck.tech}</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      section.appendChild(grid);
+      wrap.appendChild(section);
     });
-    body.appendChild(grid);
+
+    body.appendChild(wrap);
   }
 
   function renderAccordsTab(){
