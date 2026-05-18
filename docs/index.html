@@ -5696,7 +5696,7 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1P
 // ── Retourne les bookings d'une date — cache instantané ou fetch complet
 async function fetchZcForDate(date, onProgress, onDateReady){
   // 1. Cache localStorage valide → retour immédiat
-  const cached = zcCacheGet(date);
+  const cached = await zcCacheGet(date);
   if(cached !== null) return cached;
 
   // 2. Pool mémoire frais → source de vérité fiable (construit depuis un fetch réel)
