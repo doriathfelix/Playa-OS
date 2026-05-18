@@ -74,9 +74,9 @@ function renderSidebar(){
       ? `<span style="display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:var(--rtbg);border:0.5px solid var(--rtbd);color:var(--rtt);flex-shrink:0">${r.tr}⛱</span>`
       : '';
 
-    // Ligne du bas : note (commentaire client + note interne)
+    // Ligne du bas : note (commentaire client + note interne) — tronqué avec ...
     const commentLine = r.comment
-      ? `<div class="rc-sub" style="margin-top:3px;font-size:11px;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">💬 ${r.comment}</div>`
+      ? `<div class="rc-sub" style="margin-top:3px;font-size:11px;color:var(--t2);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;word-break:break-word">💬 ${r.comment.length>60?r.comment.substring(0,60)+'…':r.comment}</div>`
       : '';
 
     // Badge en attente
@@ -99,15 +99,15 @@ function renderSidebar(){
       : '';
 
     d.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
-        <div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;position:relative">
+        <div style="flex:1;min-width:0">
           <div class="rc-name">${r.urgent?'<span class="urgent-dot"></span>':''}${r.name}</div>
           ${!r.repas_transat?`<div style="font-size:11px;font-weight:600;color:var(--t2);margin-top:3px">${r.time}</div>`:''}
           ${attBadge}
           ${commentLine}
           ${placedLine}
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
+        <div style="position:absolute;top:0;right:0;display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
           <div style="display:flex;align-items:center;gap:4px">
             ${svcTag}
             <div class="rc-pax">${r.pax} PAX</div>
