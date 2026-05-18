@@ -166,35 +166,37 @@ function renderBar(c){
     const pairings = [
       { cat:'Tapas & fruits de mer', ico:'🦪',
         rows:[
-          { plat:'Huîtres de Bouzigues',          col:'⚪', wine:'Dauvissat Cuvée St Pierre — Chablis',        why:'Minéralité crayeuse et fraîcheur iodée : le duo parfait avec l\'huître',              price:'42€' },
-          { plat:'Palourdes à la crème d\'ail',    col:'⚪', wine:'Paternel Blanc de Blanc — Cassis',           why:'Vivacité provençale et amande fraîche contrebalancent la crème sans l\'écraser',   price:'51€' },
-          { plat:'Couteaux persillade gratinés',   col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',             why:'Agrumes vifs et légèreté minérale épousent l\'ail et le persil',                   price:'26€ · 7€ verre' },
-          { plat:'Bao tentacule, mangue piment',   col:'⚪', wine:'Pithon Mon P\'tit Pithon Blanc',             why:'Fruité exubérant et rondeur aromatique tiennent tête à la mangue et au piment',   price:'36€' },
-          { plat:'Pinsa truffe, roquette, burrata',col:'🔴', wine:'Fanny Sabre — Bourgogne',                   why:'Pinot Noir délicat et sous-bois subliment la truffe sans l\'éclipser',             price:'58€' },
+          { plat:'Huîtres de Bouzigues',           col:'⚪', wine:'Dauvissat Cuvée St Pierre — Chablis',         why:'La minéralité crayeuse et la tension iodée du Chablis épousent la salinité naturelle des huîtres de Bouzigues : accord de terroir marin absolu.',           price:'42€' },
+          { plat:'Palourdes à la crème d\'ail',     col:'⚪', wine:'Paternel Blanc de Blanc — Cassis',            why:'La vivacité du Cassis (AOP) et ses notes d\'amande fraîche contrebalancent la crème d\'ail sans l\'écraser : la Provence répond à la mer.',            price:'51€' },
+          { plat:'Couteaux persillade gratinés',    col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',              why:'Les agrumes frais et la légèreté minérale du blanc des Alpilles font directement écho à l\'ail frais et au persil du gratin.',                         price:'26€ · 7€ verre' },
+          { plat:'Bao tentacule, sauce mangue-piment-coriandre', col:'⚪', wine:'Pithon Mon P\'tit Pithon Blanc', why:'L\'exubérance fruitée des Côtes Catalanes et sa légère rondeur tiennent tête au condiment mangue-curry rouge sans dominer la vapeur du bao.',       price:'36€' },
+          { plat:'Pinsa truffe, roquette, burrata', col:'🔴', wine:'Fanny Sabre — Bourgogne',                    why:'Le Pinot Noir bourguignon, ses notes de sous-bois et de pivoine, sublime la truffe d\'été et l\'amertume de la roquette sans éclipser la burrata.',   price:'58€' },
+          { plat:'Croque comté truffe jambon italien', col:'🔴', wine:'Pithon Mon P\'tit Pithon Rouge',           why:'Le Grenache-Carignan fruité et gourmand répond au comté 6 mois, à la crème tartufata et au jambon truffé sans alourdir le tout.',                     price:'36€' },
         ]
       },
       { cat:'Entrées', ico:'🥗',
         rows:[
-          { plat:'Ceviche lèche de tigre',         col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',             why:'L\'acidité vive et les notes d\'agrumes font parfaitement écho à la marinade',     price:'26€ · 7€ verre' },
-          { plat:'Tataki de taureau, glace wasabi', col:'🔴', wine:'Mas Valériole Beauduc — Camargue',          why:'Rouge camarguais léger, fruits rouges croquants : accord terroir évident',         price:'32€ · 7€ verre' },
-          { plat:'Salade pastèque burrata feta',   col:'🌸', wine:'Puech Haut Cuvée Prestige — Rosé',          why:'Fraîcheur fruitée et texture veloutée du rosé épousent le mariage sucré-salé',    price:'39€ · 8€ verre' },
+          { plat:'Ceviche de muge, leche de tigre et mangue', col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',   why:'L\'acidité vive du blanc et ses notes d\'agrumes font directement écho à la marinade leche de tigre et à la fraîcheur de la mangue.',                   price:'26€ · 7€ verre' },
+          { plat:'Tataki taureau AOP, wok croquant, glace wasabi', col:'🔴', wine:'Mas Valériole Beauduc — Camargue', why:'Même terroir que la viande. Le rouge camarguais léger et ses fruits rouges croquants ne dominent pas la marinade soja-gingembre-citron 24h.', price:'32€ · 7€ verre' },
+          { plat:'Salade pastèque, burrata 125g, feta AOP',   col:'🌸', wine:'Puech Haut Cuvée Prestige — Rosé', why:'La texture veloutée et les notes de fraise du rosé épousent parfaitement le sucré-salé de la pastèque, du condiment menthe-balsamique blanc et de la burrata.', price:'39€ · 8€ verre' },
         ]
       },
       { cat:'Plats', ico:'🍽️',
         rows:[
-          { plat:'Filet de poisson, hollandaise',  col:'⚪', wine:'Paternel Blanc de Blanc — Cassis',          why:'La vivacité minérale et le gras beurré du Cassis sont faits l\'un pour l\'autre',  price:'51€' },
-          { plat:'Poissons sauvages, beurre blanc', col:'⚪', wine:'Dauvissat Cuvée St Pierre — Chablis',       why:'Accord classique Normandie-mer : minéralité pour minéralité',                     price:'42€' },
-          { plat:'Volaille, pistache, petit pois', col:'⚪', wine:'Pithon Mon P\'tit Pithon Blanc',             why:'Fruité solaire et légèreté toscane accompagnent en douceur la volaille',           price:'36€' },
-          { plat:'Risotto 3 riz de Camargue',      col:'🌸', wine:'Puech Haut Cuvée Prestige — Rosé',          why:'La rondeur veloutée du rosé épouse le crémeux, terroir partagé Camargue',         price:'39€ · 8€ verre' },
-          { plat:'Smash burger bœuf de Galice',    col:'🔴', wine:'Pithon Mon P\'tit Pithon Rouge',             why:'Grenache-Carignan gourmand et solaire pour tenir le bœuf fumé et le cheddar',    price:'36€' },
-          { plat:'Faux filet Wagyu 180g',          col:'🔴', wine:'Fanny Sabre — Bourgogne  ou  Valériole Empreinte', why:'Pinot raffiné ou micro-cuvée camarguaise : les deux élèvent la viande d\'exception', price:'58–66€' },
+          { plat:'Filet de poisson, grenaille Noirmoutier, hollandaise aérienne', col:'⚪', wine:'Paternel Blanc de Blanc — Cassis', why:'L\'acidité vive et le gras naturel du Cassis répondent à la hollandaise siphonnée et aux grenailles caramélisées : accord beurré-minéral parfait.', price:'51€' },
+          { plat:'Poissons sauvages, beurre blanc tomate-xérès, citron cédrat', col:'⚪', wine:'Dauvissat Cuvée St Pierre — Chablis', why:'La minéralité du Chablis dialogue avec le beurre blanc monté à la tomate et vinaigre de Xérès — accord haute gastronomie, minéralité pour minéralité.', price:'42€' },
+          { plat:'Ballotine de volaille, pistache, lissé petit pois, carotte des sables', col:'⚪', wine:'Pithon Mon P\'tit Pithon Blanc', why:'Le fruité solaire des Côtes Catalanes accompagne la mousseline de dinde sarriette-pistache et le lissé de petit pois sans écraser leur délicatesse.', price:'36€' },
+          { plat:'Risotto 3 riz Camargue, car\'hot, ananas, Grana Padano', col:'🌸', wine:'Puech Haut Cuvée Prestige — Rosé', why:'La rondeur veloutée du rosé épouse le twist sucré-salé ananas-carotte-curry rouge du risotto lié au Grana Padano : accord généreux et gourmand.', price:'39€ · 8€ verre' },
+          { plat:'Smash burger bœuf de Galice maturé, cheddar mild red, mayo fumée', col:'🔴', wine:'Pithon Mon P\'tit Pithon Rouge', why:'Le Grenache-Carignan solaire et gourmand tient le bœuf de Galice maturé 100g, le cheddar mild red et la mayonnaise fumée maison sans les dominer.', price:'36€' },
+          { plat:'Faux filet Wagyu 180g, jus réduit UMAMI, carotte BBQ', col:'🔴', wine:'Fanny Sabre Bourgogne  ou  Valériole Empreinte', why:'Le jus UMAMI corsé du Wagyu uruguayen brûlé au chalumeau appelle un Pinot Noir racé (Fanny Sabre) ou la micro-cuvée camarguaise pour une profondeur digne de la viande.', price:'58–66€' },
         ]
       },
       { cat:'Fromages & desserts', ico:'🍮',
         rows:[
-          { plat:'Pélardon des Cévennes',          col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',             why:'Le chèvre frais aime les blancs vifs et minéraux',                                price:'26€ · 7€ verre' },
-          { plat:'K\'ouète tartelette, ganache cacahuète', col:'🌸', wine:'Château Guiot Plaisir Coupable — Moelleux', why:'Douceur miel et abricot confit font écho à la ganache sans la dominer',   price:'32€ · 7€ verre' },
-          { plat:'Clafoutis ananas façon Piña Colada', col:'🥂', wine:'Veuve Clicquot Brut Carte Jaune',        why:'Les bulles fines et le biscuité du Champagne subliment l\'ananas flambé',         price:'90€' },
+          { plat:'Pélardon des Cévennes',           col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',              why:'Le chèvre frais et lacté aime les blancs vifs et minéraux qui nettoient le palais entre chaque bouchée.',                                                price:'26€ · 7€ verre' },
+          { plat:'K\'ouète — ganache chocolat cacahuète, caramel beurre salé', col:'🌸', wine:'Château Guiot Plaisir Coupable — Moelleux', why:'Les notes de miel et d\'abricot confit du moelleux font écho à la ganache chocolat-cacahuète et au caramel beurre salé chocolaté sans les écraser.', price:'32€ · 7€ verre' },
+          { plat:'Clafoutis ananas flambé au rhum brun, sorbet coco, sauce suzette', col:'🥂', wine:'Veuve Clicquot Brut Carte Jaune', why:'Le biscuité et les bulles fines du Clicquot subliment l\'ananas flambé au rhum et la sauce suzette jus d\'ananas-beurre frais — mariage festif évident.', price:'90€' },
+          { plat:'Gaspacho framboise, bavarois citron, citron caviar', col:'🥂', wine:'Ruinart Blanc de Blancs',   why:'La fraîcheur citronnée et la minéralité du 100% Chardonnay Ruinart dialoguent avec le bavarois citron jaune-zeste citron vert et les grains de citron caviar.', price:'160€' },
         ]
       }
     ];
