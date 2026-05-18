@@ -439,23 +439,23 @@ async function fetchZcPage(page, dateFilter){
 }
 
 // ── Voie rapide : fetch filtré par date (1-2 requêtes si l'API supporte date_min/date_max)
-// Renvoie les bookings si le filtre a fonctionné, null sinon (total > 400 = filtre ignoré)
+// Renvoie { filtered:true, bookings } ou { filtered:false, p1data, totalPages } pour réutilisation
 async function fetchZcDateFiltered(date, onProgress){
   const p1 = await fetchZcPage(1, date);
   const data = p1.data || [];
   const total = p1.paginator?.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / 250));
-  if(total > 400) return null; // API a ignoré le filtre → total = toutes les resas
+  if(total > 400) return { filtered: false, p1data: data, totalPages };
   if(onProgress) onProgress(1, totalPages);
-  if(totalPages === 1) return data;
-  // Quelques pages max (jour très chargé) → tout en parallèle
+  if(totalPages === 1) return { filtered: true, bookings: data };
+  // Quelques pages max (jour très chargé) → tout en parallèle (max 2-3 pages)
   const rest = await Promise.all(
     Array.from({length: totalPages - 1}, (_, i) =>
       fetchZcPage(i + 2, date).then(r => r.data || [])
     )
   );
   if(onProgress) onProgress(totalPages, totalPages);
-  return [...data, ...rest.flat()];
+  return { filtered: true, bookings: [...data, ...rest.flat()] };
 }
 
 // ── Helpers
@@ -483,14 +483,21 @@ function memoryPoolGet(date){
 // onProgress(cur, total)  : avancement pages
 // onDateReady(date, bkgs) : appelé dès qu'on a des données pour une date ciblée (affichage progressif)
 let _fetchAllInProgress = null;
-async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate){
+// p1Prefetch : { p1data, totalPages } pour réutiliser la page 1 déjà chargée par fetchZcDateFiltered
+async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1Prefetch){
   if(_fetchAllInProgress) return _fetchAllInProgress;
 
   _fetchAllInProgress = (async () => {
-    const p1full = await fetchZcPage(1);
-    const p1data = p1full.data || [];
-    const total  = p1full.paginator?.total || 0;
-    const totalPages = Math.max(1, Math.ceil(total / 250));
+    let p1data, totalPages;
+    if(p1Prefetch){
+      p1data = p1Prefetch.p1data;
+      totalPages = p1Prefetch.totalPages;
+    } else {
+      const p1full = await fetchZcPage(1);
+      p1data = p1full.data || [];
+      const total = p1full.paginator?.total || 0;
+      totalPages = Math.max(1, Math.ceil(total / 250));
+    }
     if(onProgress) onProgress(1, totalPages);
 
     const byDate = {};
@@ -506,18 +513,18 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate){
     if(onDateReady && targetDate && byDate[targetDate])
       onDateReady(targetDate, byDate[targetDate]);
 
-    if(totalPages > 1){
-      // Toutes les pages restantes en parallèle — pas de batching séquentiel
-      const results = await Promise.all(
-        Array.from({length: totalPages - 1}, (_, i) =>
-          fetchZcPage(i + 2).then(r => r.data || [])
-        )
+    const BATCH = 12; // batches de 12 — 2× plus rapide que 6 sans saturer l'API
+    for(let start = 2; start <= totalPages; start += BATCH){
+      const pageNums = Array.from(
+        {length: Math.min(BATCH, totalPages - start + 1)},
+        (_, i) => start + i
       );
+      const results = await Promise.all(pageNums.map(p => fetchZcPage(p).then(r => r.data || [])));
       results.forEach(rows => addToBD(rows));
+      if(onProgress) onProgress(Math.min(start + BATCH - 1, totalPages), totalPages);
+      if(onDateReady && targetDate && byDate[targetDate])
+        onDateReady(targetDate, byDate[targetDate]);
     }
-    if(onProgress) onProgress(totalPages, totalPages);
-    if(onDateReady && targetDate && byDate[targetDate])
-      onDateReady(targetDate, byDate[targetDate]);
 
     // Stocker en mémoire
     _memoryPool = { ts: Date.now(), byDate };
@@ -721,11 +728,11 @@ async function syncZenchef(date){
       });
     } catch(e){ fast = null; }
 
-    if(fast !== null){
+    if(fast !== null && fast.filtered){
       // Filtre API fonctionnel — résultats en 1-2 requêtes
       zcSetProgress(100);
-      zcCacheSet(date, fast);
-      const { added, dupes, cancelled } = applyBookings(fast, date);
+      zcCacheSet(date, fast.bookings);
+      const { added, dupes, cancelled } = applyBookings(fast.bookings, date);
       lastSyncAt = new Date();
       updateSyncAge();
       render();
@@ -733,8 +740,38 @@ async function syncZenchef(date){
         (cancelled > 0 ? ' · ' + cancelled + ' annulées' : '') +
         (dupes > 0 ? ' · ' + dupes + ' doublons' : '');
       toast('✓ Zenchef — ' + msg);
-      // Remplir le pool en background pour navigation entre dates
-      fetchAllPagesAndCacheAll(null, null, null).catch(()=>{});
+      // Remplir le pool en background pour navigation entre dates — réutiliser p1 existante
+      fetchAllPagesAndCacheAll(null, null, null, fast.filtered ? null : {p1data: fast.p1data, totalPages: fast.totalPages}).catch(()=>{});
+    } else if(fast !== null && !fast.filtered){
+      // Filtre API non supporté → fetch complet avec p1 réutilisée
+      let firstDataShown = false;
+      const bookings = await fetchZcForDate(
+        date,
+        (cur, total) => {
+          zcSetProgress(Math.round(cur/total*100));
+          zcSetLabel('chargement ' + cur + '/' + total + ' pages…');
+        },
+        (d, bkgs) => {
+          if(firstDataShown) return;
+          firstDataShown = true;
+          reservations = {s1:[], s2:[], transats:[], soir:[]};
+          fused = {s1:[],s2:[],transats:[],soir:[]};
+          selectedId = null;
+          applyBookings(bkgs, date);
+          lastSyncAt = new Date();
+          render();
+          zcSetLabel('mise à jour…');
+        }
+      );
+      zcCacheSet(date, bookings);
+      const { added, dupes, cancelled } = applyBookings(bookings, date);
+      lastSyncAt = new Date();
+      updateSyncAge();
+      render();
+      const msg = formatDateFR(date) + ' · ' + added + ' resas' +
+        (cancelled > 0 ? ' · ' + cancelled + ' annulées' : '') +
+        (dupes > 0 ? ' · ' + dupes + ' doublons' : '');
+      toast('✓ Zenchef — ' + msg);
     } else {
       // Voie classique : fetch complet tout-parallèle avec affichage progressif
       let firstDataShown = false;
