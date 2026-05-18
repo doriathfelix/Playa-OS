@@ -99,15 +99,15 @@ function renderSidebar(){
       : '';
 
     d.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;position:relative">
-        <div style="flex:1;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
+        <div style="flex:1;min-width:0;padding-right:75px">
           <div class="rc-name">${r.urgent?'<span class="urgent-dot"></span>':''}${r.name}</div>
           ${!r.repas_transat?`<div style="font-size:11px;font-weight:600;color:var(--t2);margin-top:3px">${r.time}</div>`:''}
           ${attBadge}
           ${commentLine}
           ${placedLine}
         </div>
-        <div style="position:absolute;top:0;right:0;display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
           <div style="display:flex;align-items:center;gap:4px">
             ${svcTag}
             <div class="rc-pax">${r.pax} PAX</div>
