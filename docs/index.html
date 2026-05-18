@@ -5283,17 +5283,47 @@ const ZC_API = 'https://api.zenchef.com/api/v1';
 let syncInterval = null;
 let lastSyncAt = null;
 
-// ── Cache localStorage — TTL adaptatif
-// Dates passées : 24h (ne changent plus)   Aujourd'hui / futur : 10 min
+// ── Cache IndexedDB + localStorage fallback
 const ZC_CACHE_TTL_NOW  = 10 * 60 * 1000;  // 10 min pour aujourd'hui et futur
 const ZC_CACHE_TTL_PAST = 24 * 60 * 60 * 1000; // 24h pour les dates passées
-const ZC_FULL_FETCH_KEY = 'playa_zc_pool_ts'; // timestamp du dernier fetch complet
+const ZC_FULL_FETCH_KEY = 'playa_zc_pool_ts';
+let _zcDb = null; // IndexedDB connection
+
+async function zcDbInit(){
+  if(_zcDb) return _zcDb;
+  return new Promise((resolve) => {
+    const req = indexedDB.open('PlayaZenchef', 1);
+    req.onerror = () => { console.warn('IndexedDB init failed'); resolve(null); };
+    req.onsuccess = () => { _zcDb = req.result; resolve(_zcDb); };
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('bookings')) {
+        db.createObjectStore('bookings', {keyPath: 'date'});
+      }
+    };
+  });
+}
 
 function zcCacheTTL(date){
   const today = new Date().toISOString().split('T')[0];
   return date < today ? ZC_CACHE_TTL_PAST : ZC_CACHE_TTL_NOW;
 }
-function zcCacheGet(date){
+
+async function zcCacheGet(date){
+  const db = await zcDbInit();
+  if(db) {
+    try{
+      const tx = db.transaction('bookings', 'readonly');
+      const store = tx.objectStore('bookings');
+      const req = store.get(date);
+      const result = await new Promise((resolve) => {
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+      if(result && Date.now() - result.ts <= zcCacheTTL(date)) return result.data;
+    } catch(e){}
+  }
+  // Fallback localStorage
   try{
     const raw = localStorage.getItem('playa_zc_' + date);
     if(!raw) return null;
@@ -5302,10 +5332,20 @@ function zcCacheGet(date){
     return data;
   } catch(e){ return null; }
 }
-function zcCacheSet(date, data){
+
+async function zcCacheSet(date, data){
+  const db = await zcDbInit();
+  if(db) {
+    try{
+      const tx = db.transaction('bookings', 'readwrite');
+      const store = tx.objectStore('bookings');
+      store.put({date, ts: Date.now(), data});
+    } catch(e){}
+  }
+  // Fallback localStorage
   try{ localStorage.setItem('playa_zc_' + date, JSON.stringify({ts: Date.now(), data})); }catch(e){}
 }
-// Âge du dernier fetch complet (toutes pages) en ms
+
 function zcFullFetchAge(){
   try{ return Date.now() - parseInt(localStorage.getItem(ZC_FULL_FETCH_KEY)||'0'); }
   catch(e){ return Infinity; }
@@ -5780,8 +5820,8 @@ function zcSetSpinner(on){
 async function syncZenchef(date){
   if(!date) date = currentDate;
 
-  // ── ÉTAPE 1 : cache localStorage valide → retour immédiat
-  const cached = zcCacheGet(date);
+  // ── ÉTAPE 1 : cache (IndexedDB/localStorage) valide → retour immédiat
+  const cached = await zcCacheGet(date);
   if(cached){
     reservations = {s1:[], s2:[], transats:[], soir:[]};
     fused = {s1:[],s2:[],transats:[],soir:[]};
