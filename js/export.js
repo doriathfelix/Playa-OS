@@ -204,237 +204,184 @@ ${unplacedHtml}
 
 
 // ══════════════════════════════════════════
-// PRINT PLAN DE TRANSATS — pleine page, nom + badges service dans chaque cellule
+// PRINT PLAN DE TRANSATS — fond blanc, lisible, blocs g/m/d séparés
 // ══════════════════════════════════════════
 function printTransats(){
   const dateStr = fmtDateLong(currentDate);
 
-  // ── Stats globales
+  // ── Stats
   const allTr  = reservations.transats.filter(r => !r.ns);
   const placed = allTr.filter(r => r.placed);
   const unplcd = allTr.filter(r => !r.placed);
   const nbSlots = placed.reduce((s,r) => s + (r.slot >= 1001 ? 2 : (r.tr||1)), 0);
   const nbRT    = allTr.filter(r => r.repas_transat).length;
+  const nbS1    = placed.filter(r=>r.svc==='s1').reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
+  const nbS2    = placed.filter(r=>r.svc==='s2').reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
+  const nbSoir  = placed.filter(r=>r.svc==='soir').reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
 
-  // Détail par service
-  const nbS1   = placed.filter(r => r.svc==='s1').reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
-  const nbS2   = placed.filter(r => r.svc==='s2').reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
-  const nbSoir = placed.filter(r => r.svc==='soir').reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
-
-  // ── Helpers grille
-  function slotToGridCol(slot){
-    const p = slot - Math.floor(slot/100)*100;
-    if(p >= 1  && p <= 7)  return 1 + p;
-    if(p >= 8  && p <= 12) return 2 + p;
-    return 3 + p;
-  }
-  function slotToGridRow(slot){
-    const rb = Math.floor(slot/100)*100;
-    return TR_ROWS.findIndex(r => r.id === rb) + 1;
-  }
-
-  // ── Couleurs par service
-  const SVC_CLR = {
-    s1:   { bd:'#16A34A', bg:'#DCFCE7', tx:'#14532D', pill:'#16A34A', lbl:'S1'   },
-    s2:   { bd:'#0284C7', bg:'#E0F2FE', tx:'#0C4A6E', pill:'#0284C7', lbl:'S2'   },
-    soir: { bd:'#7C3AED', bg:'#EDE9FE', tx:'#3B0764', pill:'#7C3AED', lbl:'Soir' },
+  const SVC = {
+    s1:   {bg:'#DCFCE7', bd:'#16A34A', tx:'#14532D', lbl:'S1'},
+    s2:   {bg:'#DBEAFE', bd:'#2563EB', tx:'#1E3A8A', lbl:'S2'},
+    soir: {bg:'#EDE9FE', bd:'#7C3AED', tx:'#4C1D95', lbl:'Soir'},
   };
-  const RT_CLR  = { pill:'#0D9488', lbl:'RT' };
-  const BED_CLR = { bd:'#D97706', bg:'#FEF3C7', tx:'#92400E' };
+  const BED_C = {bg:'#FEF3C7', bd:'#D97706', tx:'#92400E', lbl:'BED'};
+  const RT_BD = '#0D9488';
 
-  function resaColors(r){
-    if(BED_SLOTS.includes(r.slot)) return BED_CLR;
-    return SVC_CLR[r.svc] || SVC_CLR.s1;
-  }
+  function cFor(r){ return BED_SLOTS.includes(r.slot) ? BED_C : (SVC[r.svc] || SVC.s1); }
 
-  function svcBadges(r){
-    const isBed = BED_SLOTS.includes(r.slot);
-    if(isBed){
-      return `<span style="background:#D97706;color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px">BED</span>`;
-    }
-    const pills = [];
-    const sc = SVC_CLR[r.svc];
-    if(sc) pills.push(`<span style="background:${sc.pill};color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px">${sc.lbl}</span>`);
-    if(r.repas_transat) pills.push(`<span style="background:${RT_CLR.pill};color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px">${RT_CLR.lbl}</span>`);
-    return pills.join('');
-  }
-
-  // ── Slots couverts
-  const coveredSlots = new Set();
-  const regularPlaced = placed.filter(r => !(r.slot >= 1001 && r.slot <= 1004));
-  regularPlaced.forEach(resa => {
+  // slot → resa
+  const slotMap = {};
+  placed.filter(r => r.slot < 1001).forEach(resa => {
     const slots = (resa.extraSlots && resa.extraSlots.length)
       ? resa.extraSlots
       : Array.from({length: resa.tr||1}, (_,i) => (resa.slot||0)+i);
-    slots.forEach(s => coveredSlots.add(s));
+    slots.forEach(s => { if(!slotMap[s]) slotMap[s] = resa; });
   });
-
   const salonMap = {};
   placed.filter(r => r.slot >= 1001 && r.slot <= 1004).forEach(r => { salonMap[r.slot] = r; });
 
-  let cells = '';
+  function emptyCell(slotNum, label, isBed){
+    const bg = isBed ? '#FFFBEB' : '#FAFAFA';
+    const bc = isBed ? '#FCD34D' : '#E5E7EB';
+    const tx = isBed ? '#D97706' : '#D1D5DB';
+    return `<td style="background:${bg};border:1px solid ${bc};text-align:center;vertical-align:middle;padding:2px;overflow:hidden">
+      ${isBed ? `<div style="font-size:6pt;font-weight:800;color:${tx}">BED</div>` : ''}
+      <div style="font-size:6pt;color:${tx}">${label}</div>
+    </td>`;
+  }
 
-  // ── 1. Cellules vides
-  TR_ROWS.forEach((row, ri) => {
-    const rb = row.id;
-    const rowIdx = ri + 1;
-    const lblColor = row.sea ? '#0D9488' : '#6B7280';
+  function resaCell(resa, colspan){
+    const c   = cFor(resa);
+    const nom = resa.name.split(' ')[0];
+    const tr  = resa.tr || 1;
+    const rt  = resa.repas_transat
+      ? `<span style="background:${RT_BD};color:#fff;font-size:6pt;font-weight:800;padding:1px 4px;border-radius:6px;margin-left:2px">RT</span>` : '';
+    return `<td colspan="${colspan}" style="background:${c.bg};border:2px solid ${c.bd};text-align:center;vertical-align:middle;padding:3px 2px;overflow:hidden">
+      <div style="font-size:11pt;font-weight:900;color:${c.tx};line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nom}</div>
+      <div style="font-size:9pt;font-weight:900;color:${c.tx};margin:1px 0">×${tr}</div>
+      <div><span style="background:${c.bd};color:#fff;font-size:6pt;font-weight:800;padding:1px 5px;border-radius:6px">${c.lbl}</span>${rt}</div>
+    </td>`;
+  }
 
-    cells += `<div style="grid-column:1;grid-row:${rowIdx};display:flex;align-items:center;justify-content:flex-end;padding-right:6px">
-      <span style="font-size:12px;font-weight:800;color:${lblColor};font-family:monospace">${rb}</span>
-    </div>`;
+  const allee = `<td style="width:6px;min-width:6px;max-width:6px;background:#fff;border:none;padding:0"></td>`;
 
-    if(rb === 100){
-      for(let p = 1; p <= 3; p++){
-        const slot = rb + p;
-        if(coveredSlots.has(slot)) continue;
-        cells += `<div style="grid-column:${1+p};grid-row:${rowIdx};border-radius:6px;background:#F8F9FA;border:1.5px dashed #DEE2E6;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:10px;color:#CED4DA">${slot}</span></div>`;
-      }
-      SALON_SLOTS.forEach(salon => {
-        if(salonMap[salon.id]) return;
-        cells += `<div style="grid-column:${salon.gridCol};grid-row:${rowIdx};border-radius:6px;background:#F8F9FA;border:1.5px dashed #CED4DA;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:10px;font-weight:600;color:#ADB5BD">${salon.lbl}</span></div>`;
-      });
-    } else if(rb === 200){
-      for(let p = 1; p <= 18; p++){
-        const slot = rb + p;
-        if(coveredSlots.has(slot)) continue;
-        const col = slotToGridCol(slot);
-        cells += `<div style="grid-column:${col};grid-row:${rowIdx};border-radius:6px;background:#F8F9FA;border:1.5px dashed #DEE2E6;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:10px;color:#CED4DA">${slot}</span></div>`;
-      }
-      for(let p = 19; p <= 21; p++){
-        const slot = rb + p;
-        if(coveredSlots.has(slot)) continue;
-        const col = slotToGridCol(slot);
-        cells += `<div style="grid-column:${col};grid-row:${rowIdx};border-radius:6px;background:#FFFBEB;border:1.5px dashed #D97706;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
-          <span style="font-size:10px;font-weight:800;color:#92400E;text-align:center;line-height:1.2">BED<br><span style="font-size:9px;font-weight:600">${slot}</span></span></div>`;
-      }
-    } else {
-      for(let p = 1; p <= 20; p++){
-        const slot = rb + p;
-        if(coveredSlots.has(slot)) continue;
-        const col = slotToGridCol(slot);
-        cells += `<div style="grid-column:${col};grid-row:${rowIdx};border-radius:6px;background:#F8F9FA;border:1.5px dashed #DEE2E6;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:10px;color:#CED4DA">${slot}</span></div>`;
+  function renderBlock(slots, labels){
+    let html = ''; let i = 0;
+    while(i < slots.length){
+      const s = slots[i];
+      const resa = slotMap[s];
+      const isBed = BED_SLOTS.includes(s);
+      if(!resa){ html += emptyCell(s, labels[i], isBed); i++; }
+      else {
+        let j = i + 1;
+        while(j < slots.length && slotMap[slots[j]] === resa) j++;
+        html += resaCell(resa, j - i);
+        i = j;
       }
     }
-  });
+    return html;
+  }
 
-  // ── 2. Cellules resas placées
-  const renderedResas = new Set();
-  regularPlaced.forEach(resa => {
-    if(renderedResas.has(resa.id)) return;
-    renderedResas.add(resa.id);
+  function colHead(labels, color){
+    return labels.map(l=>`<th style="font-size:6.5pt;font-weight:700;color:${color};text-align:center;padding:1px 0;background:#fff;border:none">${l}</th>`).join('');
+  }
 
-    const slots = (resa.extraSlots && resa.extraSlots.length)
-      ? resa.extraSlots
-      : Array.from({length: resa.tr||1}, (_,i) => (resa.slot||0)+i);
-    if(!slots.length) return;
+  const G_LBL = ['1','2','3','4','5','6','7'];
+  const M_LBL = ['8','9','10','11','12','12bis'];
+  const D_LBL = ['13','14','15','16','17','18','19','20'];
 
-    let minRow=Infinity, maxRow=-Infinity, minCol=Infinity, maxCol=-Infinity;
-    slots.forEach(s => {
-      const gr = slotToGridRow(s); const gc = slotToGridCol(s);
-      if(gr < 1) return;
-      minRow=Math.min(minRow,gr); maxRow=Math.max(maxRow,gr);
-      minCol=Math.min(minCol,gc); maxCol=Math.max(maxCol,gc);
-    });
-    if(minRow===Infinity) return;
+  // Rangée 100 : BEDs + salons
+  function renderRow100(){
+    const bedHtml = [101,102,103].map(s => {
+      const r = slotMap[s];
+      return r ? resaCell(r,1) : emptyCell(s,'BED',true);
+    }).join('');
+    const salonHtml = SALON_SLOTS.map(sl => {
+      const r = salonMap[sl.id];
+      if(r){ const c=cFor(r); const nom=r.name.split(' ')[0]; const tr=r.tr||2;
+        return `<td colspan="2" style="background:${c.bg};border:2px solid ${c.bd};text-align:center;vertical-align:middle;padding:3px">
+          <div style="font-size:10pt;font-weight:900;color:${c.tx}">${nom}</div>
+          <div style="font-size:8.5pt;font-weight:900;color:${c.tx}">×${tr}</div>
+          <div><span style="background:${c.bd};color:#fff;font-size:6pt;font-weight:800;padding:1px 5px;border-radius:6px">${c.lbl}</span></div>
+        </td>`;
+      }
+      return `<td colspan="2" style="background:#F9FAFB;border:1px solid #E5E7EB;text-align:center;vertical-align:middle"><div style="font-size:6.5pt;color:#9CA3AF;font-weight:600">${sl.lbl}</div></td>`;
+    }).join('');
+    return `<tr>
+      <td rowspan="2" style="background:#F3F4F6;text-align:center;vertical-align:middle;padding:4px 5px;border:1px solid #D1D5DB">
+        <div style="font-size:8.5pt;font-weight:900;color:#374151">100</div>
+        <div style="font-size:6pt;color:#9CA3AF">Resto</div>
+      </td>
+      <th colspan="3" style="font-size:6.5pt;color:#D97706;font-weight:700;text-align:center;padding:1px;background:#fff;border:none">BEDs</th>
+      ${allee}
+      <th colspan="8" style="font-size:6.5pt;color:#6B7280;font-weight:700;text-align:center;padding:1px;background:#fff;border:none">Salons</th>
+      ${allee}
+      <th colspan="8" style="border:none;background:#fff"></th>
+    </tr><tr>
+      ${bedHtml}${allee}${salonHtml}${allee}
+      <td colspan="8" style="background:#F9FAFB;border:1px solid #F3F4F6"></td>
+    </tr>`;
+  }
 
-    const c        = resaColors(resa);
-    const nom      = resa.name.split(' ')[0];
-    const trCount  = resa.tr || 1;
-    const badges   = svcBadges(resa);
+  function renderDataRow(rb, sea){
+    const g = [1,2,3,4,5,6,7].map(p=>rb+p);
+    const m = [8,9,10,11,12,13].map(p=>rb+p);
+    const dLen = rb===200 ? 8 : 7;
+    const d = Array.from({length:dLen},(_,i)=>rb+14+i);
+    const dLabels = D_LBL.slice(0,dLen);
+    const rowColor = sea ? '#0D9488' : '#374151';
+    const rowBg    = sea ? '#CCFBF1' : '#F3F4F6';
+    return `<tr>
+      <td style="background:${rowBg};text-align:center;vertical-align:middle;padding:4px 5px;border:1px solid #D1D5DB;white-space:nowrap">
+        <div style="font-size:9.5pt;font-weight:900;color:${rowColor}">${rb}</div>
+        ${sea?'<div style="font-size:5.5pt;color:#0D9488">Mer</div>':''}
+      </td>
+      ${renderBlock(g,G_LBL)}${allee}${renderBlock(m,M_LBL)}${allee}${renderBlock(d,dLabels)}
+    </tr>`;
+  }
 
-    cells += `<div style="grid-column:${minCol}/${maxCol+1};grid-row:${minRow}/${maxRow+1};
-      border-radius:8px;background:${c.bg};border:3px solid ${c.bd};
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      padding:4px 3px;overflow:hidden;gap:3px;z-index:3;position:relative">
-      <div style="font-size:14px;font-weight:900;color:${c.tx};text-align:center;
-        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.1">${nom}</div>
-      <div style="font-size:13px;font-weight:900;color:${c.tx};line-height:1">×${trCount}</div>
-      <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center;align-items:center">${badges}</div>
-    </div>`;
-  });
+  const colHeaders = `<tr>
+    <th style="border:none;background:#fff;width:34px"></th>
+    ${colHead(G_LBL,'#9CA3AF')}${allee}${colHead(M_LBL,'#9CA3AF')}${allee}${colHead(D_LBL,'#9CA3AF')}
+  </tr>`;
 
-  // ── 3. Salons placés
-  SALON_SLOTS.forEach(salon => {
-    const sr = salonMap[salon.id];
-    if(!sr) return;
-    const c       = SVC_CLR[sr.svc] || SVC_CLR.s1;
-    const nom     = sr.name.split(' ')[0];
-    const trCount = sr.tr || 2;
-    const badges  = svcBadges(sr);
-    cells += `<div style="grid-column:${salon.gridCol};grid-row:${salon.gridRow};
-      border-radius:8px;background:${c.bg};border:3px solid ${c.bd};
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      padding:4px 3px;overflow:hidden;gap:3px;z-index:3;position:relative">
-      <div style="font-size:13px;font-weight:900;color:${c.tx};text-align:center;
-        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.1">${nom}</div>
-      <div style="font-size:12px;font-weight:900;color:${c.tx};line-height:1">×${trCount}</div>
-      <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center">${badges}</div>
-    </div>`;
-  });
-
-  // ── Non placés (en bas)
   let unplacedHtml = '';
   if(unplcd.length){
-    unplacedHtml = `<div style="background:#FFFBEB;border:2px solid #FCD34D;border-radius:10px;padding:10px 14px;margin-top:6px;flex-shrink:0">
-      <span style="font-size:12px;font-weight:800;color:#78350F">⚠ Non placés : </span>
-      ${unplcd.map(r => {
-        const sc = SVC_CLR[r.svc];
-        return `<span style="font-size:13px;font-weight:700;color:#92400E;margin-right:14px">${r.name}
-          <span style="font-size:10px;background:${sc?sc.pill:'#6B7280'};color:#fff;padding:2px 7px;border-radius:20px;margin-left:4px">${sc?sc.lbl:'?'}</span>
-          ${r.repas_transat?`<span style="font-size:10px;background:#0D9488;color:#fff;padding:2px 7px;border-radius:20px;margin-left:2px">RT</span>`:''}
-          <span style="font-size:12px;font-weight:800;color:#92400E;margin-left:4px">×${r.tr||1}</span>
-        </span>`;
-      }).join('')}
+    unplacedHtml = `<div style="background:#FFFBEB;border:2px solid #FCD34D;border-radius:7px;padding:7px 12px;margin-top:6px;flex-shrink:0">
+      <span style="font-size:10pt;font-weight:800;color:#92400E">⚠ Non placés : </span>
+      ${unplcd.map(r => { const sc=SVC[r.svc]||{}; return `<span style="font-size:10pt;font-weight:700;color:#78350F;margin-right:12px">${r.name}
+        <span style="background:${sc.bd||'#6B7280'};color:#fff;font-size:7pt;font-weight:800;padding:1px 5px;border-radius:7px">${sc.lbl||'?'}</span>
+        <b style="margin-left:3px">×${r.tr||1}</b></span>`;}).join('')}
     </div>`;
   }
 
   const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
-<title>Plan de transats</title>
+<title>Plan transats — ${dateStr}</title>
 <style>
-@page { size: A4 landscape; margin: 7mm 9mm; }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
-body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1C1C1E; background: #fff;
-  -webkit-print-color-adjust: exact; print-color-adjust: exact;
-  display: flex; flex-direction: column; height: 100%; }
-.no-print { padding: 10px 0 8px; flex-shrink: 0; }
-@media print { .no-print { display: none !important; } }
-.btn { padding: 7px 18px; background: #1C1C1E; color: #fff; border: none; border-radius: 7px;
-  font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; margin-right: 7px; }
-.hd { display: flex; justify-content: space-between; align-items: center;
-  padding-bottom: 8px; border-bottom: 3px solid #1C1C1E; margin-bottom: 8px; flex-shrink: 0; }
-.date { font-size: 18px; font-weight: 800; color: #1C1C1E; letter-spacing: -.02em; }
-.stats-row { display: flex; gap: 10px; align-items: center; }
-.stat-block { display: flex; flex-direction: column; align-items: center; justify-content: center;
-  border-radius: 10px; padding: 6px 16px; min-width: 68px; text-align: center; }
-.stat-num { font-size: 24px; font-weight: 900; line-height: 1; }
-.stat-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; opacity: .75; }
-.svc-strip { display: flex; gap: 6px; align-items: center; }
-.svc-pill { font-size: 13px; font-weight: 800; padding: 5px 14px; border-radius: 20px; color: #fff; }
-.resto-bar { background: linear-gradient(90deg,#6B7280,#4B5563); color:#fff; border-radius: 6px;
-  text-align: center; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  padding: 4px; margin-bottom: 5px; flex-shrink: 0; }
-.sea-bar { background: linear-gradient(90deg,#0EA5E9,#0D9488); color:#fff; border-radius: 6px;
-  text-align: center; font-size: 10px; font-weight: 700; letter-spacing: .08em;
-  padding: 4px; margin-top: 5px; flex-shrink: 0; }
-.grid-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-.grid {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 36px repeat(7,1fr) 7px repeat(5,1fr) 7px repeat(8,1fr) 1fr;
-  grid-template-rows: repeat(5, 1fr);
-  gap: 4px 3px;
-  background: #F0F9FF;
-  border-radius: 10px;
-  border: 1px solid #BAE6FD;
-  padding: 6px 5px;
-  min-height: 0;
-}
+@page { size: A4 landscape; margin: 8mm 10mm; }
+* { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; }
+body { font-family:'Helvetica Neue',Arial,sans-serif; background:#fff; color:#1C1C1E;
+  -webkit-print-color-adjust:exact; print-color-adjust:exact;
+  display:flex; flex-direction:column; }
+.no-print { padding:8px 0 5px; flex-shrink:0 }
+@media print { .no-print { display:none !important; } }
+.btn { padding:6px 16px; background:#1C1C1E; color:#fff; border:none; border-radius:7px;
+  font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; margin-right:6px; }
+.hd { display:flex; justify-content:space-between; align-items:center;
+  padding-bottom:6px; border-bottom:2.5px solid #1C1C1E; margin-bottom:6px; flex-shrink:0 }
+.date { font-size:15pt; font-weight:900; letter-spacing:-.02em; }
+.stats { display:flex; gap:7px; align-items:center; }
+.stat { border-radius:7px; padding:3px 10px; text-align:center; }
+.stat-n { font-size:16pt; font-weight:900; line-height:1; }
+.stat-l { font-size:6.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.07em; opacity:.75; }
+.pills { display:flex; gap:4px; }
+.pill { font-size:9.5pt; font-weight:800; padding:3px 9px; border-radius:12px; color:#fff; }
+.bar { color:#fff; border-radius:5px; text-align:center; font-size:7.5pt; font-weight:800;
+  letter-spacing:.1em; text-transform:uppercase; padding:3px 0; margin:4px 0; flex-shrink:0 }
+.wrap { flex:1; min-height:0; }
+table { width:100%; border-collapse:collapse; height:100%; table-layout:fixed; }
+td,th { overflow:hidden; }
 </style></head><body>
 <div class="no-print">
   <button class="btn" onclick="window.print()">⎙ Imprimer</button>
@@ -442,31 +389,26 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1C1C1E; backgro
 </div>
 <div class="hd">
   <div class="date">⛱ ${dateStr}</div>
-  <div class="stats-row">
-    <div class="stat-block" style="background:#DCFCE7">
-      <div class="stat-num" style="color:#14532D">${nbSlots}</div>
-      <div class="stat-lbl" style="color:#14532D">transats</div>
+  <div class="stats">
+    <div class="stat" style="background:#DCFCE7"><div class="stat-n" style="color:#14532D">${nbSlots}</div><div class="stat-l" style="color:#14532D">transats</div></div>
+    <div class="stat" style="background:#CCFBF1"><div class="stat-n" style="color:#134E4A">${nbRT}</div><div class="stat-l" style="color:#134E4A">RT</div></div>
+    <div class="pills">
+      ${nbS1   ? `<span class="pill" style="background:#16A34A">S1 · ${nbS1}</span>`   : ''}
+      ${nbS2   ? `<span class="pill" style="background:#2563EB">S2 · ${nbS2}</span>`   : ''}
+      ${nbSoir ? `<span class="pill" style="background:#7C3AED">Soir · ${nbSoir}</span>` : ''}
     </div>
-    <div class="stat-block" style="background:#CCFBF1">
-      <div class="stat-num" style="color:#134E4A">${nbRT}</div>
-      <div class="stat-lbl" style="color:#134E4A">RT</div>
-    </div>
-    <div class="svc-strip">
-      ${nbS1   ? `<span class="svc-pill" style="background:#16A34A">S1 · ${nbS1}</span>`   : ''}
-      ${nbS2   ? `<span class="svc-pill" style="background:#0284C7">S2 · ${nbS2}</span>`   : ''}
-      ${nbSoir ? `<span class="svc-pill" style="background:#7C3AED">Soir · ${nbSoir}</span>` : ''}
-    </div>
-    ${unplcd.length ? `<div class="stat-block" style="background:#FFFBEB">
-      <div class="stat-num" style="color:#92400E">${unplcd.length}</div>
-      <div class="stat-lbl" style="color:#92400E">⚠ non placés</div>
-    </div>` : ''}
+    ${unplcd.length ? `<div class="stat" style="background:#FFFBEB"><div class="stat-n" style="color:#92400E">${unplcd.length}</div><div class="stat-l" style="color:#92400E">⚠ non placés</div></div>` : ''}
   </div>
 </div>
-<div class="resto-bar">▲ Restaurant</div>
-<div class="grid-wrap">
-  <div class="grid">${cells}</div>
+<div class="bar" style="background:linear-gradient(90deg,#6B7280,#4B5563)">▲ Restaurant</div>
+<div class="wrap">
+  <table>
+    ${colHeaders}
+    ${renderRow100()}
+    ${TR_ROWS.filter(r=>r.id!==100).map(r=>renderDataRow(r.id,r.sea)).join('')}
+  </table>
 </div>
-<div class="sea-bar">〰 Mer Méditerranée 〰</div>
+<div class="bar" style="background:linear-gradient(90deg,#0EA5E9,#0D9488)">〰 Mer Méditerranée 〰</div>
 ${unplacedHtml}
 </body></html>`;
 
