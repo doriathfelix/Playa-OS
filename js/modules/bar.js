@@ -161,56 +161,166 @@ function renderBar(c){
   }
 
   function renderAccordsTab(){
+
+    // ── Accords mets & vins (vrais plats × vrais vins de la carte)
     const pairings = [
-      {plat:'Tellines persillade', wine:'Picpoul de Pinet', color:'⚪', why:'Acidité franche qui contrebalance l\'ail et le persil', price:'28€ btl · 7€ verre'},
-      {plat:'Loup grillé fenouil', wine:'Picpoul de Pinet ou Rosé des Sables', color:'⚪🌸', why:'Minéralité iodée accompagne le poisson sans le masquer', price:'28€ · 32€'},
-      {plat:'Risotto riz rouge', wine:'Rosé des Sables IGP', color:'🌸', why:'Rondeur qui épouse le crémeux du risotto, terroir commun', price:'32€'},
-      {plat:'Gardiane de taureau AOP', wine:'Costières de Nîmes rouge', color:'🔴', why:'Puissance Syrah-Grenache pour tenir la viande mijotée', price:'34€'},
-      {plat:'Côte d\'agneau Alpilles', wine:'Costières de Nîmes ou Château rouge', color:'🔴', why:'Tanins et épices soulignent le gras de l\'agneau', price:'34€ ou sur demande'},
-      {plat:'Huîtres Gillardeau', wine:'Muscadet sur lie', color:'⚪', why:'Salinité et minéralité idéales pour crustacés', price:'25€ · 6€ verre'},
-      {plat:'Fromages provençaux', wine:'Costières rouge léger ou Banyuls', color:'🔴', why:'Selon dominante : chèvre→blanc, pâte dure→rouge', price:'34€ ou 8€ verre'},
-      {plat:'Fraises de Carpentras', wine:'Crémant rosé ou Muscat de Beaumes', color:'🥂', why:'Bulles rosées pour fruit frais, Muscat pour dessert', price:'35€ · 8€ verre'}
+      { cat:'Tapas & fruits de mer', ico:'🦪',
+        rows:[
+          { plat:'Huîtres de Bouzigues',          col:'⚪', wine:'Dauvissat Cuvée St Pierre — Chablis',        why:'Minéralité crayeuse et fraîcheur iodée : le duo parfait avec l\'huître',              price:'42€' },
+          { plat:'Palourdes à la crème d\'ail',    col:'⚪', wine:'Paternel Blanc de Blanc — Cassis',           why:'Vivacité provençale et amande fraîche contrebalancent la crème sans l\'écraser',   price:'51€' },
+          { plat:'Couteaux persillade gratinés',   col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',             why:'Agrumes vifs et légèreté minérale épousent l\'ail et le persil',                   price:'26€ · 7€ verre' },
+          { plat:'Bao tentacule, mangue piment',   col:'⚪', wine:'Pithon Mon P\'tit Pithon Blanc',             why:'Fruité exubérant et rondeur aromatique tiennent tête à la mangue et au piment',   price:'36€' },
+          { plat:'Pinsa truffe, roquette, burrata',col:'🔴', wine:'Fanny Sabre — Bourgogne',                   why:'Pinot Noir délicat et sous-bois subliment la truffe sans l\'éclipser',             price:'58€' },
+        ]
+      },
+      { cat:'Entrées', ico:'🥗',
+        rows:[
+          { plat:'Ceviche lèche de tigre',         col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',             why:'L\'acidité vive et les notes d\'agrumes font parfaitement écho à la marinade',     price:'26€ · 7€ verre' },
+          { plat:'Tataki de taureau, glace wasabi', col:'🔴', wine:'Mas Valériole Beauduc — Camargue',          why:'Rouge camarguais léger, fruits rouges croquants : accord terroir évident',         price:'32€ · 7€ verre' },
+          { plat:'Salade pastèque burrata feta',   col:'🌸', wine:'Puech Haut Cuvée Prestige — Rosé',          why:'Fraîcheur fruitée et texture veloutée du rosé épousent le mariage sucré-salé',    price:'39€ · 8€ verre' },
+        ]
+      },
+      { cat:'Plats', ico:'🍽️',
+        rows:[
+          { plat:'Filet de poisson, hollandaise',  col:'⚪', wine:'Paternel Blanc de Blanc — Cassis',          why:'La vivacité minérale et le gras beurré du Cassis sont faits l\'un pour l\'autre',  price:'51€' },
+          { plat:'Poissons sauvages, beurre blanc', col:'⚪', wine:'Dauvissat Cuvée St Pierre — Chablis',       why:'Accord classique Normandie-mer : minéralité pour minéralité',                     price:'42€' },
+          { plat:'Volaille, pistache, petit pois', col:'⚪', wine:'Pithon Mon P\'tit Pithon Blanc',             why:'Fruité solaire et légèreté toscane accompagnent en douceur la volaille',           price:'36€' },
+          { plat:'Risotto 3 riz de Camargue',      col:'🌸', wine:'Puech Haut Cuvée Prestige — Rosé',          why:'La rondeur veloutée du rosé épouse le crémeux, terroir partagé Camargue',         price:'39€ · 8€ verre' },
+          { plat:'Smash burger bœuf de Galice',    col:'🔴', wine:'Pithon Mon P\'tit Pithon Rouge',             why:'Grenache-Carignan gourmand et solaire pour tenir le bœuf fumé et le cheddar',    price:'36€' },
+          { plat:'Faux filet Wagyu 180g',          col:'🔴', wine:'Fanny Sabre — Bourgogne  ou  Valériole Empreinte', why:'Pinot raffiné ou micro-cuvée camarguaise : les deux élèvent la viande d\'exception', price:'58–66€' },
+        ]
+      },
+      { cat:'Fromages & desserts', ico:'🍮',
+        rows:[
+          { plat:'Pélardon des Cévennes',          col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',             why:'Le chèvre frais aime les blancs vifs et minéraux',                                price:'26€ · 7€ verre' },
+          { plat:'K\'ouète tartelette, ganache cacahuète', col:'🌸', wine:'Château Guiot Plaisir Coupable — Moelleux', why:'Douceur miel et abricot confit font écho à la ganache sans la dominer',   price:'32€ · 7€ verre' },
+          { plat:'Clafoutis ananas façon Piña Colada', col:'🥂', wine:'Veuve Clicquot Brut Carte Jaune',        why:'Les bulles fines et le biscuité du Champagne subliment l\'ananas flambé',         price:'90€' },
+        ]
+      }
     ];
 
-    const tbl = document.createElement('div');
-    tbl.style.cssText = 'background:var(--card);border:1px solid var(--sep);border-radius:14px;overflow:hidden';
-    tbl.innerHTML = `
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead>
-          <tr style="background:var(--bg);border-bottom:0.5px solid var(--sep)">
-            <th style="text-align:left;padding:12px 16px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">Plat</th>
-            <th style="text-align:left;padding:12px 16px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">Vin conseillé</th>
-            <th style="text-align:left;padding:12px 16px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">Pourquoi</th>
-            <th style="text-align:right;padding:12px 16px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em">Prix</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${pairings.map(p=>`
-            <tr style="border-bottom:0.5px solid var(--bg)">
-              <td style="padding:12px 16px;font-weight:700;color:var(--t1)">${p.plat}</td>
-              <td style="padding:12px 16px"><span style="font-size:14px;margin-right:6px">${p.color}</span><span style="color:var(--t1);font-weight:600">${p.wine}</span></td>
-              <td style="padding:12px 16px;color:var(--t2);font-size:11.5px;line-height:1.45">${p.why}</td>
-              <td style="padding:12px 16px;text-align:right;color:var(--t1);font-weight:700;font-family:'DM Mono',monospace">${p.price}</td>
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;gap:16px';
+
+    // Astuce vente
+    const tip = document.createElement('div');
+    tip.style.cssText = 'padding:13px 16px;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border:1px solid #C4B5FD;border-radius:12px';
+    tip.innerHTML = `<span style="font-size:12px;font-weight:700;color:#581C87">💡 Astuce vente — </span><span style="font-size:12px;color:#6B21A8;line-height:1.5">Proposer le vin au verre dès la commande des tapas, en accord avec le plat principal annoncé. Le ticket moyen augmente de <b>+8 à 12€</b> par table.</span>`;
+    wrap.appendChild(tip);
+
+    pairings.forEach(cat => {
+      const section = document.createElement('div');
+      section.style.cssText = 'background:var(--card);border:1px solid var(--sep);border-radius:14px;overflow:hidden';
+      section.innerHTML = `
+        <div style="padding:11px 16px;background:var(--bg);border-bottom:0.5px solid var(--sep);display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">${cat.ico}</span>
+          <span style="font-size:13px;font-weight:800;color:var(--t1)">${cat.cat}</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          ${cat.rows.map((r,i)=>`
+            <tr style="border-bottom:${i<cat.rows.length-1?'0.5px solid var(--bg)':'none'}">
+              <td style="padding:11px 16px;font-weight:700;color:var(--t1);min-width:160px">${r.plat}</td>
+              <td style="padding:11px 12px;white-space:nowrap">
+                <span style="font-size:13px;margin-right:5px">${r.col}</span>
+                <span style="font-size:11.5px;font-weight:700;color:var(--t1)">${r.wine}</span>
+              </td>
+              <td style="padding:11px 12px;color:var(--t2);font-size:11px;line-height:1.5">${r.why}</td>
+              <td style="padding:11px 16px;text-align:right;font-weight:800;color:var(--t1);font-family:'DM Mono',monospace;white-space:nowrap">${r.price}</td>
             </tr>
           `).join('')}
-        </tbody>
-      </table>
-    `;
-    body.appendChild(tbl);
+        </table>
+      `;
+      wrap.appendChild(section);
+    });
 
-    // Note
-    const note = document.createElement('div');
-    note.style.cssText = 'margin-top:14px;padding:14px 16px;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border:1px solid var(--pbd);border-radius:12px';
-    note.innerHTML = `
-      <div style="display:flex;align-items:flex-start;gap:10px">
-        <div style="width:24px;height:24px;border-radius:7px;background:var(--purple);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;margin-top:1px">✦</div>
-        <div>
-          <div style="font-size:12px;font-weight:700;color:var(--pt);margin-bottom:3px">Astuce vente</div>
-          <div style="font-size:11.5px;color:var(--pt);line-height:1.5">Proposer systématiquement le vin au verre à l\'entrée, en accord avec le plat commandé. Le ticket moyen augmente de <b>+8€</b> en moyenne.</div>
-        </div>
-      </div>
-    `;
-    body.appendChild(note);
+    body.appendChild(wrap);
+
+    // ── Notre cave — descriptions vendeuses
+    const caveTitle = document.createElement('div');
+    caveTitle.style.cssText = 'margin-top:24px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--sep)';
+    caveTitle.innerHTML = `<span style="font-size:16px;font-weight:900;color:var(--t1)">🍾 Notre cave</span>`;
+    body.appendChild(caveTitle);
+
+    const cave = [
+      {
+        cat:'Les rosés', col:'#F9A8D4', tx:'#831843', ico:'🌸',
+        wines:[
+          { name:'Domaine de Valdition — Cuvée Alpilles', appel:'IGP Alpilles 2025 · AB', price:'7€ verre · 26€ / 33€', desc:'Pâle et lumineux, nez de pêche blanche et fleur d\'amandier. Fraîcheur minérale en finale. Notre rosé d\'entrée de gamme qui n\'en a pas l\'air.' },
+          { name:'Puech Haut — Cuvée Prestige', appel:'IGP Pays d\'Oc 2025', price:'8€ verre · 39€ / 79€', desc:'Robe saumonée intense, nez de fraises gariguettes et agrumes frais. Corps généreux, texture veloutée. Le rosé qu\'on commande en deuxième bouteille.' },
+          { name:'Domaine de Valdition — Cuvée des Bâtonniers', appel:'IGP Alpilles 2025 · AB', price:'40€ / 87€', desc:'La cuvée premium du domaine. Complexité rare pour un rosé : abricot, pêche de vigne, pointe épicée. Long, racé, mémorable.' },
+          { name:'Domaine de la Courtade — Les Terrasses', appel:'AOP Côte de Provence · Porquerolles 2025 · AB', price:'42€', desc:'Porquerolles dans un verre. Rosé marin aux accents de citron confit et de romarin sauvage, finale saline et iodée absolument unique en Méditerranée.' },
+        ]
+      },
+      {
+        cat:'Les blancs', col:'#FEF9C3', tx:'#713F12', ico:'⚪',
+        wines:[
+          { name:'Domaine de Valdition — Cuvée Alpilles', appel:'IGP Alpilles 2025 · AB', price:'7€ verre · 26€ / 35€', desc:'Blanc vif et gourmand, notes d\'agrumes frais et de poire croquante. Buvabilité immédiate, parfait en apéritif ou sur les fruits de mer du moment.' },
+          { name:'Olivier Pithon — Mon P\'tit Pithon', appel:'Côtes Catalanes 2024 · AB', price:'36€', desc:'Catalan solaire et exubérant : pêche blanche, citrus, herbes du maquis. Nature et vivant, il surprend à chaque gorgée. Un rapport qualité-plaisir imbattable.' },
+          { name:'Jean & Sébastien Dauvissat — Cuvée St Pierre', appel:'AOP Chablis 2024', price:'42€', desc:'Grand artisan du Chablis. Minéralité ciselée, fraîcheur crayeuse, tension remarquable. La référence absolue pour accompagner les huîtres et les poissons nobles.' },
+          { name:'Domaine Paternel — Blanc de Blanc', appel:'AOP Cassis 2023 · AB', price:'51€', desc:'La Provence dans toute sa pureté. Vivacité méditerranéenne, fleurs blanches, amande fraîche et salinité finale. Irremplaçable sur les poissons grillés au beurre blanc.' },
+        ]
+      },
+      {
+        cat:'Les rouges', col:'#FEE2E2', tx:'#7F1D1D', ico:'🔴',
+        wines:[
+          { name:'Mas de Valériole — Beauduc', appel:'IGP Terre de Camargue 2024 · AB', price:'7€ verre · 32€', desc:'Camarguais dans l\'âme, léger et fruité comme une balade en Camargue. Fruits rouges croquants, tanins souples. Le rouge du quotidien qu\'on ne quitte plus.' },
+          { name:'Olivier Pithon — Mon P\'tit Pithon', appel:'Côtes Catalanes 2024 · AB', price:'36€', desc:'Grenache-Carignan gourmand et solaire, cerise noire, garrigue. Idéal légèrement frais. Une bouteille qui fait l\'unanimité autour de la table.' },
+          { name:'Domaine Yves Leccia — YL', appel:'IGP Île de Beauté 2022 · AB', price:'49€', desc:'La Corse dans toute son élégance : tanins soyeux, myrte, olive noire, fruits rouges sauvages. Caractère insulaire affirmé et grande finesse en finale.' },
+          { name:'Fanny Sabre', appel:'AOC Bourgognes 2022 · AB', price:'58€', desc:'Pinot Noir bourguignon délicat et raffiné. Cerise, pivoine, sous-bois. Le vin qui élève n\'importe quel plat et transforme un repas en souvenir.' },
+          { name:'Mas de Valériole — Empreinte, Micro Cuvée', appel:'IGP Terre de Camargue 2022 · AB', price:'66€', desc:'La rareté du domaine. Parcelle unique, vendange sélective, élevage soigné. Complexe, profond, long. À proposer sur la viande d\'exception : Wagyu, taureau.' },
+        ]
+      },
+      {
+        cat:'Les champagnes', col:'#FEF3C7', tx:'#78350F', ico:'🥂',
+        wines:[
+          { name:'Veuve Clicquot Brut — Carte Jaune', appel:'Champagne AOC', price:'90€', desc:'L\'icône mondiale. Assemblage Chardonnay-Pinot Noir-Meunier, notes de toast et brioche chaude, bulles fines et persistantes. Le champagne qui ne déçoit jamais.' },
+          { name:'Ruinart Blanc de Blancs', appel:'Champagne AOC', price:'160€', desc:'Le plus ancien champagne du monde. 100% Chardonnay, robe or pâle, bulles cristallines, fraîcheur citronnée et minéralité incomparable. L\'élégance à l\'état pur.' },
+          { name:'Dom Pérignon Vintage', appel:'Champagne AOC', price:'340€', desc:'Le mythe absolu. Chaque bouteille est un millésime unique, jamais assemblé. Complexité, profondeur et longueur hors du commun. Pour les moments qui méritent l\'inoubliable.' },
+        ]
+      },
+      {
+        cat:'Le moelleux', col:'#FDE68A', tx:'#92400E', ico:'🍯',
+        wines:[
+          { name:'Château Guiot — Plaisir Coupable', appel:'IGP Pays d\'Oc · en conversion bio', price:'7€ verre · 32€', desc:'Douceur assumée et gourmande. Miel, abricot confit, fleur d\'oranger. Une parenthèse sucrée sans complexe, idéale en accord avec les desserts ou les fromages affinés.' },
+        ]
+      }
+    ];
+
+    const caveWrap = document.createElement('div');
+    caveWrap.style.cssText = 'display:flex;flex-direction:column;gap:18px';
+
+    cave.forEach(cat => {
+      const section = document.createElement('div');
+
+      const header = document.createElement('div');
+      header.style.cssText = `display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:10px;background:${cat.col};margin-bottom:10px`;
+      header.innerHTML = `<span style="font-size:20px">${cat.ico}</span><span style="font-size:14px;font-weight:900;color:${cat.tx}">${cat.cat}</span><span style="font-size:10px;color:${cat.tx};opacity:.6;margin-left:4px">${cat.wines.length} références</span>`;
+      section.appendChild(header);
+
+      const grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px';
+
+      cat.wines.forEach(w => {
+        const card = document.createElement('div');
+        card.style.cssText = `background:var(--card);border:1px solid var(--sep);border-radius:12px;overflow:hidden`;
+        card.innerHTML = `
+          <div style="padding:12px 14px;border-bottom:0.5px solid var(--sep);background:${cat.col}20">
+            <div style="font-size:13px;font-weight:800;color:var(--t1);line-height:1.3">${w.name}</div>
+            <div style="font-size:10px;color:var(--t3);margin-top:3px">${w.appel}</div>
+            <div style="font-size:13px;font-weight:800;color:${cat.tx};margin-top:6px;font-family:'DM Mono',monospace">${w.price}</div>
+          </div>
+          <div style="padding:11px 14px">
+            <div style="font-size:12px;color:var(--t2);line-height:1.6;font-style:italic">"${w.desc}"</div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      section.appendChild(grid);
+      caveWrap.appendChild(section);
+    });
+
+    body.appendChild(caveWrap);
   }
 
   function renderBarProcessTab(){
