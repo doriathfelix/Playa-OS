@@ -209,14 +209,19 @@ ${unplacedHtml}
 function printTransats(){
   const dateStr = fmtDateLong(currentDate);
 
-  // ── Stats
+  // ── Stats globales
   const allTr  = reservations.transats.filter(r => !r.ns);
   const placed = allTr.filter(r => r.placed);
   const unplcd = allTr.filter(r => !r.placed);
   const nbSlots = placed.reduce((s,r) => s + (r.slot >= 1001 ? 2 : (r.tr||1)), 0);
   const nbRT    = allTr.filter(r => r.repas_transat).length;
 
-  // ── Helpers
+  // Détail par service
+  const nbS1   = placed.filter(r => r.svc==='s1').reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
+  const nbS2   = placed.filter(r => r.svc==='s2').reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
+  const nbSoir = placed.filter(r => r.svc==='soir').reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
+
+  // ── Helpers grille
   function slotToGridCol(slot){
     const p = slot - Math.floor(slot/100)*100;
     if(p >= 1  && p <= 7)  return 1 + p;
@@ -228,7 +233,7 @@ function printTransats(){
     return TR_ROWS.findIndex(r => r.id === rb) + 1;
   }
 
-  // ── Couleurs par service (border/bg/text)
+  // ── Couleurs par service
   const SVC_CLR = {
     s1:   { bd:'#16A34A', bg:'#DCFCE7', tx:'#14532D', pill:'#16A34A', lbl:'S1'   },
     s2:   { bd:'#0284C7', bg:'#E0F2FE', tx:'#0C4A6E', pill:'#0284C7', lbl:'S2'   },
@@ -242,16 +247,15 @@ function printTransats(){
     return SVC_CLR[r.svc] || SVC_CLR.s1;
   }
 
-  // Badges service pour une resa (retourne HTML des pills)
   function svcBadges(r){
     const isBed = BED_SLOTS.includes(r.slot);
     if(isBed){
-      return `<span style="background:#D97706;color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px">BED</span>`;
+      return `<span style="background:#D97706;color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px">BED</span>`;
     }
     const pills = [];
     const sc = SVC_CLR[r.svc];
-    if(sc) pills.push(`<span style="background:${sc.pill};color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px">${sc.lbl}</span>`);
-    if(r.repas_transat) pills.push(`<span style="background:${RT_CLR.pill};color:#fff;font-size:9px;font-weight:800;padding:2px 6px;border-radius:20px">${RT_CLR.lbl}</span>`);
+    if(sc) pills.push(`<span style="background:${sc.pill};color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px">${sc.lbl}</span>`);
+    if(r.repas_transat) pills.push(`<span style="background:${RT_CLR.pill};color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px">${RT_CLR.lbl}</span>`);
     return pills.join('');
   }
 
@@ -276,9 +280,8 @@ function printTransats(){
     const rowIdx = ri + 1;
     const lblColor = row.sea ? '#0D9488' : '#6B7280';
 
-    // Label rangée
     cells += `<div style="grid-column:1;grid-row:${rowIdx};display:flex;align-items:center;justify-content:flex-end;padding-right:6px">
-      <span style="font-size:11px;font-weight:800;color:${lblColor};font-family:monospace">${rb}</span>
+      <span style="font-size:12px;font-weight:800;color:${lblColor};font-family:monospace">${rb}</span>
     </div>`;
 
     if(rb === 100){
@@ -286,7 +289,7 @@ function printTransats(){
         const slot = rb + p;
         if(coveredSlots.has(slot)) continue;
         cells += `<div style="grid-column:${1+p};grid-row:${rowIdx};border-radius:6px;background:#F8F9FA;border:1.5px dashed #DEE2E6;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:9px;color:#CED4DA">${slot}</span></div>`;
+          <span style="font-size:10px;color:#CED4DA">${slot}</span></div>`;
       }
       SALON_SLOTS.forEach(salon => {
         if(salonMap[salon.id]) return;
@@ -299,14 +302,14 @@ function printTransats(){
         if(coveredSlots.has(slot)) continue;
         const col = slotToGridCol(slot);
         cells += `<div style="grid-column:${col};grid-row:${rowIdx};border-radius:6px;background:#F8F9FA;border:1.5px dashed #DEE2E6;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:9px;color:#CED4DA">${slot}</span></div>`;
+          <span style="font-size:10px;color:#CED4DA">${slot}</span></div>`;
       }
       for(let p = 19; p <= 21; p++){
         const slot = rb + p;
         if(coveredSlots.has(slot)) continue;
         const col = slotToGridCol(slot);
         cells += `<div style="grid-column:${col};grid-row:${rowIdx};border-radius:6px;background:#FFFBEB;border:1.5px dashed #D97706;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
-          <span style="font-size:9px;font-weight:800;color:#92400E;text-align:center;line-height:1.2">BED<br><span style="font-size:8px;font-weight:600">${slot}</span></span></div>`;
+          <span style="font-size:10px;font-weight:800;color:#92400E;text-align:center;line-height:1.2">BED<br><span style="font-size:9px;font-weight:600">${slot}</span></span></div>`;
       }
     } else {
       for(let p = 1; p <= 20; p++){
@@ -314,7 +317,7 @@ function printTransats(){
         if(coveredSlots.has(slot)) continue;
         const col = slotToGridCol(slot);
         cells += `<div style="grid-column:${col};grid-row:${rowIdx};border-radius:6px;background:#F8F9FA;border:1.5px dashed #DEE2E6;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:9px;color:#CED4DA">${slot}</span></div>`;
+          <span style="font-size:10px;color:#CED4DA">${slot}</span></div>`;
       }
     }
   });
@@ -339,16 +342,18 @@ function printTransats(){
     });
     if(minRow===Infinity) return;
 
-    const c   = resaColors(resa);
-    const nom = resa.name.split(' ')[0];
-    const badges = svcBadges(resa);
+    const c        = resaColors(resa);
+    const nom      = resa.name.split(' ')[0];
+    const trCount  = resa.tr || 1;
+    const badges   = svcBadges(resa);
 
     cells += `<div style="grid-column:${minCol}/${maxCol+1};grid-row:${minRow}/${maxRow+1};
-      border-radius:8px;background:${c.bg};border:2.5px solid ${c.bd};
+      border-radius:8px;background:${c.bg};border:3px solid ${c.bd};
       display:flex;flex-direction:column;align-items:center;justify-content:center;
-      padding:4px 3px;overflow:hidden;gap:4px;z-index:3;position:relative">
-      <div style="font-size:12px;font-weight:800;color:${c.tx};text-align:center;
+      padding:4px 3px;overflow:hidden;gap:3px;z-index:3;position:relative">
+      <div style="font-size:14px;font-weight:900;color:${c.tx};text-align:center;
         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.1">${nom}</div>
+      <div style="font-size:13px;font-weight:900;color:${c.tx};line-height:1">×${trCount}</div>
       <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center;align-items:center">${badges}</div>
     </div>`;
   });
@@ -357,29 +362,32 @@ function printTransats(){
   SALON_SLOTS.forEach(salon => {
     const sr = salonMap[salon.id];
     if(!sr) return;
-    const c = SVC_CLR[sr.svc] || SVC_CLR.s1;
-    const nom = sr.name.split(' ')[0];
-    const badges = svcBadges(sr);
+    const c       = SVC_CLR[sr.svc] || SVC_CLR.s1;
+    const nom     = sr.name.split(' ')[0];
+    const trCount = sr.tr || 2;
+    const badges  = svcBadges(sr);
     cells += `<div style="grid-column:${salon.gridCol};grid-row:${salon.gridRow};
-      border-radius:8px;background:${c.bg};border:2.5px solid ${c.bd};
+      border-radius:8px;background:${c.bg};border:3px solid ${c.bd};
       display:flex;flex-direction:column;align-items:center;justify-content:center;
-      padding:4px 3px;overflow:hidden;gap:4px;z-index:3;position:relative">
-      <div style="font-size:11px;font-weight:800;color:${c.tx};text-align:center;
+      padding:4px 3px;overflow:hidden;gap:3px;z-index:3;position:relative">
+      <div style="font-size:13px;font-weight:900;color:${c.tx};text-align:center;
         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.1">${nom}</div>
+      <div style="font-size:12px;font-weight:900;color:${c.tx};line-height:1">×${trCount}</div>
       <div style="display:flex;gap:3px;flex-wrap:wrap;justify-content:center">${badges}</div>
     </div>`;
   });
 
-  // ── Unplaced (compact, en bas)
+  // ── Non placés (en bas)
   let unplacedHtml = '';
   if(unplcd.length){
-    unplacedHtml = `<div style="background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:8px;padding:8px 12px;margin-top:6px;flex-shrink:0">
-      <span style="font-size:10px;font-weight:700;color:#78350F">⚠ Non placés : </span>
+    unplacedHtml = `<div style="background:#FFFBEB;border:2px solid #FCD34D;border-radius:10px;padding:10px 14px;margin-top:6px;flex-shrink:0">
+      <span style="font-size:12px;font-weight:800;color:#78350F">⚠ Non placés : </span>
       ${unplcd.map(r => {
         const sc = SVC_CLR[r.svc];
-        return `<span style="font-size:11px;font-weight:700;color:#92400E;margin-right:10px">${r.name}
-          <span style="font-size:9px;background:${sc?sc.pill:'#6B7280'};color:#fff;padding:1px 5px;border-radius:20px;margin-left:3px">${sc?sc.lbl:'?'}</span>
-          ${r.repas_transat?`<span style="font-size:9px;background:#0D9488;color:#fff;padding:1px 5px;border-radius:20px;margin-left:2px">RT</span>`:''}
+        return `<span style="font-size:13px;font-weight:700;color:#92400E;margin-right:14px">${r.name}
+          <span style="font-size:10px;background:${sc?sc.pill:'#6B7280'};color:#fff;padding:2px 7px;border-radius:20px;margin-left:4px">${sc?sc.lbl:'?'}</span>
+          ${r.repas_transat?`<span style="font-size:10px;background:#0D9488;color:#fff;padding:2px 7px;border-radius:20px;margin-left:2px">RT</span>`:''}
+          <span style="font-size:12px;font-weight:800;color:#92400E;margin-left:4px">×${r.tr||1}</span>
         </span>`;
       }).join('')}
     </div>`;
@@ -399,15 +407,20 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1C1C1E; backgro
 .btn { padding: 7px 18px; background: #1C1C1E; color: #fff; border: none; border-radius: 7px;
   font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; margin-right: 7px; }
 .hd { display: flex; justify-content: space-between; align-items: center;
-  padding-bottom: 6px; border-bottom: 2px solid #1C1C1E; margin-bottom: 7px; flex-shrink: 0; }
-.date { font-size: 14px; font-weight: 700; color: #1C1C1E; }
-.stats-row { display: flex; gap: 14px; align-items: center; }
-.stat-pill { font-size: 12px; font-weight: 700; padding: 3px 12px; border-radius: 20px; }
+  padding-bottom: 8px; border-bottom: 3px solid #1C1C1E; margin-bottom: 8px; flex-shrink: 0; }
+.date { font-size: 18px; font-weight: 800; color: #1C1C1E; letter-spacing: -.02em; }
+.stats-row { display: flex; gap: 10px; align-items: center; }
+.stat-block { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-radius: 10px; padding: 6px 16px; min-width: 68px; text-align: center; }
+.stat-num { font-size: 24px; font-weight: 900; line-height: 1; }
+.stat-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; margin-top: 2px; opacity: .75; }
+.svc-strip { display: flex; gap: 6px; align-items: center; }
+.svc-pill { font-size: 13px; font-weight: 800; padding: 5px 14px; border-radius: 20px; color: #fff; }
 .resto-bar { background: linear-gradient(90deg,#6B7280,#4B5563); color:#fff; border-radius: 6px;
-  text-align: center; font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  text-align: center; font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
   padding: 4px; margin-bottom: 5px; flex-shrink: 0; }
 .sea-bar { background: linear-gradient(90deg,#0EA5E9,#0D9488); color:#fff; border-radius: 6px;
-  text-align: center; font-size: 9px; font-weight: 700; letter-spacing: .08em;
+  text-align: center; font-size: 10px; font-weight: 700; letter-spacing: .08em;
   padding: 4px; margin-top: 5px; flex-shrink: 0; }
 .grid-wrap { flex: 1; display: flex; flex-direction: column; min-height: 0; }
 .grid {
@@ -428,11 +441,25 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1C1C1E; backgro
   <button class="btn" style="background:#3C3C43" onclick="window.close()">✕ Fermer</button>
 </div>
 <div class="hd">
-  <div class="date">${dateStr}</div>
+  <div class="date">⛱ ${dateStr}</div>
   <div class="stats-row">
-    <span class="stat-pill" style="background:#DCFCE7;color:#14532D">⛱ ${nbSlots} transats</span>
-    <span class="stat-pill" style="background:#CCFBF1;color:#134E4A">RT ${nbRT}</span>
-    ${unplcd.length ? `<span class="stat-pill" style="background:#FFFBEB;color:#92400E">⚠ ${unplcd.length} non placés</span>` : ''}
+    <div class="stat-block" style="background:#DCFCE7">
+      <div class="stat-num" style="color:#14532D">${nbSlots}</div>
+      <div class="stat-lbl" style="color:#14532D">transats</div>
+    </div>
+    <div class="stat-block" style="background:#CCFBF1">
+      <div class="stat-num" style="color:#134E4A">${nbRT}</div>
+      <div class="stat-lbl" style="color:#134E4A">RT</div>
+    </div>
+    <div class="svc-strip">
+      ${nbS1   ? `<span class="svc-pill" style="background:#16A34A">S1 · ${nbS1}</span>`   : ''}
+      ${nbS2   ? `<span class="svc-pill" style="background:#0284C7">S2 · ${nbS2}</span>`   : ''}
+      ${nbSoir ? `<span class="svc-pill" style="background:#7C3AED">Soir · ${nbSoir}</span>` : ''}
+    </div>
+    ${unplcd.length ? `<div class="stat-block" style="background:#FFFBEB">
+      <div class="stat-num" style="color:#92400E">${unplcd.length}</div>
+      <div class="stat-lbl" style="color:#92400E">⚠ non placés</div>
+    </div>` : ''}
   </div>
 </div>
 <div class="resto-bar">▲ Restaurant</div>
