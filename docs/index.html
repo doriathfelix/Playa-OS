@@ -8268,7 +8268,11 @@ ${cave.map(cat=>`
     // Bouton imprimer
     const printBtn = document.createElement('div');
     printBtn.style.cssText = 'display:flex;justify-content:flex-end';
-    printBtn.innerHTML = `<button onclick="printAccordsVins()" style="padding:9px 20px;background:#1C1C1E;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🖨 Imprimer accords + cave</button>`;
+    const btn = document.createElement('button');
+    btn.textContent = '🖨 Imprimer accords + cave';
+    btn.style.cssText = 'padding:9px 20px;background:#1C1C1E;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit';
+    btn.onclick = () => printAccordsVins();
+    printBtn.appendChild(btn);
     wrap.appendChild(printBtn);
 
     // Astuce vente
