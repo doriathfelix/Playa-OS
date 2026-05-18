@@ -160,6 +160,183 @@ function renderBar(c){
     body.appendChild(wrap);
   }
 
+  function printAccordsVins(){
+    const pairings = [
+      { cat:'Tapas & fruits de mer', ico:'🦪',
+        rows:[
+          { plat:'Huîtres de Bouzigues',                                        col:'⚪', wine:'Dauvissat — Chablis St Pierre',          why:'Très minéral, très frais. Même salinité que l\'huître.',                              price:'42€' },
+          { plat:'Palourdes à la crème d\'ail',                                  col:'⚪', wine:'Paternel Blanc de Blanc — Cassis',        why:'Vif et légèrement salin. Coupe la crème sans l\'écraser.',                            price:'51€' },
+          { plat:'Couteaux persillade gratinés',                                 col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',          why:'Citron et minéral répondent à l\'ail et au persil.',                                  price:'26€ · 7€/verre' },
+          { plat:'Bao tentacule, mangue-piment-coriandre',                       col:'⚪', wine:'Pithon Mon P\'tit Pithon Blanc',          why:'Fruité et aromatique, tient tête au curry rouge sans dominer.',                       price:'36€' },
+          { plat:'Pinsa truffe, roquette, burrata',                              col:'🔴', wine:'Fanny Sabre — Bourgogne',                why:'Pinot Noir floral et sous-bois sublime la truffe.',                                   price:'58€' },
+          { plat:'Croque comté truffe jambon italien',                           col:'🔴', wine:'Pithon Mon P\'tit Pithon Rouge',          why:'Fruité gourmand répond au comté 6 mois et à la crème tartufata.',                    price:'36€' },
+        ]
+      },
+      { cat:'Entrées', ico:'🥗',
+        rows:[
+          { plat:'Ceviche de muge, leche de tigre, mangue',                      col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',          why:'Même vivacité citronnée que la marinade.',                                            price:'26€ · 7€/verre' },
+          { plat:'Tataki taureau AOP, wok croquant, glace wasabi',               col:'🔴', wine:'Mas Valériole Beauduc — Camargue',        why:'Même terroir que la viande. Léger, ne domine pas la marinade soja.',                  price:'32€ · 7€/verre' },
+          { plat:'Salade pastèque, burrata 125g, feta AOP',                      col:'🌸', wine:'Puech Haut Cuvée Prestige — Rosé',        why:'Fruité et velouté, épouse le sucré-salé pastèque-burrata.',                          price:'39€ · 8€/verre' },
+        ]
+      },
+      { cat:'Plats', ico:'🍽️',
+        rows:[
+          { plat:'Filet de poisson, grenaille Noirmoutier, hollandaise aérienne',col:'⚪', wine:'Paternel Blanc de Blanc — Cassis',        why:'Son gras naturel répond à la hollandaise siphonnée.',                                 price:'51€' },
+          { plat:'Poissons sauvages, beurre blanc tomate-xérès',                 col:'⚪', wine:'Dauvissat — Chablis St Pierre',          why:'Minéralité et fraîcheur dialoguent avec le beurre blanc.',                            price:'42€' },
+          { plat:'Ballotine volaille, pistache, lissé petit pois',               col:'⚪', wine:'Pithon Mon P\'tit Pithon Blanc',          why:'Fruité léger accompagne la mousseline sans l\'écraser.',                              price:'36€' },
+          { plat:'Risotto 3 riz Camargue, ananas, Grana Padano',                 col:'🌸', wine:'Puech Haut Cuvée Prestige — Rosé',        why:'Rondeur et fraîcheur fruitée épousent le twist sucré-salé.',                         price:'39€ · 8€/verre' },
+          { plat:'Smash burger bœuf de Galice, cheddar mild red',                col:'🔴', wine:'Pithon Mon P\'tit Pithon Rouge',          why:'Gourmand et solaire pour tenir le bœuf maturé et la mayo fumée.',                    price:'36€' },
+          { plat:'Faux filet Wagyu 180g, jus réduit UMAMI',                      col:'🔴', wine:'Fanny Sabre  ou  Valériole Empreinte',   why:'Pinot racé ou micro-cuvée camarguaise : à la hauteur du Wagyu.',                     price:'58–66€' },
+        ]
+      },
+      { cat:'Fromages & desserts', ico:'🍮',
+        rows:[
+          { plat:'Pélardon des Cévennes',                                        col:'⚪', wine:'Valdition Cuvée Alpilles Blanc',          why:'Le blanc vif nettoie le palais entre chaque bouchée de chèvre.',                     price:'26€ · 7€/verre' },
+          { plat:'K\'ouète — ganache chocolat cacahuète, caramel beurre salé',   col:'🍯', wine:'Château Guiot Plaisir Coupable',          why:'Miel et abricot confit font écho à la ganache sans l\'écraser.',                     price:'32€ · 7€/verre' },
+          { plat:'Clafoutis ananas flambé rhum brun, sauce suzette',             col:'🥂', wine:'Veuve Clicquot Brut Carte Jaune',         why:'Bulles et biscuité subliment l\'ananas flambé au rhum.',                             price:'90€' },
+          { plat:'Gaspacho framboise, bavarois citron, citron caviar',           col:'🥂', wine:'Ruinart Blanc de Blancs',                 why:'Fraîcheur citronnée et bulles fines dialoguent avec le bavarois citron.',            price:'160€' },
+        ]
+      }
+    ];
+
+    const cave = [
+      { cat:'Les rosés 🌸', wines:[
+        { name:'Domaine de Valdition — Cuvée Alpilles', appel:'IGP Alpilles 2025 · AB', price:'7€/verre · 26€ · 33€', desc:'Léger et frais, presque transparent. Pêche blanche, amande, une touche florale. Il passe tout seul, c\'est notre rosé du quotidien.' },
+        { name:'Puech Haut — Cuvée Prestige', appel:'IGP Pays d\'Oc 2025', price:'8€/verre · 39€ · 79€', desc:'Plus charnu, plus présent. Belle robe saumonée, fraise gariguette, agrumes. Celui qu\'on commande une deuxième bouteille sans hésiter.' },
+        { name:'Domaine de Valdition — Cuvée des Bâtonniers', appel:'IGP Alpilles 2025 · AB', price:'40€ · 87€', desc:'Le haut de gamme du domaine. Abricot, pêche de vigne, légère épice. Un rosé qui a vraiment du caractère et de la longueur.' },
+        { name:'Domaine de la Courtade — Les Terrasses', appel:'AOP Côte de Provence · Porquerolles 2025 · AB', price:'42€', desc:'Ça vient de Porquerolles — et ça se sent. Iodé, marin, herbes sauvages du maquis. Une bouteille comme une balade sur l\'île.' },
+      ]},
+      { cat:'Les blancs ⚪', wines:[
+        { name:'Domaine de Valdition — Cuvée Alpilles', appel:'IGP Alpilles 2025 · AB', price:'7€/verre · 26€ · 35€', desc:'Frais et direct. Citron, poire, minéral. Le blanc polyvalent : apéro, huîtres, poisson du jour. Il ne déçoit jamais.' },
+        { name:'Olivier Pithon — Mon P\'tit Pithon', appel:'Côtes Catalanes 2024 · AB', price:'36€', desc:'Blanc naturel du Roussillon, très aromatique. Pêche blanche, fleurs, soleil catalan. Vivant, surprenant, on ne s\'en lasse pas.' },
+        { name:'Jean & Sébastien Dauvissat — Cuvée St Pierre', appel:'AOP Chablis 2024', price:'42€', desc:'Chablis de vigneron artisan. Très frais, très minéral, tension citronnée. Le blanc parfait pour les huîtres et les poissons nobles.' },
+        { name:'Domaine Paternel — Blanc de Blanc', appel:'AOP Cassis 2023 · AB', price:'51€', desc:'L\'AOP Cassis — rare et souvent méconnu. Fleurs blanches, amande, salinité finale. Il est fait pour les poissons et les fruits de mer.' },
+      ]},
+      { cat:'Les rouges 🔴', wines:[
+        { name:'Mas de Valériole — Beauduc', appel:'IGP Terre de Camargue 2024 · AB', price:'7€/verre · 32€', desc:'Rouge de Camargue, léger et fruité. Fruits rouges, tanins souples. À boire légèrement frais. Le rouge de l\'été par excellence.' },
+        { name:'Olivier Pithon — Mon P\'tit Pithon', appel:'Côtes Catalanes 2024 · AB', price:'36€', desc:'Grenache-Carignan du Roussillon. Gourmand, cerise noire, garrigue. Servir légèrement frais. Fait l\'unanimité autour de la table.' },
+        { name:'Domaine Yves Leccia — YL', appel:'IGP Île de Beauté 2022 · AB', price:'49€', desc:'Un rouge corse élégant. Tanins soyeux, myrte, fruits rouges sauvages. Du caractère et de la finesse — une belle surprise pour ceux qui ne connaissent pas.' },
+        { name:'Fanny Sabre', appel:'AOC Bourgognes 2022 · AB', price:'58€', desc:'Pinot Noir de Bourgogne. Délicat, floral, sous-bois. Le vin qui élève n\'importe quel plat. Quand on veut marquer le repas.' },
+        { name:'Mas de Valériole — Empreinte, Micro Cuvée', appel:'IGP Terre de Camargue 2022 · AB', price:'66€', desc:'La pépite du domaine. Parcelle unique, production limitée, élevage soigné. Complexe et profond. Pour les viandes d\'exception : Wagyu, taureau.' },
+      ]},
+      { cat:'Les champagnes 🥂', wines:[
+        { name:'Veuve Clicquot Brut — Carte Jaune', appel:'Champagne AOC', price:'90€', desc:'L\'icône. Brioche, toast, bulles fines et persistantes. On sait ce qu\'on a. Le champagne qui ne déçoit jamais et que tout le monde reconnaît.' },
+        { name:'Ruinart Blanc de Blancs', appel:'Champagne AOC', price:'160€', desc:'100% Chardonnay, le plus vieux champagne du monde. Bulles très fines, citron frais, minéral pur. L\'élégance dans toute sa simplicité.' },
+        { name:'Dom Pérignon Vintage', appel:'Champagne AOC', price:'340€', desc:'Le mythe. Chaque millésime est unique, jamais assemblé à d\'autres années. Long, complexe, inoubliable. Pour les moments qu\'on n\'oublie pas.' },
+      ]},
+      { cat:'Le moelleux 🍯', wines:[
+        { name:'Château Guiot — Plaisir Coupable', appel:'IGP Pays d\'Oc · en conversion bio', price:'7€/verre · 32€', desc:'Doux et gourmand, sans complexe. Miel, abricot, fleur d\'oranger. Parfait avec les desserts sucrés ou le pélardon des Cévennes.' },
+      ]},
+    ];
+
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>Accords mets & vins — La Playa</title>
+<style>
+@page { size: A4 portrait; margin: 12mm 14mm; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #1C1C1E; background: #fff;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.no-print { margin-bottom: 14px; }
+@media print { .no-print { display: none !important; } }
+.btn { padding: 9px 22px; background: #1C1C1E; color: #fff; border: none; border-radius: 8px;
+  font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; margin-right: 8px; }
+.hd { display: flex; justify-content: space-between; align-items: flex-end;
+  padding-bottom: 10px; border-bottom: 3px solid #1C1C1E; margin-bottom: 16px; }
+.logo { font-size: 22px; font-weight: 900; letter-spacing: -.03em; }
+.sub  { font-size: 11px; color: #8E8E93; margin-top: 3px; }
+.section-title { font-size: 13px; font-weight: 800; color: #1C1C1E; padding: 8px 12px;
+  background: #F2F2F7; border-radius: 8px; margin: 14px 0 6px; display:flex; align-items:center; gap:6px; }
+table { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-bottom: 4px; }
+thead tr { background: #1C1C1E; }
+th { padding: 7px 12px; text-align: left; font-size: 9.5px; font-weight: 700; color: #fff;
+  text-transform: uppercase; letter-spacing: .08em; }
+th:last-child { text-align: right; }
+td { padding: 9px 12px; border-bottom: 0.5px solid #F2F2F7; vertical-align: top; }
+td:last-child { text-align: right; font-weight: 700; white-space: nowrap; font-family: monospace; }
+tr:last-child td { border-bottom: none; }
+.wine { font-weight: 700; color: #1C1C1E; }
+.why  { color: #6B7280; font-size: 10.5px; line-height: 1.45; }
+.page-break { page-break-before: always; }
+.cave-section { margin-bottom: 18px; }
+.cave-cat { font-size: 14px; font-weight: 900; color: #1C1C1E; border-bottom: 2px solid #1C1C1E;
+  padding-bottom: 5px; margin-bottom: 10px; margin-top: 16px; }
+.wine-row { display: flex; gap: 12px; padding: 10px 0; border-bottom: 0.5px solid #F2F2F7; }
+.wine-row:last-child { border-bottom: none; }
+.wine-info { flex: 1; min-width: 0; }
+.wine-name { font-size: 12px; font-weight: 800; color: #1C1C1E; line-height: 1.3; }
+.wine-appel { font-size: 10px; color: #8E8E93; margin-top: 2px; }
+.wine-desc { font-size: 11px; color: #4B5563; line-height: 1.55; margin-top: 5px; font-style: italic; }
+.wine-price { font-size: 12px; font-weight: 800; color: #1C1C1E; font-family: monospace;
+  white-space: nowrap; text-align: right; flex-shrink: 0; padding-top: 2px; }
+.footer { margin-top: 16px; font-size: 8px; color: #C7C7CC; text-align: center; }
+.tip { background: #F0FDF4; border-left: 3px solid #16A34A; padding: 8px 12px;
+  font-size: 11px; color: #14532D; border-radius: 0 6px 6px 0; margin-bottom: 12px; }
+</style></head><body>
+<div class="no-print">
+  <button class="btn" onclick="window.print()">⎙ Imprimer</button>
+  <button class="btn" style="background:#3C3C43" onclick="window.close()">✕ Fermer</button>
+</div>
+
+<div class="hd">
+  <div>
+    <div class="logo">La Playa · Accords mets &amp; vins</div>
+    <div class="sub">Carte 2026 — Document équipe</div>
+  </div>
+</div>
+
+<div class="tip">💡 Proposer le vin au verre dès la commande des tapas, en accord avec le plat principal annoncé. Le ticket moyen augmente de +8 à 12€ par table.</div>
+
+${pairings.map(cat => `
+  <div class="section-title">${cat.ico} ${cat.cat}</div>
+  <table>
+    <thead><tr>
+      <th style="width:32%">Plat</th>
+      <th style="width:28%">Vin conseillé</th>
+      <th>Pourquoi ça marche</th>
+      <th>Prix</th>
+    </tr></thead>
+    <tbody>
+      ${cat.rows.map(r=>`<tr>
+        <td style="font-weight:700">${r.plat}</td>
+        <td><span style="margin-right:4px">${r.col}</span><span class="wine">${r.wine}</span></td>
+        <td class="why">${r.why}</td>
+        <td>${r.price}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+`).join('')}
+
+<div class="page-break"></div>
+
+<div class="hd" style="margin-top:0">
+  <div>
+    <div class="logo">La Playa · Notre cave</div>
+    <div class="sub">Carte 2026 — Descriptions & prix</div>
+  </div>
+</div>
+
+${cave.map(cat=>`
+  <div class="cave-section">
+    <div class="cave-cat">${cat.cat}</div>
+    ${cat.wines.map(w=>`
+      <div class="wine-row">
+        <div class="wine-info">
+          <div class="wine-name">${w.name}</div>
+          <div class="wine-appel">${w.appel}</div>
+          <div class="wine-desc">${w.desc}</div>
+        </div>
+        <div class="wine-price">${w.price}</div>
+      </div>
+    `).join('')}
+  </div>
+`).join('')}
+
+<div class="footer">La Playa en Camargue · Document interne · Carte 2026</div>
+</body></html>`;
+
+    openPrintWindow(html);
+  }
+
   function renderAccordsTab(){
 
     // ── Accords mets & vins (vrais plats × vrais vins de la carte)
@@ -204,6 +381,12 @@ function renderBar(c){
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;flex-direction:column;gap:16px';
 
+    // Bouton imprimer
+    const printBtn = document.createElement('div');
+    printBtn.style.cssText = 'display:flex;justify-content:flex-end';
+    printBtn.innerHTML = `<button onclick="printAccordsVins()" style="padding:9px 20px;background:#1C1C1E;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">🖨 Imprimer accords + cave</button>`;
+    wrap.appendChild(printBtn);
+
     // Astuce vente
     const tip = document.createElement('div');
     tip.style.cssText = 'padding:13px 16px;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border:1px solid #C4B5FD;border-radius:12px';
@@ -247,43 +430,43 @@ function renderBar(c){
       {
         cat:'Les rosés', col:'#F9A8D4', tx:'#831843', ico:'🌸',
         wines:[
-          { name:'Domaine de Valdition — Cuvée Alpilles', appel:'IGP Alpilles 2025 · AB', price:'7€ verre · 26€ / 33€', desc:'Pâle et lumineux, nez de pêche blanche et fleur d\'amandier. Fraîcheur minérale en finale. Notre rosé d\'entrée de gamme qui n\'en a pas l\'air.' },
-          { name:'Puech Haut — Cuvée Prestige', appel:'IGP Pays d\'Oc 2025', price:'8€ verre · 39€ / 79€', desc:'Robe saumonée intense, nez de fraises gariguettes et agrumes frais. Corps généreux, texture veloutée. Le rosé qu\'on commande en deuxième bouteille.' },
-          { name:'Domaine de Valdition — Cuvée des Bâtonniers', appel:'IGP Alpilles 2025 · AB', price:'40€ / 87€', desc:'La cuvée premium du domaine. Complexité rare pour un rosé : abricot, pêche de vigne, pointe épicée. Long, racé, mémorable.' },
-          { name:'Domaine de la Courtade — Les Terrasses', appel:'AOP Côte de Provence · Porquerolles 2025 · AB', price:'42€', desc:'Porquerolles dans un verre. Rosé marin aux accents de citron confit et de romarin sauvage, finale saline et iodée absolument unique en Méditerranée.' },
+          { name:'Domaine de Valdition — Cuvée Alpilles', appel:'IGP Alpilles 2025 · AB', price:'7€/verre · 26€ · 33€', desc:'Léger et frais, presque transparent. Pêche blanche, amande, touche florale. Il passe tout seul — notre rosé du quotidien qui n\'en a pas l\'air.' },
+          { name:'Puech Haut — Cuvée Prestige', appel:'IGP Pays d\'Oc 2025', price:'8€/verre · 39€ · 79€', desc:'Plus charnu, plus présent. Belle robe saumonée, fraise gariguette, agrumes. Celui qu\'on commande une deuxième bouteille sans hésiter.' },
+          { name:'Domaine de Valdition — Cuvée des Bâtonniers', appel:'IGP Alpilles 2025 · AB', price:'40€ · 87€', desc:'Le haut de gamme du domaine. Abricot, pêche de vigne, légère épice. Un rosé qui a vraiment du caractère — rare à ce niveau de prix.' },
+          { name:'Domaine de la Courtade — Les Terrasses', appel:'AOP Côte de Provence · Porquerolles 2025 · AB', price:'42€', desc:'Ça vient de Porquerolles, et ça se sent. Iodé, marin, herbes sauvages du maquis. Une bouteille comme une balade sur l\'île.' },
         ]
       },
       {
         cat:'Les blancs', col:'#FEF9C3', tx:'#713F12', ico:'⚪',
         wines:[
-          { name:'Domaine de Valdition — Cuvée Alpilles', appel:'IGP Alpilles 2025 · AB', price:'7€ verre · 26€ / 35€', desc:'Blanc vif et gourmand, notes d\'agrumes frais et de poire croquante. Buvabilité immédiate, parfait en apéritif ou sur les fruits de mer du moment.' },
-          { name:'Olivier Pithon — Mon P\'tit Pithon', appel:'Côtes Catalanes 2024 · AB', price:'36€', desc:'Catalan solaire et exubérant : pêche blanche, citrus, herbes du maquis. Nature et vivant, il surprend à chaque gorgée. Un rapport qualité-plaisir imbattable.' },
-          { name:'Jean & Sébastien Dauvissat — Cuvée St Pierre', appel:'AOP Chablis 2024', price:'42€', desc:'Grand artisan du Chablis. Minéralité ciselée, fraîcheur crayeuse, tension remarquable. La référence absolue pour accompagner les huîtres et les poissons nobles.' },
-          { name:'Domaine Paternel — Blanc de Blanc', appel:'AOP Cassis 2023 · AB', price:'51€', desc:'La Provence dans toute sa pureté. Vivacité méditerranéenne, fleurs blanches, amande fraîche et salinité finale. Irremplaçable sur les poissons grillés au beurre blanc.' },
+          { name:'Domaine de Valdition — Cuvée Alpilles', appel:'IGP Alpilles 2025 · AB', price:'7€/verre · 26€ · 35€', desc:'Frais et direct. Citron, poire, minéral. Le blanc pour tout : apéro, huîtres, poisson du jour. Simple, efficace, il ne déçoit jamais.' },
+          { name:'Olivier Pithon — Mon P\'tit Pithon', appel:'Côtes Catalanes 2024 · AB', price:'36€', desc:'Blanc naturel du Roussillon, très aromatique. Pêche blanche, fleurs, soleil catalan. Vivant et surprenant — un rapport qualité-plaisir imbattable.' },
+          { name:'Jean & Sébastien Dauvissat — Cuvée St Pierre', appel:'AOP Chablis 2024', price:'42€', desc:'Chablis de vigneron artisan. Très frais, très minéral, tension citronnée. Le blanc parfait pour les huîtres et les poissons nobles. Reconnaissable au premier verre.' },
+          { name:'Domaine Paternel — Blanc de Blanc', appel:'AOP Cassis 2023 · AB', price:'51€', desc:'L\'AOP Cassis — rare et souvent méconnu. Fleurs blanches, amande, salinité finale. Il est littéralement fait pour les poissons et les fruits de mer.' },
         ]
       },
       {
         cat:'Les rouges', col:'#FEE2E2', tx:'#7F1D1D', ico:'🔴',
         wines:[
-          { name:'Mas de Valériole — Beauduc', appel:'IGP Terre de Camargue 2024 · AB', price:'7€ verre · 32€', desc:'Camarguais dans l\'âme, léger et fruité comme une balade en Camargue. Fruits rouges croquants, tanins souples. Le rouge du quotidien qu\'on ne quitte plus.' },
-          { name:'Olivier Pithon — Mon P\'tit Pithon', appel:'Côtes Catalanes 2024 · AB', price:'36€', desc:'Grenache-Carignan gourmand et solaire, cerise noire, garrigue. Idéal légèrement frais. Une bouteille qui fait l\'unanimité autour de la table.' },
-          { name:'Domaine Yves Leccia — YL', appel:'IGP Île de Beauté 2022 · AB', price:'49€', desc:'La Corse dans toute son élégance : tanins soyeux, myrte, olive noire, fruits rouges sauvages. Caractère insulaire affirmé et grande finesse en finale.' },
-          { name:'Fanny Sabre', appel:'AOC Bourgognes 2022 · AB', price:'58€', desc:'Pinot Noir bourguignon délicat et raffiné. Cerise, pivoine, sous-bois. Le vin qui élève n\'importe quel plat et transforme un repas en souvenir.' },
-          { name:'Mas de Valériole — Empreinte, Micro Cuvée', appel:'IGP Terre de Camargue 2022 · AB', price:'66€', desc:'La rareté du domaine. Parcelle unique, vendange sélective, élevage soigné. Complexe, profond, long. À proposer sur la viande d\'exception : Wagyu, taureau.' },
+          { name:'Mas de Valériole — Beauduc', appel:'IGP Terre de Camargue 2024 · AB', price:'7€/verre · 32€', desc:'Rouge de Camargue, léger et fruité. Fruits rouges, tanins souples. À boire légèrement frais en été. Le rouge qu\'on ne quitte plus.' },
+          { name:'Olivier Pithon — Mon P\'tit Pithon', appel:'Côtes Catalanes 2024 · AB', price:'36€', desc:'Grenache-Carignan du Roussillon. Gourmand, cerise noire, garrigue. Servir légèrement frais. Il fait l\'unanimité autour de la table à chaque fois.' },
+          { name:'Domaine Yves Leccia — YL', appel:'IGP Île de Beauté 2022 · AB', price:'49€', desc:'Un rouge corse élégant. Tanins soyeux, myrte, fruits rouges sauvages. Du caractère et de la finesse — souvent une belle surprise pour ceux qui ne connaissent pas.' },
+          { name:'Fanny Sabre', appel:'AOC Bourgognes 2022 · AB', price:'58€', desc:'Pinot Noir de Bourgogne. Délicat, floral, sous-bois. Le vin qui élève n\'importe quel plat. Quand on veut marquer le repas.' },
+          { name:'Mas de Valériole — Empreinte, Micro Cuvée', appel:'IGP Terre de Camargue 2022 · AB', price:'66€', desc:'La pépite du domaine. Parcelle unique, production limitée. Complexe et profond. Pour le Wagyu ou le taureau — à la hauteur des viandes d\'exception.' },
         ]
       },
       {
         cat:'Les champagnes', col:'#FEF3C7', tx:'#78350F', ico:'🥂',
         wines:[
-          { name:'Veuve Clicquot Brut — Carte Jaune', appel:'Champagne AOC', price:'90€', desc:'L\'icône mondiale. Assemblage Chardonnay-Pinot Noir-Meunier, notes de toast et brioche chaude, bulles fines et persistantes. Le champagne qui ne déçoit jamais.' },
-          { name:'Ruinart Blanc de Blancs', appel:'Champagne AOC', price:'160€', desc:'Le plus ancien champagne du monde. 100% Chardonnay, robe or pâle, bulles cristallines, fraîcheur citronnée et minéralité incomparable. L\'élégance à l\'état pur.' },
-          { name:'Dom Pérignon Vintage', appel:'Champagne AOC', price:'340€', desc:'Le mythe absolu. Chaque bouteille est un millésime unique, jamais assemblé. Complexité, profondeur et longueur hors du commun. Pour les moments qui méritent l\'inoubliable.' },
+          { name:'Veuve Clicquot Brut — Carte Jaune', appel:'Champagne AOC', price:'90€', desc:'L\'icône. Brioche, toast, bulles fines et persistantes. On sait ce qu\'on a. Le champagne qui ne déçoit jamais et que tout le monde reconnaît.' },
+          { name:'Ruinart Blanc de Blancs', appel:'Champagne AOC', price:'160€', desc:'100% Chardonnay, le plus vieux champagne du monde. Bulles très fines, citron frais, minéral pur. L\'élégance dans toute sa simplicité.' },
+          { name:'Dom Pérignon Vintage', appel:'Champagne AOC', price:'340€', desc:'Le mythe. Chaque millésime est unique, jamais assemblé à d\'autres années. Long, complexe, inoubliable. Pour les moments qu\'on n\'oublie pas.' },
         ]
       },
       {
         cat:'Le moelleux', col:'#FDE68A', tx:'#92400E', ico:'🍯',
         wines:[
-          { name:'Château Guiot — Plaisir Coupable', appel:'IGP Pays d\'Oc · en conversion bio', price:'7€ verre · 32€', desc:'Douceur assumée et gourmande. Miel, abricot confit, fleur d\'oranger. Une parenthèse sucrée sans complexe, idéale en accord avec les desserts ou les fromages affinés.' },
+          { name:'Château Guiot — Plaisir Coupable', appel:'IGP Pays d\'Oc · en conversion bio', price:'7€/verre · 32€', desc:'Doux et gourmand, sans complexe. Miel, abricot, fleur d\'oranger. Parfait avec les desserts sucrés ou le pélardon des Cévennes.' },
         ]
       }
     ];
