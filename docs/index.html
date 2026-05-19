@@ -4647,17 +4647,17 @@ function printTransats(){
   const unplcd = allTr.filter(r => !r.placed);
   const nbSlots = placed.reduce((s,r) => s + (r.slot >= 1001 ? 2 : (r.tr||1)), 0);
   const nbRT    = allTr.filter(r => r.repas_transat).length;
-  const nbS1    = placed.filter(r=>r.svc==='s1'  && !r.repas_transat).reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
-  const nbS2    = placed.filter(r=>r.svc==='s2'  && !r.repas_transat).reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
-  const nbSoir  = placed.filter(r=>r.svc==='soir'&& !r.repas_transat).reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
+  const nbS1    = placed.filter(r=>r.svc==='s1'  &&!r.repas_transat).reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
+  const nbS2    = placed.filter(r=>r.svc==='s2'  &&!r.repas_transat).reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
+  const nbSoir  = placed.filter(r=>r.svc==='soir'&&!r.repas_transat).reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
 
-  // Couleurs exactes de l'app (tokens.css)
+  // N&B : gris différents par service, bordures noires
   const C = {
-    s1:   {bg:'#EDF7F1', bd:'#1A7A3E', tx:'#0D5C2E', lbl:'S1'},
-    s2:   {bg:'#FEF6E8', bd:'#C47A0A', tx:'#8A5200', lbl:'S2'},
-    soir: {bg:'#F0EDF9', bd:'#6B48C8', tx:'#3E2590', lbl:'Soir'},
-    rt:   {bg:'#E8F4FD', bd:'#0284C7', tx:'#0A6EA6', lbl:'RT'},
-    bed:  {bg:'#FFFBEB', bd:'#D97706', tx:'#92400E', lbl:'BED'},
+    s1:   {bg:'#FFFFFF', bd:'#1A1A1A', tx:'#1A1A1A', lbl:'S1',   bw:1.5},
+    s2:   {bg:'#E0E0E0', bd:'#1A1A1A', tx:'#1A1A1A', lbl:'S2',   bw:1.5},
+    soir: {bg:'#B0B0B0', bd:'#1A1A1A', tx:'#111111', lbl:'Soir',  bw:2},
+    rt:   {bg:'#FFFFFF', bd:'#000000', tx:'#000000', lbl:'RT',    bw:2.5},
+    bed:  {bg:'#EBEBEB', bd:'#888888', tx:'#555555', lbl:'BED',   bw:1},
   };
 
   function cFor(r){
@@ -4666,7 +4666,6 @@ function printTransats(){
     return C[r.svc] || C.s1;
   }
 
-  // Labels visuels comme dans l'app
   function slotLabel(slot){
     const BED_LBL = {220:'219', 221:'220', 222:'221'};
     if(BED_SLOTS.includes(slot)) return BED_LBL[slot] || String(slot);
@@ -4677,7 +4676,6 @@ function printTransats(){
     return String(slot);
   }
 
-  // slot → resa
   const slotMap = {};
   placed.filter(r => r.slot < 1001).forEach(resa => {
     const slots = (resa.extraSlots && resa.extraSlots.length)
@@ -4688,165 +4686,179 @@ function printTransats(){
   const salonMap = {};
   placed.filter(r => r.slot >= 1001 && r.slot <= 1004).forEach(r => { salonMap[r.slot] = r; });
 
-  // Cellule d'un slot (vide ou occupé)
   function slotCell(s, flex){
     const resa  = slotMap[s];
     const isBed = BED_SLOTS.includes(s);
     const lbl   = slotLabel(s);
     if(!resa){
-      const bg = isBed ? C.bed.bg : '#F9FAFB';
-      const bc = isBed ? C.bed.bd : '#E2E0DA';
-      const tx = isBed ? C.bed.tx : '#C8C6C0';
+      const bg = isBed ? C.bed.bg : '#F7F7F7';
+      const bc = isBed ? C.bed.bd : '#CCCCCC';
+      const tx = isBed ? C.bed.tx : '#AAAAAA';
       return `<div style="flex:${flex};padding:1px;min-width:0">
-        <div style="height:100%;background:${bg};border:1px solid ${bc};border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:1px">
-          ${isBed ? `<div style="font-size:5pt;font-weight:800;color:${tx}">BED</div>` : ''}
-          <div style="font-size:5.5pt;font-weight:600;color:${tx}">${lbl}</div>
+        <div style="height:100%;background:${bg};border:1px solid ${bc};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:1px">
+          ${isBed?`<div style="font-size:5pt;font-weight:800;color:${tx}">BED</div>`:''}
+          <div style="font-size:5.5pt;font-weight:500;color:${tx}">${lbl}</div>
         </div>
       </div>`;
     }
     const c  = cFor(resa);
     const fs = flex >= 6 ? '11pt' : flex >= 4 ? '9.5pt' : flex >= 2 ? '8pt' : '6.5pt';
-    const f2 = flex >= 6 ? '10pt' : flex >= 4 ? '8.5pt' : flex >= 2 ? '7pt' : '6pt';
+    const f2 = flex >= 6 ? '9.5pt': flex >= 4 ? '8.5pt' : flex >= 2 ? '7pt' : '6pt';
+    // Badge : fond noir texte blanc pour lisibilité N&B
+    const bdgBg = c.lbl==='S1' ? '#555' : '#111';
     return `<div style="flex:${flex};padding:1px;min-width:0">
-      <div style="height:100%;background:${c.bg};border:1.5px solid ${c.bd};border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
+      <div style="height:100%;background:${c.bg};border:${c.bw}px solid ${c.bd};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
         <div style="font-size:${fs};font-weight:700;color:${c.tx};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.15">${resa.name}</div>
         <div style="font-size:${f2};font-weight:700;color:${c.tx};line-height:1">⛱ ${resa.tr||1}</div>
-        <span style="font-size:4.5pt;font-weight:800;background:${c.bd};color:#fff;padding:0 3px;border-radius:3px;line-height:1.4">${c.lbl}</span>
+        <span style="font-size:5pt;font-weight:800;background:${bdgBg};color:#fff;padding:0 4px;border-radius:3px;line-height:1.5">${c.lbl}</span>
       </div>
     </div>`;
   }
 
   function renderBlock(slots){
-    let html = ''; let i = 0;
+    let html=''; let i=0;
     while(i < slots.length){
-      const s    = slots[i];
-      const resa = slotMap[s];
-      if(!resa){ html += slotCell(s, 1); i++; }
+      const s=slots[i], resa=slotMap[s];
+      if(!resa){ html+=slotCell(s,1); i++; }
       else {
-        let j = i + 1;
-        while(j < slots.length && slotMap[slots[j]] === resa) j++;
-        html += slotCell(s, j - i);
-        i = j;
+        let j=i+1;
+        while(j<slots.length && slotMap[slots[j]]===resa) j++;
+        html+=slotCell(s,j-i); i=j;
       }
     }
     return `<div style="display:flex;flex:${slots.length};height:100%">${html}</div>`;
   }
 
   function salonCell(id, flex){
-    const r  = salonMap[id];
-    const sl = SALON_SLOTS.find(s => s.id === id);
+    const r=salonMap[id], sl=SALON_SLOTS.find(s=>s.id===id);
     if(r){
-      const c = cFor(r);
+      const c=cFor(r);
+      const bdgBg=c.lbl==='S1'?'#555':'#111';
       return `<div style="flex:${flex};padding:1px;min-width:0">
-        <div style="height:100%;background:${c.bg};border:1.5px solid ${c.bd};border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
-          <div style="font-size:8pt;font-weight:700;color:${c.tx};text-align:center;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${r.name}</div>
+        <div style="height:100%;background:${c.bg};border:${c.bw}px solid ${c.bd};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
+          <div style="font-size:8pt;font-weight:700;color:${c.tx};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.15">${r.name}</div>
           <div style="font-size:7.5pt;font-weight:700;color:${c.tx}">⛱ ${r.tr||2}</div>
-          <span style="font-size:4.5pt;font-weight:800;background:${c.bd};color:#fff;padding:0 3px;border-radius:3px;line-height:1.4">${c.lbl}</span>
+          <span style="font-size:5pt;font-weight:800;background:${bdgBg};color:#fff;padding:0 4px;border-radius:3px;line-height:1.5">${c.lbl}</span>
         </div>
       </div>`;
     }
     return `<div style="flex:${flex};padding:1px;min-width:0">
-      <div style="height:100%;background:#F9FAFB;border:1px solid #E2E0DA;border-radius:8px;display:flex;align-items:center;justify-content:center">
-        <div style="font-size:5.5pt;color:#C8C6C0;font-weight:600;text-align:center">${sl?sl.lbl:id}</div>
+      <div style="height:100%;background:#F7F7F7;border:1px solid #CCCCCC;border-radius:7px;display:flex;align-items:center;justify-content:center">
+        <div style="font-size:5.5pt;color:#AAAAAA;font-weight:600;text-align:center">${sl?sl.lbl:id}</div>
       </div>
     </div>`;
   }
 
   function renderRow100(){
-    const g    = [101,102,103,104,105,106,107];
-    const mHtml = `<div style="display:flex;flex:6;height:100%">
+    const g=[101,102,103,104,105,106,107];
+    const mHtml=`<div style="display:flex;flex:6;height:100%">
       ${salonCell(1001,2)}${salonCell(1002,2)}
-      <div style="flex:2;padding:1px"><div style="height:100%;background:#F9FAFB;border:1px solid #F0EFE9;border-radius:8px"></div></div>
+      <div style="flex:2;padding:1px"><div style="height:100%;background:#F7F7F7;border:1px solid #CCCCCC;border-radius:7px"></div></div>
     </div>`;
-    const dHtml = `<div style="display:flex;flex:7;height:100%">
+    const dHtml=`<div style="display:flex;flex:7;height:100%">
       ${salonCell(1003,2)}${salonCell(1004,2)}
-      <div style="flex:3;padding:1px"><div style="height:100%;background:#F9FAFB;border:1px solid #F0EFE9;border-radius:8px"></div></div>
+      <div style="flex:3;padding:1px"><div style="height:100%;background:#F7F7F7;border:1px solid #CCCCCC;border-radius:7px"></div></div>
     </div>`;
     return `<div class="row">
-      <div class="row-lbl"><div class="row-num">100</div><div class="row-sub">Resto</div></div>
+      <div class="row-lbl"><div class="rn">100</div><div class="rs">Resto</div></div>
       ${renderBlock(g)}<div class="sep"></div>${mHtml}<div class="sep"></div>${dHtml}
     </div>`;
   }
 
   function renderDataRow(rb, sea){
-    const g    = [1,2,3,4,5,6,7].map(p=>rb+p);
-    const m    = [8,9,10,11,12,13].map(p=>rb+p);
-    const dLen = rb===200 ? 8 : 7;
-    const d    = Array.from({length:dLen},(_,i)=>rb+14+i);
+    const g=[1,2,3,4,5,6,7].map(p=>rb+p);
+    const m=[8,9,10,11,12,13].map(p=>rb+p);
+    const dLen=rb===200?8:7;
+    const d=Array.from({length:dLen},(_,i)=>rb+14+i);
     return `<div class="row">
-      <div class="row-lbl" style="${sea?'background:#EDF7F6':''}">
-        <div class="row-num" style="color:${sea?'#0D7D6A':'#3A3830'}">${rb}</div>
-        ${sea?`<div class="row-sub" style="color:#0D9488">Mer</div>`:'<div class="row-sub">&nbsp;</div>'}
+      <div class="row-lbl" style="${sea?'border-right:3px solid #333':'}">
+        <div class="rn">${rb}</div>
+        <div class="rs">${sea?'⌊Mer⌋':''}</div>
       </div>
       ${renderBlock(g)}<div class="sep"></div>${renderBlock(m)}<div class="sep"></div>${renderBlock(d)}
     </div>`;
   }
 
-  let unplacedHtml = '';
+  let unplacedHtml='';
   if(unplcd.length){
-    unplacedHtml = `<div style="background:#FFFBEB;border:1px solid #FCD34D;border-radius:6px;padding:4px 10px;margin-top:4px">
-      <span style="font-size:8pt;font-weight:800;color:#92400E">⚠ Non placés : </span>
-      ${unplcd.map(r=>{const c=cFor(r);return `<span style="font-size:8pt;font-weight:700;color:${c.tx};margin-right:8px">${r.name} ⛱${r.tr||1} <span style="background:${c.bd};color:#fff;font-size:5pt;font-weight:800;padding:0 3px;border-radius:3px">${c.lbl}</span></span>`;}).join('')}
+    unplacedHtml=`<div style="border:2px solid #333;border-radius:6px;padding:4px 10px;margin-top:4px">
+      <span style="font-size:8pt;font-weight:800">⚠ Non placés : </span>
+      ${unplcd.map(r=>{const c=cFor(r);return `<span style="font-size:8pt;font-weight:700;margin-right:8px">${r.name} ⛱${r.tr||1} <span style="background:#111;color:#fff;font-size:5pt;font-weight:800;padding:0 3px;border-radius:3px">${c.lbl}</span></span>`;}).join('')}
     </div>`;
   }
 
-  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
 <title>Plan transats — ${dateStr}</title>
 <style>
 @page { size: A4 landscape; margin: 7mm 9mm; }
 * { box-sizing:border-box; margin:0; padding:0; }
-body { font-family:'DM Sans','Helvetica Neue',Arial,sans-serif; background:#fff; color:#18181A;
+body { font-family:'Helvetica Neue',Arial,sans-serif; background:#fff; color:#111;
   -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 .no-print { padding:7px 0 5px }
 @media print { .no-print { display:none !important; } }
-.btn { padding:5px 14px; background:#18181A; color:#fff; border:none; border-radius:6px;
+.btn { padding:5px 14px; background:#111; color:#fff; border:none; border-radius:6px;
   font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; margin-right:5px; }
 .hd { display:flex; justify-content:space-between; align-items:center;
-  padding-bottom:5px; border-bottom:2px solid #18181A; margin-bottom:4px; }
+  padding-bottom:5px; border-bottom:2.5px solid #111; margin-bottom:4px; }
 .date { font-size:15pt; font-weight:700; letter-spacing:-.02em; }
-.stats { display:flex; gap:5px; align-items:center; }
-.stat { border-radius:7px; padding:2px 9px; text-align:center; }
+.stats { display:flex; gap:6px; align-items:center; }
+.stat { border-radius:6px; padding:3px 9px; text-align:center;
+  border:1.5px solid #333; }
 .stat-n { font-size:14pt; font-weight:700; line-height:1; }
-.stat-l { font-size:5.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.07em; opacity:.7; margin-top:1px; }
+.stat-l { font-size:5.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.07em; opacity:.6; margin-top:1px; }
 .pills { display:flex; gap:3px; }
-.pill { font-size:8pt; font-weight:700; padding:3px 8px; border-radius:10px; color:#fff; }
-.bar { color:#fff; border-radius:6px; text-align:center; font-size:7pt; font-weight:800;
-  letter-spacing:.12em; text-transform:uppercase; padding:3px 0; margin:3px 0; }
+.pill { font-size:8pt; font-weight:800; padding:3px 9px; border-radius:10px;
+  border:1.5px solid #333; background:#fff; color:#111; }
+.bar { color:#fff; background:#333; border-radius:5px; text-align:center;
+  font-size:7pt; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
+  padding:3px 0; margin:3px 0; }
 .grid { display:grid; grid-template-rows:repeat(5,1fr);
-  height:148mm; border:1px solid #E2E0DA; border-radius:10px; overflow:hidden; }
-.row { display:flex; align-items:stretch; border-bottom:1px solid #E2E0DA; overflow:hidden; }
+  height:148mm; border:2px solid #333; border-radius:8px; overflow:hidden; }
+.row { display:flex; align-items:stretch; border-bottom:1px solid #CCCCCC; overflow:hidden; }
 .row:last-child { border-bottom:none; }
 .row-lbl { width:38px; flex-shrink:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; border-right:1px solid #E2E0DA;
-  padding:2px; background:#F4F3EF; }
-.row-num { font-size:9pt; font-weight:700; color:#3A3830; line-height:1; }
-.row-sub { font-size:5pt; font-weight:600; color:#A8A59D; margin-top:1px; }
-.sep { width:4px; flex-shrink:0; background:#F4F3EF;
-  border-left:1px dashed #E2E0DA; border-right:1px dashed #E2E0DA; }
+  align-items:center; justify-content:center;
+  border-right:2px solid #333; padding:2px; background:#EEEEEE; }
+.rn { font-size:9pt; font-weight:800; color:#111; line-height:1; }
+.rs { font-size:5pt; font-weight:600; color:#666; margin-top:1px; }
+.sep { width:4px; flex-shrink:0; background:#EEEEEE;
+  border-left:1px dashed #AAAAAA; border-right:1px dashed #AAAAAA; }
+/* Légende en bas à droite de l'en-tête */
+.legend { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+.leg { display:flex; align-items:center; gap:3px; font-size:7pt; font-weight:600; color:#333; }
+.leg-box { width:14px; height:10px; border-radius:2px; border:1.5px solid #333; }
 </style></head><body>
 <div class="no-print">
   <button class="btn" onclick="window.print()">⎙ Imprimer</button>
-  <button class="btn" style="background:#3C3C43" onclick="window.close()">✕ Fermer</button>
+  <button class="btn" style="background:#555" onclick="window.close()">✕ Fermer</button>
 </div>
 <div class="hd">
-  <div class="date">⛱ ${dateStr}</div>
-  <div class="stats">
-    <div class="stat" style="background:#EDF7F1"><div class="stat-n" style="color:#0D5C2E">${nbSlots}</div><div class="stat-l" style="color:#0D5C2E">transats</div></div>
-    <div class="stat" style="background:#E8F4FD"><div class="stat-n" style="color:#0A6EA6">${nbRT}</div><div class="stat-l" style="color:#0A6EA6">RT</div></div>
-    <div class="pills">
-      ${nbS1   ? `<span class="pill" style="background:#1A7A3E">S1 · ${nbS1}</span>`   : ''}
-      ${nbS2   ? `<span class="pill" style="background:#C47A0A">S2 · ${nbS2}</span>`   : ''}
-      ${nbSoir ? `<span class="pill" style="background:#6B48C8">Soir · ${nbSoir}</span>` : ''}
+  <div>
+    <div class="date">⛱ ${dateStr}</div>
+    <div class="legend" style="margin-top:3px">
+      <div class="leg"><div class="leg-box" style="background:#fff"></div>S1</div>
+      <div class="leg"><div class="leg-box" style="background:#E0E0E0"></div>S2</div>
+      <div class="leg"><div class="leg-box" style="background:#B0B0B0"></div>Soir</div>
+      <div class="leg"><div class="leg-box" style="background:#fff;border-width:2.5px"></div>RT</div>
     </div>
-    ${unplcd.length ? `<div class="stat" style="background:#FFFBEB"><div class="stat-n" style="color:#92400E">${unplcd.length}</div><div class="stat-l" style="color:#92400E">⚠ non placés</div></div>` : ''}
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="stat-n">${nbSlots}</div><div class="stat-l">transats</div></div>
+    <div class="stat"><div class="stat-n">${nbRT}</div><div class="stat-l">RT</div></div>
+    <div class="pills">
+      ${nbS1   ?`<span class="pill">S1 · ${nbS1}</span>`  :''}
+      ${nbS2   ?`<span class="pill" style="background:#E0E0E0">S2 · ${nbS2}</span>`  :''}
+      ${nbSoir ?`<span class="pill" style="background:#B0B0B0">Soir · ${nbSoir}</span>`:''}
+    </div>
+    ${unplcd.length?`<div class="stat" style="border-color:#333"><div class="stat-n">⚠${unplcd.length}</div><div class="stat-l">non placés</div></div>`:''}
   </div>
 </div>
-<div class="bar" style="background:linear-gradient(90deg,#6B7280,#4B5563)">▲ RESTAURANT</div>
+<div class="bar">▲ RESTAURANT</div>
 <div class="grid">
   ${renderRow100()}
   ${TR_ROWS.filter(r=>r.id!==100).map(r=>renderDataRow(r.id,r.sea)).join('')}
 </div>
-<div class="bar" style="background:linear-gradient(90deg,#0284C7,#0D9488)">〰 MER MÉDITERRANÉE 〰</div>
+<div class="bar">〰 MER MÉDITERRANÉE 〰</div>
 ${unplacedHtml}
 </body></html>`;
 
