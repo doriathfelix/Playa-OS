@@ -389,7 +389,7 @@ function zcToResa(b){
   const isRepasTransat = typeExp.toLowerCase().includes('transat');
   // Convention La Playa : uniquement 13h00 pile = repas transat
   const is13h00 = (b.time || '').startsWith('13:00');
-  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || (is13h00 && !isTablePlusTransat);
+  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || (is13h00 && nbTransats > 0);
 
   // Heure : "13:00" -> "13h00"
   const timeRaw = b.time || '12:00';
