@@ -271,7 +271,7 @@ function printTransats(){
     return `<div style="flex:${flex};padding:1px;min-width:0">
       <div style="height:100%;background:${c.bg};border:${c.bw}px solid ${c.bd};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
         <div style="font-size:${fs};font-weight:700;color:${c.tx};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.15">${resa.name}</div>
-        <div style="font-size:${f2};font-weight:700;color:${c.tx};line-height:1">⛱ ${resa.tr||1}</div>
+        <div style="font-size:${f2};font-weight:700;color:${c.tx};line-height:1">x${resa.tr||1}</div>
         <span style="font-size:5pt;font-weight:800;background:${bdgBg};color:#fff;padding:0 4px;border-radius:3px;line-height:1.5">${c.lbl}</span>
       </div>
     </div>`;
@@ -299,7 +299,7 @@ function printTransats(){
       return `<div style="flex:${flex};padding:1px;min-width:0">
         <div style="height:100%;background:${c.bg};border:${c.bw}px solid ${c.bd};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
           <div style="font-size:8pt;font-weight:700;color:${c.tx};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.15">${r.name}</div>
-          <div style="font-size:7.5pt;font-weight:700;color:${c.tx}">⛱ ${r.tr||2}</div>
+          <div style="font-size:7.5pt;font-weight:700;color:${c.tx}">x${r.tr||2}</div>
           <span style="font-size:5pt;font-weight:800;background:${bdgBg};color:#fff;padding:0 4px;border-radius:3px;line-height:1.5">${c.lbl}</span>
         </div>
       </div>`;
@@ -345,7 +345,7 @@ function printTransats(){
   if(unplcd.length){
     unplacedHtml=`<div style="border:2px solid #333;border-radius:6px;padding:4px 10px;margin-top:4px">
       <span style="font-size:8pt;font-weight:800">⚠ Non placés : </span>
-      ${unplcd.map(r=>{const c=cFor(r);return `<span style="font-size:8pt;font-weight:700;margin-right:8px">${r.name} ⛱${r.tr||1} <span style="background:#111;color:#fff;font-size:5pt;font-weight:800;padding:0 3px;border-radius:3px">${c.lbl}</span></span>`;}).join('')}
+      ${unplcd.map(r=>{const c=cFor(r);return `<span style="font-size:8pt;font-weight:700;margin-right:8px">${r.name} x${r.tr||1}<span style="background:#111;color:#fff;font-size:5pt;font-weight:800;padding:0 3px;border-radius:3px">${c.lbl}</span></span>`;}).join('')}
     </div>`;
   }
 
