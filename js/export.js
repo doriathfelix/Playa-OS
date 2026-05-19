@@ -209,217 +209,191 @@ ${unplacedHtml}
 function printTransats(){
   const dateStr = fmtDateLong(currentDate);
 
-  // ── Dimensions en mm, calibrées A4 paysage (marges 7mm×9mm → 283mm utilisables)
-  const W=11, H=9.5, GAP=1.2, ALLEY=5, LBL=14, RGAP=3;
+  // A4 paysage : marges 7mm×9mm → 279mm×196mm utilisables
+  // W/GAP/ALLEY calibrés pour remplir les 279mm de large
+  const W=10.8, GAP=1.2, ALLEY=5, LBL=14;
 
-  // ── Couleurs (identiques à l'app — tokens.css)
-  const C = {
-    s1:   {bg:'#EDF7F1', bd:'#1A7A3E', tx:'#0D5C2E'},
-    s2:   {bg:'#FEF6E8', bd:'#C47A0A', tx:'#8A5200'},
-    soir: {bg:'#F0EDF9', bd:'#6B48C8', tx:'#3E2590'},
-    rt:   {bg:'#E8F4FD', bd:'#0284C7', tx:'#0A6EA6'},
+  // ── Pastilles de service (seule couleur sur fond N&B)
+  const SVC = {
+    s1:   {bg:'#1A7A3E', tx:'#fff', lbl:'S1'},
+    s2:   {bg:'#C47A0A', tx:'#fff', lbl:'S2'},
+    soir: {bg:'#6B48C8', tx:'#fff', lbl:'Soir'},
+    rt:   {bg:'#0284C7', tx:'#fff', lbl:'RT'},
   };
-  function cFor(r){
-    if(r.repas_transat) return C.rt;
-    return C[r.svc] || C.s1;
-  }
+  function svcOf(r){ return r.repas_transat ? SVC.rt : SVC[r.svc] || SVC.s1; }
 
-  // ── Même mapping slot→colonne CSS que l'app (render.js)
+  // Mapping slot → colonne CSS grid (identique à l'app)
   function sCol(slot){
     const pos = slot - Math.floor(slot/100)*100;
-    if(pos >= 1 && pos <= 7)  return 1 + pos;   // g-block : cols 2–8
-    if(pos >= 8 && pos <= 13) return 2 + pos;   // m-block : cols 10–15
-    return 3 + pos;                              // d-block : cols 17–24
-  }
-  function sRow(slot){
-    return TR_ROWS.findIndex(r => r.id === Math.floor(slot/100)*100) + 1;
+    if(pos >= 1 && pos <= 7)  return 1 + pos;
+    if(pos >= 8 && pos <= 13) return 2 + pos;
+    return 3 + pos;
   }
   function slotLbl(slot){
-    const BL = {220:'219',221:'220',222:'221'};
-    if(BED_SLOTS.includes(slot)) return BL[slot] || String(slot);
-    const base = Math.floor(slot/100)*100, pos = slot - base;
-    if(pos === 13) return (base+12)+'bis';
-    if(pos >= 14)  return String(base+pos-1);
+    const BL={220:'219',221:'220',222:'221'};
+    if(BED_SLOTS.includes(slot)) return BL[slot]||String(slot);
+    const base=Math.floor(slot/100)*100, pos=slot-base;
+    if(pos===13) return (base+12)+'bis';
+    if(pos>=14)  return String(base+pos-1);
     return String(slot);
   }
 
-  // ── Données : slotMap (transats placés)
-  const placed  = reservations.transats.filter(r => r.placed && !r.ns && (r.slot||0) < 1001);
-  const unplcd  = reservations.transats.filter(r => !r.placed && !r.ns);
-  const slotMap = {};
-  placed.forEach(resa => {
-    const isBed = BED_SLOTS.includes(resa.slot);
-    const slots = (resa.extraSlots && resa.extraSlots.length)
-      ? resa.extraSlots
-      : isBed ? [resa.slot]
-      : Array.from({length: resa.tr||1}, (_,i) => (resa.slot||0)+i);
-    slots.forEach(s => { if(!slotMap[s]) slotMap[s] = resa; });
+  // ── Données
+  const placed = reservations.transats.filter(r=>r.placed&&!r.ns&&(r.slot||0)<1001);
+  const unplcd = reservations.transats.filter(r=>!r.placed&&!r.ns);
+  const slotMap={};
+  placed.forEach(resa=>{
+    const isBed=BED_SLOTS.includes(resa.slot);
+    const slots=(resa.extraSlots&&resa.extraSlots.length)?resa.extraSlots
+      :isBed?[resa.slot]
+      :Array.from({length:resa.tr||1},(_,i)=>(resa.slot||0)+i);
+    slots.forEach(s=>{if(!slotMap[s])slotMap[s]=resa;});
   });
-
-  // ── Salons : même source que l'app (résas restaurant placées en salon)
-  const salonResaMap = {};
-  ['s1','s2','soir'].forEach(svc => {
-    (reservations[svc]||[]).forEach(r => {
-      if(r.placed && !r.ns && r.tableId >= 1001 && r.tableId <= 1004){
-        if(!salonResaMap[r.tableId]) salonResaMap[r.tableId] = r;
-      }
+  const salonResaMap={};
+  ['s1','s2','soir'].forEach(svc=>{
+    (reservations[svc]||[]).forEach(r=>{
+      if(r.placed&&!r.ns&&r.tableId>=1001&&r.tableId<=1004)
+        if(!salonResaMap[r.tableId]) salonResaMap[r.tableId]=r;
     });
   });
-  // Aussi les transats placés sur slot salon
-  reservations.transats.filter(r => r.placed && !r.ns && (r.slot||0) >= 1001 && (r.slot||0) <= 1004)
-    .forEach(r => { if(!salonResaMap[r.slot]) salonResaMap[r.slot] = r; });
+  reservations.transats.filter(r=>r.placed&&!r.ns&&(r.slot||0)>=1001&&(r.slot||0)<=1004)
+    .forEach(r=>{if(!salonResaMap[r.slot])salonResaMap[r.slot]=r;});
 
-  // ── Stats
-  const allTr  = reservations.transats.filter(r => !r.ns);
-  const nbSlots = placed.reduce((s,r) => s + (r.tr||1), 0);
-  const nbRT    = allTr.filter(r => r.repas_transat).length;
-  const nbS1    = placed.filter(r => r.svc==='s1'  && !r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
-  const nbS2    = placed.filter(r => r.svc==='s2'  && !r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
-  const nbSoir  = placed.filter(r => r.svc==='soir'&& !r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const allTr  = reservations.transats.filter(r=>!r.ns);
+  const nbSlots= placed.reduce((s,r)=>s+(r.tr||1),0);
+  const nbRT   = allTr.filter(r=>r.repas_transat).length;
+  const nbS1   = placed.filter(r=>r.svc==='s1'  &&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const nbS2   = placed.filter(r=>r.svc==='s2'  &&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const nbSoir = placed.filter(r=>r.svc==='soir'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
 
-  // ── Rendu slot vide
+  // ── Slot vide (N&B)
   function emptySlot(slot, gridRow){
-    const isBed = BED_SLOTS.includes(slot);
-    const col   = sCol(slot);
-    const lbl   = slotLbl(slot);
-    return `<div style="grid-column:${col};grid-row:${gridRow};background:#F5F5F5;border:1px solid #E5E5E5;border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
-      ${isBed ? `<div style="font-size:3.5pt;font-weight:800;color:#AAAAAA;line-height:1.1">BED</div>` : ''}
-      <div style="font-size:4pt;color:#AAAAAA;font-weight:500;line-height:1">${lbl}</div>
+    const isBed=BED_SLOTS.includes(slot), col=sCol(slot);
+    return `<div style="grid-column:${col};grid-row:${gridRow};background:#F8F8F8;border:0.8px solid #DCDCDC;border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
+      ${isBed?`<div style="font-size:5pt;font-weight:800;color:#BBBBBB;line-height:1">BED</div>`:''}
+      <div style="font-size:5pt;color:#BBBBBB;font-weight:500;line-height:1">${slotLbl(slot)}</div>
     </div>`;
   }
 
-  // ── Rendu bloc resa (N slots contigus, même rangée — identique à l'app avec SVG)
+  // ── Bloc resa : N&B + pastille colorée service + nom + xN
   function resaBlock(resa, cMin, cMax, gridRow){
-    const N     = cMax - cMin + 1;
-    const svgW  = (N * W + (N-1) * GAP).toFixed(2);
-    const svgH  = H;
-    const c     = cFor(resa);
-    const totalTr = resa.tr || N;
-    const fs    = N >= 3 ? '6pt' : '5pt';
+    const N  = cMax-cMin+1;
+    const sv = svcOf(resa);
+    const totalTr = resa.tr||N;
+    const numW = N*W+(N-1)*GAP;
+    const svgW = numW.toFixed(2);
+    const fsName = N>=5?'9pt':N>=3?'7.5pt':N>=2?'6.5pt':'5pt';
+    const fsCnt  = N>=3?'8pt':N>=2?'7pt':'5.5pt';
+    const fsSvc  = N>=3?'6pt':'5pt';
 
-    const outlines = Array.from({length:N}, (_,i) => {
-      const x = (i * (W + GAP) + 0.4).toFixed(2);
-      return `<rect x="${x}" y="0.4" width="${(W-0.8).toFixed(2)}" height="${(svgH-0.8).toFixed(2)}" rx="2.2" fill="none" stroke="${c.bd}" stroke-width="0.4" opacity="0.28"/>`;
+    // Outlines individuels (gris très léger)
+    const outlines = Array.from({length:N},(_,i)=>{
+      const x=(i*(W+GAP)+0.5).toFixed(2);
+      return `<rect x="${x}" y="0.5" width="${(W-1).toFixed(2)}" height="9" rx="2" fill="none" stroke="#C8C8C8" stroke-width="0.4"/>`;
     }).join('');
 
     return `<div style="grid-column:${cMin}/${cMax+1};grid-row:${gridRow};position:relative;overflow:hidden;border-radius:3px">
-      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none" style="position:absolute;inset:0;display:block">
-        <rect x="0" y="0" width="${svgW}" height="${svgH}" rx="2.5" fill="${c.bg}"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${svgW} 10" preserveAspectRatio="none" style="position:absolute;inset:0;display:block">
+        <rect x="0" y="0" width="${svgW}" height="10" rx="2.5" fill="#FFFFFF"/>
         ${outlines}
-        <rect x="0.4" y="0.4" width="${(+svgW-0.8).toFixed(2)}" height="${(svgH-0.8).toFixed(2)}" rx="2.2" fill="none" stroke="${c.bd}" stroke-width="0.6"/>
+        <rect x="0.5" y="0.5" width="${(numW-1).toFixed(2)}" height="9" rx="2.2" fill="none" stroke="#999999" stroke-width="0.7"/>
       </svg>
-      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 1.5mm">
-        <div style="text-align:center;min-width:0;width:100%">
-          <div style="font-size:${fs};font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2">${resa.name}</div>
-          <div style="font-size:4.5pt;font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${totalTr}</div>
-        </div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.6mm;padding:2mm 1.5mm">
+        <span style="font-size:${fsSvc};font-weight:800;padding:0.5mm 2.5mm;border-radius:10mm;background:${sv.bg};color:${sv.tx};white-space:nowrap;line-height:1.4;flex-shrink:0">${sv.lbl}</span>
+        <div style="font-size:${fsName};font-weight:700;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${resa.name}</div>
+        <div style="font-size:${fsCnt};font-weight:800;color:#333;font-family:monospace;line-height:1">x${totalTr}</div>
       </div>
     </div>`;
   }
 
-  // ── Rendu salon (en longueur, même style que l'app)
+  // ── Salon (N&B + pastille)
   function salonCell(salon, gridRow){
-    const r  = salonResaMap[salon.id];
-    const gc = salon.gridCol;                          // ex: '10 / 12'
-    const N  = parseInt(gc.split('/')[1]) - parseInt(gc.split('/')[0]);
+    const r=salonResaMap[salon.id], gc=salon.gridCol;
+    const N=parseInt(gc.split('/')[1])-parseInt(gc.split('/')[0]);
     if(r){
-      const c = cFor(r);
-      const svgW = (N * W + (N-1) * GAP).toFixed(2);
-      const outlines = Array.from({length:N}, (_,i) => {
-        const x = (i*(W+GAP)+0.4).toFixed(2);
-        return `<rect x="${x}" y="0.4" width="${(W-0.8).toFixed(2)}" height="${(H-0.8).toFixed(2)}" rx="2.2" fill="none" stroke="${c.bd}" stroke-width="0.4" opacity="0.28"/>`;
+      const sv=svcOf(r);
+      const numW=N*W+(N-1)*GAP, svgW=numW.toFixed(2);
+      const outlines=Array.from({length:N},(_,i)=>{
+        const x=(i*(W+GAP)+0.5).toFixed(2);
+        return `<rect x="${x}" y="0.5" width="${(W-1).toFixed(2)}" height="9" rx="2" fill="none" stroke="#C8C8C8" stroke-width="0.4"/>`;
       }).join('');
       return `<div style="grid-column:${gc};grid-row:${gridRow};position:relative;overflow:hidden;border-radius:3px">
-        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${svgW} ${H}" preserveAspectRatio="none" style="position:absolute;inset:0;display:block">
-          <rect x="0" y="0" width="${svgW}" height="${H}" rx="2.5" fill="${c.bg}"/>
+        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${svgW} 10" preserveAspectRatio="none" style="position:absolute;inset:0;display:block">
+          <rect x="0" y="0" width="${svgW}" height="10" rx="2.5" fill="#FFFFFF"/>
           ${outlines}
-          <rect x="0.4" y="0.4" width="${(+svgW-0.8).toFixed(2)}" height="${(H-0.8).toFixed(2)}" rx="2.2" fill="none" stroke="${c.bd}" stroke-width="0.6"/>
+          <rect x="0.5" y="0.5" width="${(numW-1).toFixed(2)}" height="9" rx="2.2" fill="none" stroke="#999999" stroke-width="0.7"/>
         </svg>
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 1.5mm">
-          <div style="text-align:center;min-width:0;width:100%">
-            <div style="font-size:3.5pt;font-weight:700;color:${c.tx};opacity:.7;text-transform:uppercase;letter-spacing:.05em;line-height:1">${salon.lbl}</div>
-            <div style="font-size:5.5pt;font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2">${r.name}</div>
-            <div style="font-size:4.5pt;font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${r.tr||r.pax||2}</div>
-          </div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5mm;padding:2mm 1.5mm">
+          <div style="font-size:4pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em;line-height:1">${salon.lbl}</div>
+          <span style="font-size:5pt;font-weight:800;padding:0.5mm 2.5mm;border-radius:10mm;background:${sv.bg};color:${sv.tx};white-space:nowrap;line-height:1.4">${sv.lbl}</span>
+          <div style="font-size:7pt;font-weight:700;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${r.name}</div>
+          <div style="font-size:6.5pt;font-weight:800;color:#333;font-family:monospace;line-height:1">x${r.tr||r.pax||2}</div>
         </div>
       </div>`;
     }
-    return `<div style="grid-column:${gc};grid-row:${gridRow};background:#F5F5F5;border:1px dashed #CCCCCC;border-radius:3px;display:flex;align-items:center;justify-content:center">
-      <div style="font-size:4.5pt;color:#AAAAAA;font-weight:600;text-align:center;line-height:1.4">${salon.lbl}<br><span style="font-size:3.5pt">libre</span></div>
+    return `<div style="grid-column:${gc};grid-row:${gridRow};background:#F8F8F8;border:0.8px dashed #CCCCCC;border-radius:3px;display:flex;align-items:center;justify-content:center">
+      <div style="font-size:5pt;color:#BBBBBB;font-weight:600;text-align:center;line-height:1.4">${salon.lbl}<br><span style="font-size:3.5pt">libre</span></div>
     </div>`;
   }
 
-  // ── Construction de la grille HTML
-  let cells = '';
-
-  TR_ROWS.forEach((row, ri) => {
-    const rb      = row.id;
-    const gridRow = ri + 1;
-    const lblCol  = row.sea ? '#0284C7' : '#555';
-
-    // Label rangée
-    cells += `<div style="grid-column:1;grid-row:${gridRow};display:flex;align-items:center;justify-content:flex-end;padding-right:2.5mm">
-      <span style="font-size:6.5pt;font-weight:800;color:${lblCol};font-family:monospace">${rb}</span>
+  // ── Cellules de la grille
+  let cells='';
+  TR_ROWS.forEach((row,ri)=>{
+    const rb=row.id, gridRow=ri+1;
+    cells+=`<div style="grid-column:1;grid-row:${gridRow};display:flex;align-items:center;justify-content:flex-end;padding-right:2.5mm">
+      <span style="font-size:7pt;font-weight:800;color:${row.sea?'#0284C7':'#555'};font-family:monospace">${rb}</span>
     </div>`;
-
-    if(rb === 100){
-      // BED slots uniquement dans le g-block (101–103)
-      for(let slot = 101; slot <= 103; slot++){
-        const resa = slotMap[slot];
-        cells += resa ? resaBlock(resa, sCol(slot), sCol(slot), gridRow)
-                      : emptySlot(slot, gridRow);
+    if(rb===100){
+      for(let s=101;s<=103;s++){
+        const resa=slotMap[s];
+        cells+=resa?resaBlock(resa,sCol(s),sCol(s),gridRow):emptySlot(s,gridRow);
       }
-      // Salons 1001–1004 en longueur
-      SALON_SLOTS.forEach(s => { cells += salonCell(s, gridRow); });
+      SALON_SLOTS.forEach(sl=>{cells+=salonCell(sl,gridRow);});
       return;
     }
-
-    // Rangées normales : parcours par bloc g/m/d
     for(const blk of ['g','m','d']){
-      const slots = trSlots(rb)[blk];
-      let i = 0;
-      while(i < slots.length){
-        const s    = slots[i];
-        const resa = slotMap[s];
-        if(!resa){
-          cells += emptySlot(s, gridRow);
-          i++;
-        } else {
-          let j = i+1;
-          while(j < slots.length && slotMap[slots[j]] === resa) j++;
-          const run  = slots.slice(i, j);
-          const cols = run.map(sCol);
-          cells += resaBlock(resa, Math.min(...cols), Math.max(...cols), gridRow);
-          i = j;
+      const bSlots=trSlots(rb)[blk]; let i=0;
+      while(i<bSlots.length){
+        const s=bSlots[i], resa=slotMap[s];
+        if(!resa){cells+=emptySlot(s,gridRow);i++;}
+        else{
+          let j=i+1;
+          while(j<bSlots.length&&slotMap[bSlots[j]]===resa)j++;
+          const run=bSlots.slice(i,j), cols=run.map(sCol);
+          cells+=resaBlock(resa,Math.min(...cols),Math.max(...cols),gridRow);
+          i=j;
         }
       }
     }
   });
 
-  // ── Non placés
-  let unplacedHtml = '';
+  let unplacedHtml='';
   if(unplcd.length){
-    unplacedHtml = `<div style="margin-top:3mm;border:1.5px solid #CC3333;border-radius:4px;padding:2mm 3mm;display:flex;flex-wrap:wrap;gap:2mm;align-items:center">
-      <span style="font-size:6.5pt;font-weight:800;color:#CC3333;flex-shrink:0">⚠ Non placés :</span>
-      ${unplcd.map(r => {
-        const c = cFor(r);
-        return `<span style="font-size:6.5pt;font-weight:700;padding:1px 5px;border-radius:3px;background:${c.bg};color:${c.tx};border:1px solid ${c.bd}">${r.name} x${r.tr||1}</span>`;
-      }).join('')}
+    unplacedHtml=`<div style="margin-top:2mm;border:1px solid #CC3333;border-radius:3px;padding:1.5mm 3mm;display:flex;flex-wrap:wrap;gap:1.5mm;align-items:center">
+      <span style="font-size:6pt;font-weight:800;color:#CC3333;flex-shrink:0">⚠ Non placés :</span>
+      ${unplcd.map(r=>{const sv=svcOf(r);return`<span style="font-size:5.5pt;font-weight:700;padding:0.5mm 2mm;border-radius:3px;background:${sv.bg};color:${sv.tx}">${r.name} x${r.tr||1}</span>`;}).join('')}
     </div>`;
   }
 
-  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
 <title>Plan transats — ${dateStr}</title>
 <style>
 @page{size:A4 landscape;margin:7mm 9mm}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.no-print{padding:5px 0 4px}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact;height:196mm;display:flex;flex-direction:column}
+.no-print{padding:4px 0;flex-shrink:0}
 @media print{.no-print{display:none!important}}
 .btn{padding:4px 12px;background:#111;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:4px}
-.hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:2.5mm;border-bottom:1.5px solid #222;margin-bottom:2.5mm}
-.grid{display:grid;grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(8,${W}mm);grid-template-rows:repeat(5,${H}mm);column-gap:${GAP}mm;row-gap:${RGAP}mm}
-.sea{text-align:center;font-size:6.5pt;font-weight:700;letter-spacing:.1em;color:#0284C7;margin-top:2.5mm;border-top:1px solid #E0E0E0;padding-top:2mm}
+.hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:2mm;border-bottom:1.5px solid #222;margin-bottom:2mm;flex-shrink:0}
+.grid{
+  flex:1;min-height:0;
+  display:grid;
+  grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(8,${W}mm);
+  grid-template-rows:repeat(5,1fr);
+  column-gap:${GAP}mm;
+  row-gap:3mm;
+}
+.sea{flex-shrink:0;text-align:center;font-size:6.5pt;font-weight:700;letter-spacing:.1em;color:#0284C7;border-top:1px solid #E0E0E0;padding-top:1.5mm;margin-top:2mm}
 </style></head><body>
 <div class="no-print">
   <button class="btn" onclick="window.print()">⎙ Imprimer</button>
@@ -427,29 +401,26 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
 </div>
 <div class="hd">
   <div style="display:flex;align-items:center;gap:3mm">
-    <div style="font-size:12pt;font-weight:700">⛱ ${dateStr}</div>
+    <div style="font-size:13pt;font-weight:800">⛱ ${dateStr}</div>
     <div style="display:flex;gap:2mm;align-items:center">
-      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:9px;height:9px;background:#EDF7F1;border:1px solid #1A7A3E;border-radius:1px;display:inline-block"></span>S1</span>
-      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:9px;height:9px;background:#FEF6E8;border:1px solid #C47A0A;border-radius:1px;display:inline-block"></span>S2</span>
-      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:9px;height:9px;background:#F0EDF9;border:1px solid #6B48C8;border-radius:1px;display:inline-block"></span>Soir</span>
-      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:9px;height:9px;background:#E8F4FD;border:1px solid #0284C7;border-radius:1px;display:inline-block"></span>RT</span>
+      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:8px;height:8px;background:#1A7A3E;border-radius:50%;display:inline-block"></span>S1</span>
+      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:8px;height:8px;background:#C47A0A;border-radius:50%;display:inline-block"></span>S2</span>
+      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:8px;height:8px;background:#6B48C8;border-radius:50%;display:inline-block"></span>Soir</span>
+      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:8px;height:8px;background:#0284C7;border-radius:50%;display:inline-block"></span>RT</span>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:3mm;flex-wrap:wrap">
-    <div style="text-align:center;border:1.5px solid #333;border-radius:5px;padding:1.5mm 3mm">
+  <div style="display:flex;align-items:center;gap:2.5mm;flex-wrap:wrap">
+    <div style="border:1.5px solid #333;border-radius:4px;padding:1mm 2.5mm;text-align:center">
       <div style="font-size:11pt;font-weight:700;line-height:1">${nbSlots}</div>
-      <div style="font-size:4pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.6;margin-top:0.5mm">transats</div>
+      <div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">transats</div>
     </div>
-    <div style="text-align:center;border:1.5px solid #333;border-radius:5px;padding:1.5mm 3mm">
-      <div style="font-size:11pt;font-weight:700;line-height:1">${nbRT}</div>
-      <div style="font-size:4pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.6;margin-top:0.5mm">RT</div>
+    ${nbRT?`<div style="border:1.5px solid #0284C7;border-radius:4px;padding:1mm 2.5mm;text-align:center;color:#0284C7"><div style="font-size:11pt;font-weight:700;line-height:1">${nbRT}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:0.5mm">RT</div></div>`:''}
+    <div style="display:flex;gap:1.5mm;align-items:center;flex-wrap:wrap">
+      ${nbS1?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:8mm;background:#1A7A3E;color:#fff">S1 · ${nbS1}</span>`:''}
+      ${nbS2?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:8mm;background:#C47A0A;color:#fff">S2 · ${nbS2}</span>`:''}
+      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:8mm;background:#6B48C8;color:#fff">Soir · ${nbSoir}</span>`:''}
     </div>
-    <div style="display:flex;gap:1.5mm;flex-wrap:wrap">
-      ${nbS1   ? `<span style="font-size:5.5pt;font-weight:800;padding:1.5mm 3mm;border-radius:8px;background:#EDF7F1;border:1px solid #1A7A3E;color:#0D5C2E">S1 · ${nbS1}</span>` : ''}
-      ${nbS2   ? `<span style="font-size:5.5pt;font-weight:800;padding:1.5mm 3mm;border-radius:8px;background:#FEF6E8;border:1px solid #C47A0A;color:#8A5200">S2 · ${nbS2}</span>` : ''}
-      ${nbSoir ? `<span style="font-size:5.5pt;font-weight:800;padding:1.5mm 3mm;border-radius:8px;background:#F0EDF9;border:1px solid #6B48C8;color:#3E2590">Soir · ${nbSoir}</span>` : ''}
-    </div>
-    ${unplcd.length ? `<div style="text-align:center;border:1.5px solid #CC3333;border-radius:5px;padding:1.5mm 3mm;color:#CC3333"><div style="font-size:11pt;font-weight:700;line-height:1">⚠${unplcd.length}</div><div style="font-size:4pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.8;margin-top:0.5mm">non placés</div></div>` : ''}
+    ${unplcd.length?`<div style="border:1.5px solid #CC3333;border-radius:4px;padding:1mm 2.5mm;text-align:center;color:#CC3333"><div style="font-size:11pt;font-weight:700;line-height:1">⚠${unplcd.length}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:0.5mm">non placés</div></div>`:''}
   </div>
 </div>
 <div class="grid">${cells}</div>
@@ -459,10 +430,6 @@ ${unplacedHtml}
 
   openPrintWindow(html);
 }
-// ══════════════════════════════════════════
-// PLAN DE SALLE JOUR — 2 colonnes S1 / S2
-// Format identique au plan papier : grille complète, double en-tête DATE/RÉSERVATIONS
-// ══════════════════════════════════════════
 function printServiceSheet() {
   const dateStr = fmtDateLong(currentDate);
 
