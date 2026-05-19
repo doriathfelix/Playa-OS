@@ -209,20 +209,17 @@ ${unplacedHtml}
 function printTransats(){
   const dateStr = fmtDateLong(currentDate);
 
-  // A4 paysage : marges 7mm×9mm → 279mm×196mm utilisables
-  // W/GAP/ALLEY calibrés pour remplir les 279mm de large
   const W=10.8, GAP=1.2, ALLEY=5, LBL=14;
 
-  // ── Pastilles de service (seule couleur sur fond N&B)
-  const SVC = {
-    s1:   {bg:'#1A7A3E', tx:'#fff', lbl:'S1'},
-    s2:   {bg:'#C47A0A', tx:'#fff', lbl:'S2'},
-    soir: {bg:'#6B48C8', tx:'#fff', lbl:'Soir'},
-    rt:   {bg:'#0284C7', tx:'#fff', lbl:'RT'},
+  // N&B : gris différents par service pour lecture intuitive
+  const C = {
+    s1:   {bg:'#FFFFFF', bd:'#555555', tx:'#111111', lbl:'S1',   bw:0.7},
+    s2:   {bg:'#E5E5E5', bd:'#555555', tx:'#111111', lbl:'S2',   bw:0.7},
+    soir: {bg:'#B8B8B8', bd:'#333333', tx:'#111111', lbl:'Soir', bw:0.8},
+    rt:   {bg:'#FFFFFF', bd:'#000000', tx:'#111111', lbl:'RT',   bw:1.4},
   };
-  function svcOf(r){ return r.repas_transat ? SVC.rt : SVC[r.svc] || SVC.s1; }
+  function cFor(r){ return r.repas_transat ? C.rt : C[r.svc] || C.s1; }
 
-  // Mapping slot → colonne CSS grid (identique à l'app)
   function sCol(slot){
     const pos = slot - Math.floor(slot/100)*100;
     if(pos >= 1 && pos <= 7)  return 1 + pos;
@@ -238,7 +235,6 @@ function printTransats(){
     return String(slot);
   }
 
-  // ── Données
   const placed = reservations.transats.filter(r=>r.placed&&!r.ns&&(r.slot||0)<1001);
   const unplcd = reservations.transats.filter(r=>!r.placed&&!r.ns);
   const slotMap={};
@@ -266,82 +262,81 @@ function printTransats(){
   const nbS2   = placed.filter(r=>r.svc==='s2'  &&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
   const nbSoir = placed.filter(r=>r.svc==='soir'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
 
-  // ── Slot vide (N&B)
   function emptySlot(slot, gridRow){
-    const isBed=BED_SLOTS.includes(slot), col=sCol(slot);
-    return `<div style="grid-column:${col};grid-row:${gridRow};background:#F8F8F8;border:0.8px solid #DCDCDC;border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
+    const isBed=BED_SLOTS.includes(slot);
+    return `<div style="grid-column:${sCol(slot)};grid-row:${gridRow};background:#F5F5F5;border:0.6px solid #DDDDDD;border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
       ${isBed?`<div style="font-size:5pt;font-weight:800;color:#BBBBBB;line-height:1">BED</div>`:''}
       <div style="font-size:5pt;color:#BBBBBB;font-weight:500;line-height:1">${slotLbl(slot)}</div>
     </div>`;
   }
 
-  // ── Bloc resa : N&B + pastille colorée service + nom + xN
   function resaBlock(resa, cMin, cMax, gridRow){
-    const N  = cMax-cMin+1;
-    const sv = svcOf(resa);
-    const totalTr = resa.tr||N;
-    const numW = N*W+(N-1)*GAP;
-    const svgW = numW.toFixed(2);
-    const fsName = N>=5?'9pt':N>=3?'7.5pt':N>=2?'6.5pt':'5pt';
-    const fsCnt  = N>=3?'8pt':N>=2?'7pt':'5.5pt';
-    const fsSvc  = N>=3?'6pt':'5pt';
+    const N   = cMax-cMin+1;
+    const c   = cFor(resa);
+    const tot = resa.tr||N;
+    const numW= N*W+(N-1)*GAP;
+    const svgW= numW.toFixed(2);
 
-    // Outlines individuels (gris très léger)
+    // Outlines individuels — plus foncés que le fond pour rester lisibles en N&B
+    const olStroke = c.bg==='#FFFFFF' ? '#CCCCCC' : '#AAAAAA';
     const outlines = Array.from({length:N},(_,i)=>{
       const x=(i*(W+GAP)+0.5).toFixed(2);
-      return `<rect x="${x}" y="0.5" width="${(W-1).toFixed(2)}" height="9" rx="2" fill="none" stroke="#C8C8C8" stroke-width="0.4"/>`;
+      return `<rect x="${x}" y="0.5" width="${(W-1).toFixed(2)}" height="9" rx="2" fill="none" stroke="${olStroke}" stroke-width="0.5"/>`;
     }).join('');
+
+    const fsName = N>=5?'8.5pt':N>=3?'7pt':N>=2?'6pt':'4.5pt';
+    const fsCnt  = N>=3?'7.5pt':N>=2?'6.5pt':'5.5pt';
+    const fsLbl  = N>=3?'5.5pt':'4.5pt';
 
     return `<div style="grid-column:${cMin}/${cMax+1};grid-row:${gridRow};position:relative;overflow:hidden;border-radius:3px">
       <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${svgW} 10" preserveAspectRatio="none" style="position:absolute;inset:0;display:block">
-        <rect x="0" y="0" width="${svgW}" height="10" rx="2.5" fill="#FFFFFF"/>
+        <rect x="0" y="0" width="${svgW}" height="10" rx="2.5" fill="${c.bg}"/>
         ${outlines}
-        <rect x="0.5" y="0.5" width="${(numW-1).toFixed(2)}" height="9" rx="2.2" fill="none" stroke="#999999" stroke-width="0.7"/>
+        <rect x="0.4" y="0.4" width="${(numW-0.8).toFixed(2)}" height="9.2" rx="2.2" fill="none" stroke="${c.bd}" stroke-width="${c.bw}"/>
       </svg>
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.6mm;padding:2mm 1.5mm">
-        <span style="font-size:${fsSvc};font-weight:800;padding:0.5mm 2.5mm;border-radius:10mm;background:${sv.bg};color:${sv.tx};white-space:nowrap;line-height:1.4;flex-shrink:0">${sv.lbl}</span>
-        <div style="font-size:${fsName};font-weight:700;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${resa.name}</div>
-        <div style="font-size:${fsCnt};font-weight:800;color:#333;font-family:monospace;line-height:1">x${totalTr}</div>
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8mm;padding:1.5mm 1mm">
+        <div style="font-size:${fsName};font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${resa.name}</div>
+        <div style="font-size:${fsCnt};font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${tot}</div>
+        <div style="font-size:${fsLbl};font-weight:800;color:${c.tx};line-height:1;opacity:.75">${c.lbl}</div>
       </div>
     </div>`;
   }
 
-  // ── Salon (N&B + pastille)
   function salonCell(salon, gridRow){
     const r=salonResaMap[salon.id], gc=salon.gridCol;
     const N=parseInt(gc.split('/')[1])-parseInt(gc.split('/')[0]);
     if(r){
-      const sv=svcOf(r);
+      const c=cFor(r);
       const numW=N*W+(N-1)*GAP, svgW=numW.toFixed(2);
+      const olStroke=c.bg==='#FFFFFF'?'#CCCCCC':'#AAAAAA';
       const outlines=Array.from({length:N},(_,i)=>{
         const x=(i*(W+GAP)+0.5).toFixed(2);
-        return `<rect x="${x}" y="0.5" width="${(W-1).toFixed(2)}" height="9" rx="2" fill="none" stroke="#C8C8C8" stroke-width="0.4"/>`;
+        return `<rect x="${x}" y="0.5" width="${(W-1).toFixed(2)}" height="9" rx="2" fill="none" stroke="${olStroke}" stroke-width="0.5"/>`;
       }).join('');
       return `<div style="grid-column:${gc};grid-row:${gridRow};position:relative;overflow:hidden;border-radius:3px">
         <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${svgW} 10" preserveAspectRatio="none" style="position:absolute;inset:0;display:block">
-          <rect x="0" y="0" width="${svgW}" height="10" rx="2.5" fill="#FFFFFF"/>
+          <rect x="0" y="0" width="${svgW}" height="10" rx="2.5" fill="${c.bg}"/>
           ${outlines}
-          <rect x="0.5" y="0.5" width="${(numW-1).toFixed(2)}" height="9" rx="2.2" fill="none" stroke="#999999" stroke-width="0.7"/>
+          <rect x="0.4" y="0.4" width="${(numW-0.8).toFixed(2)}" height="9.2" rx="2.2" fill="none" stroke="${c.bd}" stroke-width="${c.bw}"/>
         </svg>
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5mm;padding:2mm 1.5mm">
-          <div style="font-size:4pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.05em;line-height:1">${salon.lbl}</div>
-          <span style="font-size:5pt;font-weight:800;padding:0.5mm 2.5mm;border-radius:10mm;background:${sv.bg};color:${sv.tx};white-space:nowrap;line-height:1.4">${sv.lbl}</span>
-          <div style="font-size:7pt;font-weight:700;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${r.name}</div>
-          <div style="font-size:6.5pt;font-weight:800;color:#333;font-family:monospace;line-height:1">x${r.tr||r.pax||2}</div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.6mm;padding:1.5mm 1mm">
+          <div style="font-size:4pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;line-height:1">${salon.lbl}</div>
+          <div style="font-size:7pt;font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${r.name}</div>
+          <div style="font-size:6.5pt;font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${r.tr||r.pax||2}</div>
+          <div style="font-size:4.5pt;font-weight:800;color:${c.tx};line-height:1;opacity:.75">${c.lbl}</div>
         </div>
       </div>`;
     }
-    return `<div style="grid-column:${gc};grid-row:${gridRow};background:#F8F8F8;border:0.8px dashed #CCCCCC;border-radius:3px;display:flex;align-items:center;justify-content:center">
+    return `<div style="grid-column:${gc};grid-row:${gridRow};background:#F5F5F5;border:0.8px dashed #CCCCCC;border-radius:3px;display:flex;align-items:center;justify-content:center">
       <div style="font-size:5pt;color:#BBBBBB;font-weight:600;text-align:center;line-height:1.4">${salon.lbl}<br><span style="font-size:3.5pt">libre</span></div>
     </div>`;
   }
 
-  // ── Cellules de la grille
   let cells='';
   TR_ROWS.forEach((row,ri)=>{
     const rb=row.id, gridRow=ri+1;
     cells+=`<div style="grid-column:1;grid-row:${gridRow};display:flex;align-items:center;justify-content:flex-end;padding-right:2.5mm">
-      <span style="font-size:7pt;font-weight:800;color:${row.sea?'#0284C7':'#555'};font-family:monospace">${rb}</span>
+      <span style="font-size:7pt;font-weight:800;color:${row.sea?'#555':'#555'};font-family:monospace">${rb}</span>
     </div>`;
     if(rb===100){
       for(let s=101;s<=103;s++){
@@ -369,9 +364,9 @@ function printTransats(){
 
   let unplacedHtml='';
   if(unplcd.length){
-    unplacedHtml=`<div style="margin-top:2mm;border:1px solid #CC3333;border-radius:3px;padding:1.5mm 3mm;display:flex;flex-wrap:wrap;gap:1.5mm;align-items:center">
-      <span style="font-size:6pt;font-weight:800;color:#CC3333;flex-shrink:0">⚠ Non placés :</span>
-      ${unplcd.map(r=>{const sv=svcOf(r);return`<span style="font-size:5.5pt;font-weight:700;padding:0.5mm 2mm;border-radius:3px;background:${sv.bg};color:${sv.tx}">${r.name} x${r.tr||1}</span>`;}).join('')}
+    unplacedHtml=`<div style="margin-top:2mm;border:1px solid #555;border-radius:3px;padding:1.5mm 3mm;display:flex;flex-wrap:wrap;gap:1.5mm;align-items:center">
+      <span style="font-size:6pt;font-weight:800;flex-shrink:0">⚠ Non placés :</span>
+      ${unplcd.map(r=>{const c=cFor(r);return`<span style="font-size:5.5pt;font-weight:700;padding:0.5mm 2mm;border-radius:3px;background:${c.bg};border:0.6px solid ${c.bd}">${r.name} x${r.tr||1} ${c.lbl}</span>`;}).join('')}
     </div>`;
   }
 
@@ -385,28 +380,23 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
 @media print{.no-print{display:none!important}}
 .btn{padding:4px 12px;background:#111;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:4px}
 .hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:2mm;border-bottom:1.5px solid #222;margin-bottom:2mm;flex-shrink:0}
-.grid{
-  flex:1;min-height:0;
-  display:grid;
-  grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(8,${W}mm);
-  grid-template-rows:repeat(5,1fr);
-  column-gap:${GAP}mm;
-  row-gap:3mm;
-}
-.sea{flex-shrink:0;text-align:center;font-size:6.5pt;font-weight:700;letter-spacing:.1em;color:#0284C7;border-top:1px solid #E0E0E0;padding-top:1.5mm;margin-top:2mm}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(8,${W}mm);grid-template-rows:repeat(5,1fr);column-gap:${GAP}mm;row-gap:3mm}
+.sea{flex-shrink:0;text-align:center;font-size:6.5pt;font-weight:700;letter-spacing:.1em;color:#555;border-top:1px solid #CCCCCC;padding-top:1.5mm;margin-top:2mm}
+.leg{display:inline-flex;align-items:center;gap:1.5mm;font-size:5pt;margin-right:3mm}
+.leg-box{width:12px;height:10px;border-radius:2px;display:inline-block;flex-shrink:0}
 </style></head><body>
 <div class="no-print">
   <button class="btn" onclick="window.print()">⎙ Imprimer</button>
   <button class="btn" style="background:#555" onclick="window.close()">✕ Fermer</button>
 </div>
 <div class="hd">
-  <div style="display:flex;align-items:center;gap:3mm">
+  <div style="display:flex;align-items:center;gap:4mm">
     <div style="font-size:13pt;font-weight:800">⛱ ${dateStr}</div>
-    <div style="display:flex;gap:2mm;align-items:center">
-      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:8px;height:8px;background:#1A7A3E;border-radius:50%;display:inline-block"></span>S1</span>
-      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:8px;height:8px;background:#C47A0A;border-radius:50%;display:inline-block"></span>S2</span>
-      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:8px;height:8px;background:#6B48C8;border-radius:50%;display:inline-block"></span>Soir</span>
-      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:8px;height:8px;background:#0284C7;border-radius:50%;display:inline-block"></span>RT</span>
+    <div>
+      <span class="leg"><span class="leg-box" style="background:#FFFFFF;border:0.7px solid #555"></span>S1</span>
+      <span class="leg"><span class="leg-box" style="background:#E5E5E5;border:0.7px solid #555"></span>S2</span>
+      <span class="leg"><span class="leg-box" style="background:#B8B8B8;border:0.8px solid #333"></span>Soir</span>
+      <span class="leg"><span class="leg-box" style="background:#FFFFFF;border:1.4px solid #000"></span>RT</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:2.5mm;flex-wrap:wrap">
@@ -414,13 +404,13 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
       <div style="font-size:11pt;font-weight:700;line-height:1">${nbSlots}</div>
       <div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">transats</div>
     </div>
-    ${nbRT?`<div style="border:1.5px solid #0284C7;border-radius:4px;padding:1mm 2.5mm;text-align:center;color:#0284C7"><div style="font-size:11pt;font-weight:700;line-height:1">${nbRT}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:0.5mm">RT</div></div>`:''}
+    ${nbRT?`<div style="border:1.5px solid #333;border-radius:4px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbRT}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">RT</div></div>`:''}
     <div style="display:flex;gap:1.5mm;align-items:center;flex-wrap:wrap">
-      ${nbS1?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:8mm;background:#1A7A3E;color:#fff">S1 · ${nbS1}</span>`:''}
-      ${nbS2?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:8mm;background:#C47A0A;color:#fff">S2 · ${nbS2}</span>`:''}
-      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:8mm;background:#6B48C8;color:#fff">Soir · ${nbSoir}</span>`:''}
+      ${nbS1  ?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:8mm;border:0.7px solid #555;background:#FFF">S1 · ${nbS1}</span>`:''}
+      ${nbS2  ?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:8mm;border:0.7px solid #555;background:#E5E5E5">S2 · ${nbS2}</span>`:''}
+      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:8mm;border:0.8px solid #333;background:#B8B8B8">Soir · ${nbSoir}</span>`:''}
     </div>
-    ${unplcd.length?`<div style="border:1.5px solid #CC3333;border-radius:4px;padding:1mm 2.5mm;text-align:center;color:#CC3333"><div style="font-size:11pt;font-weight:700;line-height:1">⚠${unplcd.length}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-top:0.5mm">non placés</div></div>`:''}
+    ${unplcd.length?`<div style="border:1.5px solid #333;border-radius:4px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">⚠${unplcd.length}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">non placés</div></div>`:''}
   </div>
 </div>
 <div class="grid">${cells}</div>
