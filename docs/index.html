@@ -1394,9 +1394,10 @@ function renderSidebar(){
           : `<div style="font-size:10px;font-weight:700;color:var(--s1t);margin-top:2px">→ T${r.tableId}</div>`)
       : '';
 
-    // Badge transats bas droite (chiffre+⛱)
+    // Badge transats bas droite (chiffre+⛱) — rouge si 1ère ligne mer (row_transats=500)
+    const is1ereLigne = r.row_transats === 500;
     const trBottomRight = (r.tr && r.tr > 0)
-      ? `<span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:var(--rtbg);border:0.5px solid var(--rtbd);color:var(--rtt)">${r.tr} ⛱</span>`
+      ? `<span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:${is1ereLigne?'#FFEAEA':'var(--rtbg)'};border:0.5px solid ${is1ereLigne?'#FF5555':'var(--rtbd)'};color:${is1ereLigne?'#CC0000':'var(--rtt)'}">${r.tr} ⛱</span>`
       : '';
 
     d.innerHTML = `
@@ -5488,7 +5489,9 @@ function zcToResa(b){
   const isRepasTransat = typeExp.toLowerCase().includes('transat');
   // Convention La Playa : uniquement 13h00 pile = repas transat
   const is13h00 = (b.time || '').startsWith('13:00');
-  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || (is13h00 && nbTransats > 0);
+  // Transat mentionné dans les notes (même sans nombre précis) → équivaut à avoir des transats
+  const mentionsTransatsInText = nbTransats > 0 || /\btransats?\b/i.test(allTextFields);
+  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || (is13h00 && mentionsTransatsInText);
 
   // Heure : "13:00" -> "13h00"
   const timeRaw = b.time || '12:00';
@@ -5546,7 +5549,7 @@ function zcToResa(b){
       tags: [],
       svc: svcFinal,
       repas_transat: isRepasTransatFinal,
-      tr: nbTransats > 0 ? nbTransats : null,
+      tr: nbTransats > 0 ? nbTransats : (isRepasTransatFinal ? (b.nb_guests || 1) : null),
       ns,
       zenchef_status,
       waiting: b.phase === 'waiting_list',
