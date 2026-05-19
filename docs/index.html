@@ -4638,10 +4638,10 @@ function printTransats(){
   const W=10.8, GAP=1.2, ALLEY=5, LBL=14;
 
   const C = {
-    s1:   {bg:'#FFFFFF', tx:'#111', lbl:'S1',   bw:'0.6pt'},
-    s2:   {bg:'#FFFFFF', tx:'#111', lbl:'S2',   bw:'0.6pt'},
-    soir: {bg:'#FFFFFF', tx:'#111', lbl:'Soir', bw:'0.6pt'},
-    rt:   {bg:'#FFFFFF', tx:'#111', lbl:'RT',   bw:'1.4pt'},
+    s1:   {bg:'#FFFFFF', tx:'#111', lbl:'S1',   bw:'0.5pt'},
+    s2:   {bg:'#FFFFFF', tx:'#111', lbl:'S2',   bw:'0.5pt'},
+    soir: {bg:'#FFFFFF', tx:'#111', lbl:'Soir', bw:'0.5pt'},
+    rt:   {bg:'#FFFFFF', tx:'#111', lbl:'RT',   bw:'0.5pt'},
   };
   function cFor(r){ return r.repas_transat ? C.rt : C[r.svc] || C.s1; }
 
@@ -4692,9 +4692,9 @@ function printTransats(){
 
   function emptySlot(slot, gridRow){
     const isBed=BED_SLOTS.includes(slot);
-    return `<div style="grid-column:${sCol(slot)};grid-row:${gridRow};background:#F5F5F5;border:0.5pt solid #D8D8D8;border-radius:1.5mm;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
-      ${isBed?`<div style="font-size:4.5pt;font-weight:800;color:#BBBBBB;line-height:1">BED</div>`:''}
-      <div style="font-size:4.5pt;color:#BBBBBB;font-weight:500;line-height:1">${slotLbl(slot)}</div>
+    return `<div style="grid-column:${sCol(slot)};grid-row:${gridRow};margin:0.8mm;background:#EBEBEB;border:0.5pt solid #AAAAAA;border-radius:1.5mm;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
+      ${isBed?`<div style="font-size:4.5pt;font-weight:800;color:#999;line-height:1">BED</div>`:''}
+      <div style="font-size:4.5pt;color:#999;font-weight:500;line-height:1">${slotLbl(slot)}</div>
     </div>`;
   }
 
@@ -4708,13 +4708,13 @@ function printTransats(){
       slotOutlines=Array.from({length:nCols},(_,i)=>{
         const lPct=(i*(W+GAP)/totalW*100).toFixed(2);
         const wPct=(W/totalW*100).toFixed(2);
-        return `<div style="position:absolute;left:${lPct}%;top:5%;width:${wPct}%;height:90%;border:0.35pt solid #C0C0C0;border-radius:1mm;pointer-events:none"></div>`;
+        return `<div style="position:absolute;left:${lPct}%;top:5%;width:${wPct}%;height:90%;border:0.5pt solid #AAAAAA;border-radius:1mm;pointer-events:none"></div>`;
       }).join('');
     }
     const fsName=nCols>=5?'8.5pt':nCols>=3?'7pt':nCols>=2?'6pt':'4.5pt';
     const fsCnt =nCols>=3?'7.5pt':nCols>=2?'6.5pt':'5.5pt';
     const fsLbl =nCols>=4?'8pt':nCols>=2?'7pt':'6pt';
-    return `<div style="grid-column:${cMin}/${cMax+1};grid-row:${rowMin}/${rowMax+1};position:relative;overflow:hidden;border-radius:1.5mm;background:${c.bg};border:${c.bw} solid #222">
+    return `<div style="grid-column:${cMin}/${cMax+1};grid-row:${rowMin}/${rowMax+1};margin:0.8mm;position:relative;overflow:hidden;border-radius:1.5mm;background:${c.bg};border:${c.bw} solid #666">
       ${slotOutlines}
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8mm;padding:2mm 1.5mm;z-index:1">
         <div style="font-size:${fsName};font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${resa.name}</div>
@@ -4733,9 +4733,9 @@ function printTransats(){
       const slotOutlines=Array.from({length:N},(_,i)=>{
         const lPct=(i*(W+GAP)/totalW*100).toFixed(2);
         const wPct=(W/totalW*100).toFixed(2);
-        return `<div style="position:absolute;left:${lPct}%;top:5%;width:${wPct}%;height:90%;border:0.35pt solid #C0C0C0;border-radius:1mm;pointer-events:none"></div>`;
+        return `<div style="position:absolute;left:${lPct}%;top:5%;width:${wPct}%;height:90%;border:0.5pt solid #AAAAAA;border-radius:1mm;pointer-events:none"></div>`;
       }).join('');
-      return `<div style="grid-column:${gc};grid-row:${gridRow};position:relative;overflow:hidden;border-radius:1.5mm;background:${c.bg};border:${c.bw} solid #222">
+      return `<div style="grid-column:${gc};grid-row:${gridRow};margin:0.8mm;position:relative;overflow:hidden;border-radius:1.5mm;background:${c.bg};border:${c.bw} solid #666">
         ${slotOutlines}
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5mm;padding:2mm 1.5mm;z-index:1">
           <div style="font-size:3.5pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;line-height:1">${salon.lbl}</div>
@@ -4745,8 +4745,8 @@ function printTransats(){
         </div>
       </div>`;
     }
-    return `<div style="grid-column:${gc};grid-row:${gridRow};background:#F5F5F5;border:0.5pt dashed #CCCCCC;border-radius:1.5mm;display:flex;align-items:center;justify-content:center">
-      <div style="font-size:5pt;color:#BBBBBB;font-weight:600;text-align:center;line-height:1.4">${salon.lbl}<br><span style="font-size:3.5pt">libre</span></div>
+    return `<div style="grid-column:${gc};grid-row:${gridRow};margin:0.8mm;background:#EBEBEB;border:0.5pt solid #AAAAAA;border-radius:1.5mm;display:flex;align-items:center;justify-content:center">
+      <div style="font-size:5pt;color:#999;font-weight:600;text-align:center;line-height:1.4">${salon.lbl}</div>
     </div>`;
   }
 
@@ -4836,7 +4836,7 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
 @media print{.no-print{display:none!important}}
 .btn{padding:4px 12px;background:#111;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:4px}
 .hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:2mm;border-bottom:1pt solid #222;margin-bottom:2mm;flex-shrink:0}
-.grid{flex:1;min-height:0;display:grid;grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(8,${W}mm);grid-template-rows:repeat(5,1fr);column-gap:${GAP}mm;row-gap:3mm}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(8,${W}mm);grid-template-rows:15mm repeat(4,1fr);column-gap:${GAP}mm;row-gap:2mm}
 .sea{flex-shrink:0;text-align:center;font-size:6pt;font-weight:700;letter-spacing:.1em;color:#555;border-top:0.5pt solid #CCCCCC;padding-top:1.5mm;margin-top:2mm}
 .leg{display:inline-flex;align-items:center;gap:1.5mm;font-size:5pt;margin-right:3mm}
 </style></head><body>
