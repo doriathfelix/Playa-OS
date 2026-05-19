@@ -4635,218 +4635,251 @@ ${unplacedHtml}
 function printTransats(){
   const dateStr = fmtDateLong(currentDate);
 
-  const allTr  = reservations.transats.filter(r => !r.ns);
-  const placed = allTr.filter(r => r.placed);
-  const unplcd = allTr.filter(r => !r.placed);
-  const nbSlots = placed.reduce((s,r) => s + (r.slot >= 1001 ? 2 : (r.tr||1)), 0);
-  const nbRT    = allTr.filter(r => r.repas_transat).length;
-  const nbS1    = placed.filter(r=>r.svc==='s1'  &&!r.repas_transat).reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
-  const nbS2    = placed.filter(r=>r.svc==='s2'  &&!r.repas_transat).reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
-  const nbSoir  = placed.filter(r=>r.svc==='soir'&&!r.repas_transat).reduce((s,r)=>s+(r.slot>=1001?2:(r.tr||1)),0);
+  // ── Dimensions en mm, calibrées A4 paysage (marges 7mm×9mm → 283mm utilisables)
+  const W=11, H=9.5, GAP=1.2, ALLEY=5, LBL=14, RGAP=3;
 
-  // N&B : gris différents par service, bordures noires
+  // ── Couleurs (identiques à l'app — tokens.css)
   const C = {
-    s1:   {bg:'#FFFFFF', bd:'#1A1A1A', tx:'#1A1A1A', lbl:'S1',   bw:1.5},
-    s2:   {bg:'#E0E0E0', bd:'#1A1A1A', tx:'#1A1A1A', lbl:'S2',   bw:1.5},
-    soir: {bg:'#B0B0B0', bd:'#1A1A1A', tx:'#111111', lbl:'Soir',  bw:2},
-    rt:   {bg:'#FFFFFF', bd:'#000000', tx:'#000000', lbl:'RT',    bw:2.5},
+    s1:   {bg:'#EDF7F1', bd:'#1A7A3E', tx:'#0D5C2E'},
+    s2:   {bg:'#FEF6E8', bd:'#C47A0A', tx:'#8A5200'},
+    soir: {bg:'#F0EDF9', bd:'#6B48C8', tx:'#3E2590'},
+    rt:   {bg:'#E8F4FD', bd:'#0284C7', tx:'#0A6EA6'},
   };
-
   function cFor(r){
     if(r.repas_transat) return C.rt;
     return C[r.svc] || C.s1;
   }
 
-  function slotLabel(slot){
-    const BED_LBL = {220:'219', 221:'220', 222:'221'};
-    if(BED_SLOTS.includes(slot)) return BED_LBL[slot] || String(slot);
-    const base = Math.floor(slot/100)*100;
-    const pos  = slot - base;
+  // ── Même mapping slot→colonne CSS que l'app (render.js)
+  function sCol(slot){
+    const pos = slot - Math.floor(slot/100)*100;
+    if(pos >= 1 && pos <= 7)  return 1 + pos;   // g-block : cols 2–8
+    if(pos >= 8 && pos <= 13) return 2 + pos;   // m-block : cols 10–15
+    return 3 + pos;                              // d-block : cols 17–24
+  }
+  function sRow(slot){
+    return TR_ROWS.findIndex(r => r.id === Math.floor(slot/100)*100) + 1;
+  }
+  function slotLbl(slot){
+    const BL = {220:'219',221:'220',222:'221'};
+    if(BED_SLOTS.includes(slot)) return BL[slot] || String(slot);
+    const base = Math.floor(slot/100)*100, pos = slot - base;
     if(pos === 13) return (base+12)+'bis';
     if(pos >= 14)  return String(base+pos-1);
     return String(slot);
   }
 
+  // ── Données : slotMap (transats placés)
+  const placed  = reservations.transats.filter(r => r.placed && !r.ns && (r.slot||0) < 1001);
+  const unplcd  = reservations.transats.filter(r => !r.placed && !r.ns);
   const slotMap = {};
-  placed.filter(r => r.slot < 1001).forEach(resa => {
+  placed.forEach(resa => {
+    const isBed = BED_SLOTS.includes(resa.slot);
     const slots = (resa.extraSlots && resa.extraSlots.length)
       ? resa.extraSlots
+      : isBed ? [resa.slot]
       : Array.from({length: resa.tr||1}, (_,i) => (resa.slot||0)+i);
     slots.forEach(s => { if(!slotMap[s]) slotMap[s] = resa; });
   });
-  const salonMap = {};
-  placed.filter(r => r.slot >= 1001 && r.slot <= 1004).forEach(r => { salonMap[r.slot] = r; });
 
-  function slotCell(s, flex){
-    const resa  = slotMap[s];
-    const isBed = BED_SLOTS.includes(s);
-    const lbl   = slotLabel(s);
-    if(!resa){
-      return `<div style="flex:${flex};padding:1px;min-width:0">
-        <div style="height:100%;background:#F7F7F7;border:1px solid #CCCCCC;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:1px">
-          ${isBed?`<div style="font-size:5pt;font-weight:800;color:#AAAAAA">BED</div>`:''}
-          <div style="font-size:5.5pt;font-weight:500;color:#AAAAAA">${lbl}</div>
+  // ── Salons : même source que l'app (résas restaurant placées en salon)
+  const salonResaMap = {};
+  ['s1','s2','soir'].forEach(svc => {
+    (reservations[svc]||[]).forEach(r => {
+      if(r.placed && !r.ns && r.tableId >= 1001 && r.tableId <= 1004){
+        if(!salonResaMap[r.tableId]) salonResaMap[r.tableId] = r;
+      }
+    });
+  });
+  // Aussi les transats placés sur slot salon
+  reservations.transats.filter(r => r.placed && !r.ns && (r.slot||0) >= 1001 && (r.slot||0) <= 1004)
+    .forEach(r => { if(!salonResaMap[r.slot]) salonResaMap[r.slot] = r; });
+
+  // ── Stats
+  const allTr  = reservations.transats.filter(r => !r.ns);
+  const nbSlots = placed.reduce((s,r) => s + (r.tr||1), 0);
+  const nbRT    = allTr.filter(r => r.repas_transat).length;
+  const nbS1    = placed.filter(r => r.svc==='s1'  && !r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const nbS2    = placed.filter(r => r.svc==='s2'  && !r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const nbSoir  = placed.filter(r => r.svc==='soir'&& !r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+
+  // ── Rendu slot vide
+  function emptySlot(slot, gridRow){
+    const isBed = BED_SLOTS.includes(slot);
+    const col   = sCol(slot);
+    const lbl   = slotLbl(slot);
+    return `<div style="grid-column:${col};grid-row:${gridRow};background:#F5F5F5;border:1px solid #E5E5E5;border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
+      ${isBed ? `<div style="font-size:3.5pt;font-weight:800;color:#AAAAAA;line-height:1.1">BED</div>` : ''}
+      <div style="font-size:4pt;color:#AAAAAA;font-weight:500;line-height:1">${lbl}</div>
+    </div>`;
+  }
+
+  // ── Rendu bloc resa (N slots contigus, même rangée — identique à l'app avec SVG)
+  function resaBlock(resa, cMin, cMax, gridRow){
+    const N     = cMax - cMin + 1;
+    const svgW  = (N * W + (N-1) * GAP).toFixed(2);
+    const svgH  = H;
+    const c     = cFor(resa);
+    const totalTr = resa.tr || N;
+    const fs    = N >= 3 ? '6pt' : '5pt';
+
+    const outlines = Array.from({length:N}, (_,i) => {
+      const x = (i * (W + GAP) + 0.4).toFixed(2);
+      return `<rect x="${x}" y="0.4" width="${(W-0.8).toFixed(2)}" height="${(svgH-0.8).toFixed(2)}" rx="2.2" fill="none" stroke="${c.bd}" stroke-width="0.4" opacity="0.28"/>`;
+    }).join('');
+
+    return `<div style="grid-column:${cMin}/${cMax+1};grid-row:${gridRow};position:relative;overflow:hidden;border-radius:3px">
+      <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${svgW} ${svgH}" preserveAspectRatio="none" style="position:absolute;inset:0;display:block">
+        <rect x="0" y="0" width="${svgW}" height="${svgH}" rx="2.5" fill="${c.bg}"/>
+        ${outlines}
+        <rect x="0.4" y="0.4" width="${(+svgW-0.8).toFixed(2)}" height="${(svgH-0.8).toFixed(2)}" rx="2.2" fill="none" stroke="${c.bd}" stroke-width="0.6"/>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 1.5mm">
+        <div style="text-align:center;min-width:0;width:100%">
+          <div style="font-size:${fs};font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2">${resa.name}</div>
+          <div style="font-size:4.5pt;font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${totalTr}</div>
         </div>
-      </div>`;
-    }
-    const c  = cFor(resa);
-    const fs = flex >= 6 ? '11pt' : flex >= 4 ? '9.5pt' : flex >= 2 ? '8pt' : '6.5pt';
-    const f2 = flex >= 6 ? '9.5pt': flex >= 4 ? '8.5pt' : flex >= 2 ? '7pt' : '6pt';
-    // Badge : fond noir texte blanc pour lisibilité N&B
-    const bdgBg = c.lbl==='S1' ? '#555' : '#111';
-    return `<div style="flex:${flex};padding:1px;min-width:0">
-      <div style="height:100%;background:${c.bg};border:${c.bw}px solid ${c.bd};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
-        <div style="font-size:${fs};font-weight:700;color:${c.tx};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.15">${resa.name}</div>
-        <div style="font-size:${f2};font-weight:700;color:${c.tx};line-height:1">x${resa.tr||1}</div>
-        <span style="font-size:5pt;font-weight:800;background:${bdgBg};color:#fff;padding:0 4px;border-radius:3px;line-height:1.5">${c.lbl}</span>
       </div>
     </div>`;
   }
 
-  function renderBlock(slots){
-    let html=''; let i=0;
-    while(i < slots.length){
-      const s=slots[i], resa=slotMap[s];
-      if(!resa){ html+=slotCell(s,1); i++; }
-      else {
-        let j=i+1;
-        while(j<slots.length && slotMap[slots[j]]===resa) j++;
-        html+=slotCell(s,j-i); i=j;
+  // ── Rendu salon (en longueur, même style que l'app)
+  function salonCell(salon, gridRow){
+    const r  = salonResaMap[salon.id];
+    const gc = salon.gridCol;                          // ex: '10 / 12'
+    const N  = parseInt(gc.split('/')[1]) - parseInt(gc.split('/')[0]);
+    if(r){
+      const c = cFor(r);
+      const svgW = (N * W + (N-1) * GAP).toFixed(2);
+      const outlines = Array.from({length:N}, (_,i) => {
+        const x = (i*(W+GAP)+0.4).toFixed(2);
+        return `<rect x="${x}" y="0.4" width="${(W-0.8).toFixed(2)}" height="${(H-0.8).toFixed(2)}" rx="2.2" fill="none" stroke="${c.bd}" stroke-width="0.4" opacity="0.28"/>`;
+      }).join('');
+      return `<div style="grid-column:${gc};grid-row:${gridRow};position:relative;overflow:hidden;border-radius:3px">
+        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${svgW} ${H}" preserveAspectRatio="none" style="position:absolute;inset:0;display:block">
+          <rect x="0" y="0" width="${svgW}" height="${H}" rx="2.5" fill="${c.bg}"/>
+          ${outlines}
+          <rect x="0.4" y="0.4" width="${(+svgW-0.8).toFixed(2)}" height="${(H-0.8).toFixed(2)}" rx="2.2" fill="none" stroke="${c.bd}" stroke-width="0.6"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:0 1.5mm">
+          <div style="text-align:center;min-width:0;width:100%">
+            <div style="font-size:3.5pt;font-weight:700;color:${c.tx};opacity:.7;text-transform:uppercase;letter-spacing:.05em;line-height:1">${salon.lbl}</div>
+            <div style="font-size:5.5pt;font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2">${r.name}</div>
+            <div style="font-size:4.5pt;font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${r.tr||r.pax||2}</div>
+          </div>
+        </div>
+      </div>`;
+    }
+    return `<div style="grid-column:${gc};grid-row:${gridRow};background:#F5F5F5;border:1px dashed #CCCCCC;border-radius:3px;display:flex;align-items:center;justify-content:center">
+      <div style="font-size:4.5pt;color:#AAAAAA;font-weight:600;text-align:center;line-height:1.4">${salon.lbl}<br><span style="font-size:3.5pt">libre</span></div>
+    </div>`;
+  }
+
+  // ── Construction de la grille HTML
+  let cells = '';
+
+  TR_ROWS.forEach((row, ri) => {
+    const rb      = row.id;
+    const gridRow = ri + 1;
+    const lblCol  = row.sea ? '#0284C7' : '#555';
+
+    // Label rangée
+    cells += `<div style="grid-column:1;grid-row:${gridRow};display:flex;align-items:center;justify-content:flex-end;padding-right:2.5mm">
+      <span style="font-size:6.5pt;font-weight:800;color:${lblCol};font-family:monospace">${rb}</span>
+    </div>`;
+
+    if(rb === 100){
+      // BED slots uniquement dans le g-block (101–103)
+      for(let slot = 101; slot <= 103; slot++){
+        const resa = slotMap[slot];
+        cells += resa ? resaBlock(resa, sCol(slot), sCol(slot), gridRow)
+                      : emptySlot(slot, gridRow);
+      }
+      // Salons 1001–1004 en longueur
+      SALON_SLOTS.forEach(s => { cells += salonCell(s, gridRow); });
+      return;
+    }
+
+    // Rangées normales : parcours par bloc g/m/d
+    for(const blk of ['g','m','d']){
+      const slots = trSlots(rb)[blk];
+      let i = 0;
+      while(i < slots.length){
+        const s    = slots[i];
+        const resa = slotMap[s];
+        if(!resa){
+          cells += emptySlot(s, gridRow);
+          i++;
+        } else {
+          let j = i+1;
+          while(j < slots.length && slotMap[slots[j]] === resa) j++;
+          const run  = slots.slice(i, j);
+          const cols = run.map(sCol);
+          cells += resaBlock(resa, Math.min(...cols), Math.max(...cols), gridRow);
+          i = j;
+        }
       }
     }
-    return `<div style="display:flex;flex:${slots.length};height:100%">${html}</div>`;
-  }
+  });
 
-  function salonCell(id, flex){
-    const r=salonMap[id], sl=SALON_SLOTS.find(s=>s.id===id);
-    if(r){
-      const c=cFor(r);
-      const bdgBg=c.lbl==='S1'?'#555':'#111';
-      return `<div style="flex:${flex};padding:1px;min-width:0">
-        <div style="height:100%;background:${c.bg};border:${c.bw}px solid ${c.bd};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
-          <div style="font-size:8pt;font-weight:700;color:${c.tx};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.15">${r.name}</div>
-          <div style="font-size:7.5pt;font-weight:700;color:${c.tx}">x${r.tr||2}</div>
-          <span style="font-size:5pt;font-weight:800;background:${bdgBg};color:#fff;padding:0 4px;border-radius:3px;line-height:1.5">${c.lbl}</span>
-        </div>
-      </div>`;
-    }
-    return `<div style="flex:${flex};padding:1px;min-width:0">
-      <div style="height:100%;background:#F7F7F7;border:1px solid #CCCCCC;border-radius:7px;display:flex;align-items:center;justify-content:center">
-        <div style="font-size:5.5pt;color:#AAAAAA;font-weight:600;text-align:center">${sl?sl.lbl:id}</div>
-      </div>
-    </div>`;
-  }
-
-  function renderRow100(){
-    const g=[101,102,103,104,105,106,107];
-    const mHtml=`<div style="display:flex;flex:6;height:100%">
-      ${salonCell(1001,2)}${salonCell(1002,2)}
-      <div style="flex:2;padding:1px"><div style="height:100%;background:#F7F7F7;border:1px solid #CCCCCC;border-radius:7px"></div></div>
-    </div>`;
-    const dHtml=`<div style="display:flex;flex:7;height:100%">
-      ${salonCell(1003,2)}${salonCell(1004,2)}
-      <div style="flex:3;padding:1px"><div style="height:100%;background:#F7F7F7;border:1px solid #CCCCCC;border-radius:7px"></div></div>
-    </div>`;
-    return `<div class="row">
-      <div class="row-lbl"><div class="rn">100</div><div class="rs">Resto</div></div>
-      ${renderBlock(g)}<div class="sep"></div>${mHtml}<div class="sep"></div>${dHtml}
-    </div>`;
-  }
-
-  function renderDataRow(rb, sea){
-    const g=[1,2,3,4,5,6,7].map(p=>rb+p);
-    const m=[8,9,10,11,12,13].map(p=>rb+p);
-    const dLen=rb===200?8:7;
-    const d=Array.from({length:dLen},(_,i)=>rb+14+i);
-    return `<div class="row">
-      <div class="row-lbl"${sea?' style="border-right:3px solid #333"':''}>
-        <div class="rn">${rb}</div>
-        <div class="rs">${sea?'⌊Mer⌋':''}</div>
-      </div>
-      ${renderBlock(g)}<div class="sep"></div>${renderBlock(m)}<div class="sep"></div>${renderBlock(d)}
-    </div>`;
-  }
-
-  let unplacedHtml='';
+  // ── Non placés
+  let unplacedHtml = '';
   if(unplcd.length){
-    unplacedHtml=`<div style="border:2px solid #333;border-radius:6px;padding:4px 10px;margin-top:4px">
-      <span style="font-size:8pt;font-weight:800">⚠ Non placés : </span>
-      ${unplcd.map(r=>{const c=cFor(r);return `<span style="font-size:8pt;font-weight:700;margin-right:8px">${r.name} x${r.tr||1}<span style="background:#111;color:#fff;font-size:5pt;font-weight:800;padding:0 3px;border-radius:3px">${c.lbl}</span></span>`;}).join('')}
+    unplacedHtml = `<div style="margin-top:3mm;border:1.5px solid #CC3333;border-radius:4px;padding:2mm 3mm;display:flex;flex-wrap:wrap;gap:2mm;align-items:center">
+      <span style="font-size:6.5pt;font-weight:800;color:#CC3333;flex-shrink:0">⚠ Non placés :</span>
+      ${unplcd.map(r => {
+        const c = cFor(r);
+        return `<span style="font-size:6.5pt;font-weight:700;padding:1px 5px;border-radius:3px;background:${c.bg};color:${c.tx};border:1px solid ${c.bd}">${r.name} x${r.tr||1}</span>`;
+      }).join('')}
     </div>`;
   }
 
-  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
 <title>Plan transats — ${dateStr}</title>
 <style>
-@page { size: A4 landscape; margin: 7mm 9mm; }
-* { box-sizing:border-box; margin:0; padding:0; }
-body { font-family:'Helvetica Neue',Arial,sans-serif; background:#fff; color:#111;
-  -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-.no-print { padding:7px 0 5px }
-@media print { .no-print { display:none !important; } }
-.btn { padding:5px 14px; background:#111; color:#fff; border:none; border-radius:6px;
-  font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; margin-right:5px; }
-.hd { display:flex; justify-content:space-between; align-items:center;
-  padding-bottom:5px; border-bottom:2.5px solid #111; margin-bottom:4px; }
-.date { font-size:15pt; font-weight:700; letter-spacing:-.02em; }
-.stats { display:flex; gap:6px; align-items:center; }
-.stat { border-radius:6px; padding:3px 9px; text-align:center;
-  border:1.5px solid #333; }
-.stat-n { font-size:14pt; font-weight:700; line-height:1; }
-.stat-l { font-size:5.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.07em; opacity:.6; margin-top:1px; }
-.pills { display:flex; gap:3px; }
-.pill { font-size:8pt; font-weight:800; padding:3px 9px; border-radius:10px;
-  border:1.5px solid #333; background:#fff; color:#111; }
-.bar { color:#fff; background:#333; border-radius:5px; text-align:center;
-  font-size:7pt; font-weight:800; letter-spacing:.12em; text-transform:uppercase;
-  padding:3px 0; margin:3px 0; }
-.grid { display:grid; grid-template-rows:repeat(5,1fr);
-  height:148mm; border:2px solid #333; border-radius:8px; overflow:hidden; }
-.row { display:flex; align-items:stretch; border-bottom:1px solid #CCCCCC; overflow:hidden; }
-.row:last-child { border-bottom:none; }
-.row-lbl { width:38px; flex-shrink:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  border-right:2px solid #333; padding:2px; background:#EEEEEE; }
-.rn { font-size:9pt; font-weight:800; color:#111; line-height:1; }
-.rs { font-size:5pt; font-weight:600; color:#666; margin-top:1px; }
-.sep { width:4px; flex-shrink:0; background:#EEEEEE;
-  border-left:1px dashed #AAAAAA; border-right:1px dashed #AAAAAA; }
-/* Légende en bas à droite de l'en-tête */
-.legend { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
-.leg { display:flex; align-items:center; gap:3px; font-size:7pt; font-weight:600; color:#333; }
-.leg-box { width:14px; height:10px; border-radius:2px; border:1.5px solid #333; }
+@page{size:A4 landscape;margin:7mm 9mm}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.no-print{padding:5px 0 4px}
+@media print{.no-print{display:none!important}}
+.btn{padding:4px 12px;background:#111;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:4px}
+.hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:2.5mm;border-bottom:1.5px solid #222;margin-bottom:2.5mm}
+.grid{display:grid;grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(8,${W}mm);grid-template-rows:repeat(5,${H}mm);column-gap:${GAP}mm;row-gap:${RGAP}mm}
+.sea{text-align:center;font-size:6.5pt;font-weight:700;letter-spacing:.1em;color:#0284C7;margin-top:2.5mm;border-top:1px solid #E0E0E0;padding-top:2mm}
 </style></head><body>
 <div class="no-print">
   <button class="btn" onclick="window.print()">⎙ Imprimer</button>
   <button class="btn" style="background:#555" onclick="window.close()">✕ Fermer</button>
 </div>
 <div class="hd">
-  <div>
-    <div class="date">⛱ ${dateStr}</div>
-    <div class="legend" style="margin-top:3px">
-      <div class="leg"><div class="leg-box" style="background:#fff"></div>S1</div>
-      <div class="leg"><div class="leg-box" style="background:#E0E0E0"></div>S2</div>
-      <div class="leg"><div class="leg-box" style="background:#B0B0B0"></div>Soir</div>
-      <div class="leg"><div class="leg-box" style="background:#fff;border-width:2.5px"></div>RT</div>
+  <div style="display:flex;align-items:center;gap:3mm">
+    <div style="font-size:12pt;font-weight:700">⛱ ${dateStr}</div>
+    <div style="display:flex;gap:2mm;align-items:center">
+      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:9px;height:9px;background:#EDF7F1;border:1px solid #1A7A3E;border-radius:1px;display:inline-block"></span>S1</span>
+      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:9px;height:9px;background:#FEF6E8;border:1px solid #C47A0A;border-radius:1px;display:inline-block"></span>S2</span>
+      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:9px;height:9px;background:#F0EDF9;border:1px solid #6B48C8;border-radius:1px;display:inline-block"></span>Soir</span>
+      <span style="font-size:4.5pt;display:inline-flex;align-items:center;gap:1mm"><span style="width:9px;height:9px;background:#E8F4FD;border:1px solid #0284C7;border-radius:1px;display:inline-block"></span>RT</span>
     </div>
   </div>
-  <div class="stats">
-    <div class="stat"><div class="stat-n">${nbSlots}</div><div class="stat-l">transats</div></div>
-    <div class="stat"><div class="stat-n">${nbRT}</div><div class="stat-l">RT</div></div>
-    <div class="pills">
-      ${nbS1   ?`<span class="pill">S1 · ${nbS1}</span>`  :''}
-      ${nbS2   ?`<span class="pill" style="background:#E0E0E0">S2 · ${nbS2}</span>`  :''}
-      ${nbSoir ?`<span class="pill" style="background:#B0B0B0">Soir · ${nbSoir}</span>`:''}
+  <div style="display:flex;align-items:center;gap:3mm;flex-wrap:wrap">
+    <div style="text-align:center;border:1.5px solid #333;border-radius:5px;padding:1.5mm 3mm">
+      <div style="font-size:11pt;font-weight:700;line-height:1">${nbSlots}</div>
+      <div style="font-size:4pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.6;margin-top:0.5mm">transats</div>
     </div>
-    ${unplcd.length?`<div class="stat" style="border-color:#333"><div class="stat-n">⚠${unplcd.length}</div><div class="stat-l">non placés</div></div>`:''}
+    <div style="text-align:center;border:1.5px solid #333;border-radius:5px;padding:1.5mm 3mm">
+      <div style="font-size:11pt;font-weight:700;line-height:1">${nbRT}</div>
+      <div style="font-size:4pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.6;margin-top:0.5mm">RT</div>
+    </div>
+    <div style="display:flex;gap:1.5mm;flex-wrap:wrap">
+      ${nbS1   ? `<span style="font-size:5.5pt;font-weight:800;padding:1.5mm 3mm;border-radius:8px;background:#EDF7F1;border:1px solid #1A7A3E;color:#0D5C2E">S1 · ${nbS1}</span>` : ''}
+      ${nbS2   ? `<span style="font-size:5.5pt;font-weight:800;padding:1.5mm 3mm;border-radius:8px;background:#FEF6E8;border:1px solid #C47A0A;color:#8A5200">S2 · ${nbS2}</span>` : ''}
+      ${nbSoir ? `<span style="font-size:5.5pt;font-weight:800;padding:1.5mm 3mm;border-radius:8px;background:#F0EDF9;border:1px solid #6B48C8;color:#3E2590">Soir · ${nbSoir}</span>` : ''}
+    </div>
+    ${unplcd.length ? `<div style="text-align:center;border:1.5px solid #CC3333;border-radius:5px;padding:1.5mm 3mm;color:#CC3333"><div style="font-size:11pt;font-weight:700;line-height:1">⚠${unplcd.length}</div><div style="font-size:4pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.8;margin-top:0.5mm">non placés</div></div>` : ''}
   </div>
 </div>
-<div class="bar">▲ RESTAURANT</div>
-<div class="grid">
-  ${renderRow100()}
-  ${TR_ROWS.filter(r=>r.id!==100).map(r=>renderDataRow(r.id,r.sea)).join('')}
-</div>
-<div class="bar">〰 MER MÉDITERRANÉE 〰</div>
+<div class="grid">${cells}</div>
+<div class="sea">〰 MER MÉDITERRANÉE 〰</div>
 ${unplacedHtml}
 </body></html>`;
 
