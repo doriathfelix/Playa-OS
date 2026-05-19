@@ -236,14 +236,17 @@ function printTransats(){
 
   const placed = reservations.transats.filter(r=>r.placed&&!r.ns&&(r.slot||0)<1001);
   const unplcd = reservations.transats.filter(r=>!r.placed&&!r.ns);
-  const slotMap={};
-  placed.forEach(resa=>{
+
+  // slotIdxMap : slot → index dans placed (entier, pas objet → comparaison fiable)
+  const slotIdxMap={};
+  placed.forEach((resa,idx)=>{
     const isBed=BED_SLOTS.includes(resa.slot);
     const slots=(resa.extraSlots&&resa.extraSlots.length)?resa.extraSlots
       :isBed?[resa.slot]
       :Array.from({length:resa.tr||1},(_,i)=>(resa.slot||0)+i);
-    slots.forEach(s=>{if(!slotMap[s])slotMap[s]=resa;});
+    slots.forEach(s=>{ if(slotIdxMap[s]===undefined) slotIdxMap[s]=idx; });
   });
+
   const salonResaMap={};
   ['s1','s2','soir'].forEach(svc=>{
     (reservations[svc]||[]).forEach(r=>{
@@ -269,14 +272,11 @@ function printTransats(){
     </div>`;
   }
 
-  // Bloc resa — couvre rowMin->rowMax en grid-row (multi-rangee = 1 seul bloc)
   function resaBlock(resa, cMin, cMax, rowMin, rowMax){
     const nCols=cMax-cMin+1, nRows=rowMax-rowMin+1;
     const c=cFor(resa);
     const tot=resa.tr||nCols;
     const totalW=nCols*W+(nCols-1)*GAP;
-
-    // Outlines individuels uniquement pour les blocs mono-rangee
     let slotOutlines='';
     if(nRows===1){
       slotOutlines=Array.from({length:nCols},(_,i)=>{
@@ -285,11 +285,9 @@ function printTransats(){
         return `<div style="position:absolute;left:${lPct}%;top:5%;width:${wPct}%;height:90%;border:0.35pt solid #C0C0C0;border-radius:1mm;pointer-events:none"></div>`;
       }).join('');
     }
-
     const fsName=nCols>=5?'8.5pt':nCols>=3?'7pt':nCols>=2?'6pt':'4.5pt';
     const fsCnt =nCols>=3?'7.5pt':nCols>=2?'6.5pt':'5.5pt';
     const fsLbl =nCols>=4?'8pt':nCols>=2?'7pt':'6pt';
-
     return `<div style="grid-column:${cMin}/${cMax+1};grid-row:${rowMin}/${rowMax+1};position:relative;overflow:hidden;border-radius:1.5mm;background:${c.bg};border:${c.bw} solid #222">
       ${slotOutlines}
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8mm;padding:2mm 1.5mm;z-index:1">
@@ -326,24 +324,25 @@ function printTransats(){
     </div>`;
   }
 
-  // Calcul des rectangles de reservation (multi-rangee = 1 seul bloc)
-  const resaRegions=new Map();
+  // Rectangles englobants par index de reservation (indices numériques = pas de pb de référence)
+  const resaRegions=placed.map(()=>null); // [idx] = {cMin,cMax,rowMin,rowMax} ou null
+
   TR_ROWS.forEach((row,ri)=>{
     const rb=row.id, gridRow=ri+1;
     if(rb===100) return;
     for(const blk of ['g','m','d']){
       const bSlots=trSlots(rb)[blk]; let i=0;
       while(i<bSlots.length){
-        const s=bSlots[i], resa=slotMap[s];
-        if(!resa){i++;continue;}
+        const s=bSlots[i], idx=slotIdxMap[s];
+        if(idx===undefined){i++;continue;}
         let j=i+1;
-        while(j<bSlots.length&&slotMap[bSlots[j]]===resa)j++;
+        while(j<bSlots.length && slotIdxMap[bSlots[j]]===idx) j++;
         const cols=bSlots.slice(i,j).map(sCol);
         const cMin=Math.min(...cols), cMax=Math.max(...cols);
-        if(!resaRegions.has(resa)){
-          resaRegions.set(resa,{cMin,cMax,rowMin:gridRow,rowMax:gridRow});
+        if(!resaRegions[idx]){
+          resaRegions[idx]={cMin,cMax,rowMin:gridRow,rowMax:gridRow};
         } else {
-          const reg=resaRegions.get(resa);
+          const reg=resaRegions[idx];
           reg.cMin=Math.min(reg.cMin,cMin); reg.cMax=Math.max(reg.cMax,cMax);
           reg.rowMin=Math.min(reg.rowMin,gridRow); reg.rowMax=Math.max(reg.rowMax,gridRow);
         }
@@ -352,17 +351,18 @@ function printTransats(){
     }
   });
 
-  // Cellules couvertes par des blocs multi-rangee
+  // Cellules couvertes par des blocs s'étendant sur plusieurs rangées
   const coveredCells=new Set();
-  resaRegions.forEach(({cMin,cMax,rowMin,rowMax})=>{
-    for(let r=rowMin;r<=rowMax;r++)
-      for(let c=cMin;c<=cMax;c++)
+  resaRegions.forEach(reg=>{
+    if(!reg) return;
+    for(let r=reg.rowMin;r<=reg.rowMax;r++)
+      for(let c=reg.cMin;c<=reg.cMax;c++)
         coveredCells.add(`${r}:${c}`);
   });
 
   let cells='';
 
-  // Labels de rangee + slots vides (en sautant les cellules couvertes)
+  // Labels de rangée + slots vides
   TR_ROWS.forEach((row,ri)=>{
     const rb=row.id, gridRow=ri+1;
     cells+=`<div style="grid-column:1;grid-row:${gridRow};display:flex;align-items:center;justify-content:flex-end;padding-right:2.5mm">
@@ -370,15 +370,15 @@ function printTransats(){
     </div>`;
     if(rb===100){
       for(let s=101;s<=103;s++){
-        const resa=slotMap[s];
-        cells+=resa?resaBlock(resa,sCol(s),sCol(s),gridRow,gridRow):emptySlot(s,gridRow);
+        const idx=slotIdxMap[s];
+        cells+=idx!==undefined?resaBlock(placed[idx],sCol(s),sCol(s),gridRow,gridRow):emptySlot(s,gridRow);
       }
       SALON_SLOTS.forEach(sl=>{cells+=salonCell(sl,gridRow);});
       return;
     }
     for(const blk of ['g','m','d']){
       trSlots(rb)[blk].forEach(s=>{
-        if(!slotMap[s]){
+        if(slotIdxMap[s]===undefined){
           const col=sCol(s);
           if(!coveredCells.has(`${gridRow}:${col}`)) cells+=emptySlot(s,gridRow);
         }
@@ -386,19 +386,17 @@ function printTransats(){
     }
   });
 
-  // Blocs de reservation (chacun rendu une seule fois)
-  const rendered=new Set();
-  resaRegions.forEach(({cMin,cMax,rowMin,rowMax},resa)=>{
-    if(rendered.has(resa)) return;
-    rendered.add(resa);
-    cells+=resaBlock(resa,cMin,cMax,rowMin,rowMax);
+  // Blocs de réservation — un seul bloc par resa, potentiellement multi-rangée
+  resaRegions.forEach((reg,idx)=>{
+    if(!reg) return;
+    cells+=resaBlock(placed[idx],reg.cMin,reg.cMax,reg.rowMin,reg.rowMax);
   });
 
   let unplacedHtml='';
   if(unplcd.length){
     unplacedHtml=`<div style="margin-top:2mm;border:0.6pt solid #555;border-radius:1.5mm;padding:1.5mm 3mm;display:flex;flex-wrap:wrap;gap:1.5mm;align-items:center">
       <span style="font-size:6pt;font-weight:800;flex-shrink:0">&#9888; Non places :</span>
-      ${unplcd.map(r=>{const c=cFor(r);return`<span style="font-size:5.5pt;font-weight:700;padding:0.5mm 2mm;border-radius:1mm;background:${c.bg};border:0.5pt solid #555">${r.name} x${r.tr||1} ${c.lbl}</span>`;}).join('')}
+      ${unplcd.map(r=>{const c=cFor(r);return`<span style="font-size:5.5pt;font-weight:700;padding:0.5mm 2mm;border-radius:1mm;background:#fff;border:0.5pt solid #555">${r.name} x${r.tr||1} ${c.lbl}</span>`;}).join('')}
     </div>`;
   }
 
