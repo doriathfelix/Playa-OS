@@ -389,7 +389,9 @@ function zcToResa(b){
   const isRepasTransat = typeExp.toLowerCase().includes('transat');
   // Convention La Playa : uniquement 13h00 pile = repas transat
   const is13h00 = (b.time || '').startsWith('13:00');
-  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || (is13h00 && nbTransats > 0);
+  // Transat mentionné dans les notes (même sans nombre précis) → équivaut à avoir des transats
+  const mentionsTransatsInText = nbTransats > 0 || /\btransats?\b/i.test(allTextFields);
+  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || (is13h00 && mentionsTransatsInText);
 
   // Heure : "13:00" -> "13h00"
   const timeRaw = b.time || '12:00';
@@ -447,7 +449,7 @@ function zcToResa(b){
       tags: [],
       svc: svcFinal,
       repas_transat: isRepasTransatFinal,
-      tr: nbTransats > 0 ? nbTransats : null,
+      tr: nbTransats > 0 ? nbTransats : (isRepasTransatFinal ? (b.nb_guests || 1) : null),
       ns,
       zenchef_status,
       waiting: b.phase === 'waiting_list',
