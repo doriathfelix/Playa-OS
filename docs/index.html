@@ -4642,7 +4642,6 @@ ${unplacedHtml}
 function printTransats(){
   const dateStr = fmtDateLong(currentDate);
 
-  // ── Stats
   const allTr  = reservations.transats.filter(r => !r.ns);
   const placed = allTr.filter(r => r.placed);
   const unplcd = allTr.filter(r => !r.placed);
@@ -4660,9 +4659,6 @@ function printTransats(){
   const BED_C = {bg:'#FEF3C7', bd:'#D97706', tx:'#92400E', lbl:'BED'};
   const RT_BD = '#0D9488';
 
-  function cFor(r){ return BED_SLOTS.includes(r.slot) ? BED_C : (SVC[r.svc] || SVC.s1); }
-
-  // slot → resa
   const slotMap = {};
   placed.filter(r => r.slot < 1001).forEach(resa => {
     const slots = (resa.extraSlots && resa.extraSlots.length)
@@ -4673,118 +4669,115 @@ function printTransats(){
   const salonMap = {};
   placed.filter(r => r.slot >= 1001 && r.slot <= 1004).forEach(r => { salonMap[r.slot] = r; });
 
-  function emptyCell(slotNum, label, isBed){
-    const bg = isBed ? '#FFFBEB' : '#FAFAFA';
-    const bc = isBed ? '#FCD34D' : '#E5E7EB';
-    const tx = isBed ? '#D97706' : '#D1D5DB';
-    return `<td style="background:${bg};border:1px solid ${bc};text-align:center;vertical-align:middle;padding:2px;overflow:hidden">
-      ${isBed ? `<div style="font-size:6pt;font-weight:800;color:${tx}">BED</div>` : ''}
-      <div style="font-size:6pt;color:${tx}">${label}</div>
-    </td>`;
-  }
+  function cFor(r){ return BED_SLOTS.includes(r.slot) ? BED_C : (SVC[r.svc] || SVC.s1); }
 
-  function resaCell(resa, colspan){
-    const c   = cFor(resa);
+  function slotCell(s, flex){
+    const resa = slotMap[s];
+    const isBed = BED_SLOTS.includes(s);
+    if(!resa){
+      const bg = isBed ? '#FEF3C7' : '#F9FAFB';
+      const bc = isBed ? '#FCD34D' : '#E5E7EB';
+      const tx = isBed ? '#D97706' : '#D1D5DB';
+      return `<div style="flex:${flex};padding:1px;min-width:0">
+        <div style="height:100%;background:${bg};border:1px solid ${bc};border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:1px">
+          ${isBed ? `<div style="font-size:5.5pt;font-weight:800;color:${tx}">BED</div>` : ''}
+          <div style="font-size:5pt;color:${tx}">${s}</div>
+        </div>
+      </div>`;
+    }
+    const c  = cFor(resa);
     const nom = resa.name.split(' ')[0];
     const tr  = resa.tr || 1;
-    const rt  = resa.repas_transat
-      ? `<span style="background:${RT_BD};color:#fff;font-size:6pt;font-weight:800;padding:1px 4px;border-radius:6px;margin-left:2px">RT</span>` : '';
-    return `<td colspan="${colspan}" style="background:${c.bg};border:2px solid ${c.bd};text-align:center;vertical-align:middle;padding:3px 2px;overflow:hidden">
-      <div style="font-size:11pt;font-weight:900;color:${c.tx};line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${nom}</div>
-      <div style="font-size:9pt;font-weight:900;color:${c.tx};margin:1px 0">×${tr}</div>
-      <div><span style="background:${c.bd};color:#fff;font-size:6pt;font-weight:800;padding:1px 5px;border-radius:6px">${c.lbl}</span>${rt}</div>
-    </td>`;
+    const rt  = resa.repas_transat ? `<span style="background:${RT_BD};color:#fff;font-size:4.5pt;font-weight:800;padding:0 2px;border-radius:2px">RT</span>` : '';
+    const fs  = flex >= 6 ? '12pt' : flex >= 4 ? '10pt' : flex >= 2 ? '8pt' : '6.5pt';
+    const fs2 = flex >= 6 ? '11pt' : flex >= 4 ? '9pt'  : flex >= 2 ? '7pt' : '6pt';
+    return `<div style="flex:${flex};padding:1px;min-width:0">
+      <div style="height:100%;background:${c.bg};border:2px solid ${c.bd};border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
+        <div style="font-size:${fs};font-weight:900;color:${c.tx};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.1">${nom}</div>
+        <div style="font-size:${fs2};font-weight:900;color:${c.tx};line-height:1">×${tr}</div>
+        <div style="display:flex;gap:2px;align-items:center">
+          <span style="background:${c.bd};color:#fff;font-size:4.5pt;font-weight:800;padding:0 3px;border-radius:3px">${c.lbl}</span>${rt}
+        </div>
+      </div>
+    </div>`;
   }
 
-  const allee = `<td style="width:6px;min-width:6px;max-width:6px;background:#fff;border:none;padding:0"></td>`;
-
-  function renderBlock(slots, labels){
+  function renderBlock(slots){
     let html = ''; let i = 0;
     while(i < slots.length){
       const s = slots[i];
       const resa = slotMap[s];
-      const isBed = BED_SLOTS.includes(s);
-      if(!resa){ html += emptyCell(s, labels[i], isBed); i++; }
+      if(!resa){ html += slotCell(s, 1); i++; }
       else {
         let j = i + 1;
         while(j < slots.length && slotMap[slots[j]] === resa) j++;
-        html += resaCell(resa, j - i);
+        html += slotCell(s, j - i);
         i = j;
       }
     }
-    return html;
+    return `<div style="display:flex;flex:${slots.length};height:100%">${html}</div>`;
   }
 
-  function colHead(labels, color){
-    return labels.map(l=>`<th style="font-size:6.5pt;font-weight:700;color:${color};text-align:center;padding:1px 0;background:#fff;border:none">${l}</th>`).join('');
+  function salonCell(id, flex){
+    const r  = salonMap[id];
+    const sl = SALON_SLOTS.find(s => s.id === id);
+    if(r){
+      const c = SVC[r.svc]||SVC.s1; const nom=r.name.split(' ')[0]; const tr=r.tr||2;
+      return `<div style="flex:${flex};padding:1px;min-width:0">
+        <div style="height:100%;background:${c.bg};border:2px solid ${c.bd};border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
+          <div style="font-size:8pt;font-weight:900;color:${c.tx};text-align:center;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${nom}</div>
+          <div style="font-size:7.5pt;font-weight:900;color:${c.tx}">×${tr}</div>
+          <div><span style="background:${c.bd};color:#fff;font-size:4.5pt;font-weight:800;padding:0 3px;border-radius:3px">${c.lbl}</span></div>
+        </div>
+      </div>`;
+    }
+    return `<div style="flex:${flex};padding:1px;min-width:0">
+      <div style="height:100%;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:5px;display:flex;align-items:center;justify-content:center">
+        <div style="font-size:5.5pt;color:#9CA3AF;font-weight:600;text-align:center">${sl?sl.lbl:id}</div>
+      </div>
+    </div>`;
   }
 
-  const G_LBL = ['1','2','3','4','5','6','7'];
-  const M_LBL = ['8','9','10','11','12','12bis'];
-  const D_LBL = ['13','14','15','16','17','18','19','20'];
-
-  // Rangée 100 : BEDs + salons
   function renderRow100(){
-    const bedHtml = [101,102,103].map(s => {
-      const r = slotMap[s];
-      return r ? resaCell(r,1) : emptyCell(s,'BED',true);
-    }).join('');
-    const salonHtml = SALON_SLOTS.map(sl => {
-      const r = salonMap[sl.id];
-      if(r){ const c=cFor(r); const nom=r.name.split(' ')[0]; const tr=r.tr||2;
-        return `<td colspan="2" style="background:${c.bg};border:2px solid ${c.bd};text-align:center;vertical-align:middle;padding:3px">
-          <div style="font-size:10pt;font-weight:900;color:${c.tx}">${nom}</div>
-          <div style="font-size:8.5pt;font-weight:900;color:${c.tx}">×${tr}</div>
-          <div><span style="background:${c.bd};color:#fff;font-size:6pt;font-weight:800;padding:1px 5px;border-radius:6px">${c.lbl}</span></div>
-        </td>`;
-      }
-      return `<td colspan="2" style="background:#F9FAFB;border:1px solid #E5E7EB;text-align:center;vertical-align:middle"><div style="font-size:6.5pt;color:#9CA3AF;font-weight:600">${sl.lbl}</div></td>`;
-    }).join('');
-    return `<tr>
-      <td rowspan="2" style="background:#F3F4F6;text-align:center;vertical-align:middle;padding:4px 5px;border:1px solid #D1D5DB">
+    const g = [101,102,103,104,105,106,107];
+    const mHtml = `<div style="display:flex;flex:6;height:100%">
+      ${salonCell(1001,2)}${salonCell(1002,2)}
+      <div style="flex:2;padding:1px"><div style="height:100%;background:#F9FAFB;border:1px solid #F3F4F6;border-radius:5px"></div></div>
+    </div>`;
+    const dHtml = `<div style="display:flex;flex:7;height:100%">
+      ${salonCell(1003,2)}${salonCell(1004,2)}
+      <div style="flex:3;padding:1px"><div style="height:100%;background:#F9FAFB;border:1px solid #F3F4F6;border-radius:5px"></div></div>
+    </div>`;
+    return `<div class="row">
+      <div class="row-lbl" style="background:#F3F4F6">
         <div style="font-size:8.5pt;font-weight:900;color:#374151">100</div>
-        <div style="font-size:6pt;color:#9CA3AF">Resto</div>
-      </td>
-      <th colspan="3" style="font-size:6.5pt;color:#D97706;font-weight:700;text-align:center;padding:1px;background:#fff;border:none">BEDs</th>
-      ${allee}
-      <th colspan="8" style="font-size:6.5pt;color:#6B7280;font-weight:700;text-align:center;padding:1px;background:#fff;border:none">Salons</th>
-      ${allee}
-      <th colspan="8" style="border:none;background:#fff"></th>
-    </tr><tr>
-      ${bedHtml}${allee}${salonHtml}${allee}
-      <td colspan="8" style="background:#F9FAFB;border:1px solid #F3F4F6"></td>
-    </tr>`;
+        <div style="font-size:5pt;color:#6B7280">Resto</div>
+      </div>
+      ${renderBlock(g)}<div class="sep"></div>${mHtml}<div class="sep"></div>${dHtml}
+    </div>`;
   }
 
   function renderDataRow(rb, sea){
-    const g = [1,2,3,4,5,6,7].map(p=>rb+p);
-    const m = [8,9,10,11,12,13].map(p=>rb+p);
+    const g    = [1,2,3,4,5,6,7].map(p=>rb+p);
+    const m    = [8,9,10,11,12,13].map(p=>rb+p);
     const dLen = rb===200 ? 8 : 7;
-    const d = Array.from({length:dLen},(_,i)=>rb+14+i);
-    const dLabels = D_LBL.slice(0,dLen);
+    const d    = Array.from({length:dLen},(_,i)=>rb+14+i);
     const rowColor = sea ? '#0D9488' : '#374151';
     const rowBg    = sea ? '#CCFBF1' : '#F3F4F6';
-    return `<tr>
-      <td style="background:${rowBg};text-align:center;vertical-align:middle;padding:4px 5px;border:1px solid #D1D5DB;white-space:nowrap">
-        <div style="font-size:9.5pt;font-weight:900;color:${rowColor}">${rb}</div>
-        ${sea?'<div style="font-size:5.5pt;color:#0D9488">Mer</div>':''}
-      </td>
-      ${renderBlock(g,G_LBL)}${allee}${renderBlock(m,M_LBL)}${allee}${renderBlock(d,dLabels)}
-    </tr>`;
+    return `<div class="row">
+      <div class="row-lbl" style="background:${rowBg}">
+        <div style="font-size:8.5pt;font-weight:900;color:${rowColor}">${rb}</div>
+        ${sea?`<div style="font-size:5pt;color:#0D9488">Mer</div>`:''}
+      </div>
+      ${renderBlock(g)}<div class="sep"></div>${renderBlock(m)}<div class="sep"></div>${renderBlock(d)}
+    </div>`;
   }
-
-  const colHeaders = `<tr>
-    <th style="border:none;background:#fff;width:34px"></th>
-    ${colHead(G_LBL,'#9CA3AF')}${allee}${colHead(M_LBL,'#9CA3AF')}${allee}${colHead(D_LBL,'#9CA3AF')}
-  </tr>`;
 
   let unplacedHtml = '';
   if(unplcd.length){
-    unplacedHtml = `<div style="background:#FFFBEB;border:2px solid #FCD34D;border-radius:7px;padding:7px 12px;margin-top:6px;flex-shrink:0">
-      <span style="font-size:10pt;font-weight:800;color:#92400E">⚠ Non placés : </span>
-      ${unplcd.map(r => { const sc=SVC[r.svc]||{}; return `<span style="font-size:10pt;font-weight:700;color:#78350F;margin-right:12px">${r.name}
-        <span style="background:${sc.bd||'#6B7280'};color:#fff;font-size:7pt;font-weight:800;padding:1px 5px;border-radius:7px">${sc.lbl||'?'}</span>
-        <b style="margin-left:3px">×${r.tr||1}</b></span>`;}).join('')}
+    unplacedHtml = `<div style="background:#FFFBEB;border:1.5px solid #FCD34D;border-radius:6px;padding:4px 10px;margin-top:4px">
+      <span style="font-size:8.5pt;font-weight:800;color:#92400E">⚠ Non placés : </span>
+      ${unplcd.map(r=>{const sc=SVC[r.svc]||{};return `<span style="font-size:8.5pt;font-weight:700;color:#78350F;margin-right:8px">${r.name} <span style="background:${sc.bd||'#6B7280'};color:#fff;font-size:5pt;font-weight:800;padding:0 3px;border-radius:3px">${sc.lbl||'?'}</span> ×${r.tr||1}</span>`;}).join('')}
     </div>`;
   }
 
@@ -4793,28 +4786,33 @@ function printTransats(){
 <style>
 @page { size: A4 landscape; margin: 8mm 10mm; }
 * { box-sizing:border-box; margin:0; padding:0; }
-html,body { height:100%; }
 body { font-family:'Helvetica Neue',Arial,sans-serif; background:#fff; color:#1C1C1E;
-  -webkit-print-color-adjust:exact; print-color-adjust:exact;
-  display:flex; flex-direction:column; }
-.no-print { padding:8px 0 5px; flex-shrink:0 }
+  -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+.no-print { padding:7px 0 5px }
 @media print { .no-print { display:none !important; } }
-.btn { padding:6px 16px; background:#1C1C1E; color:#fff; border:none; border-radius:7px;
-  font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; margin-right:6px; }
+.btn { padding:5px 14px; background:#1C1C1E; color:#fff; border:none; border-radius:6px;
+  font-size:12px; font-weight:700; cursor:pointer; font-family:inherit; margin-right:5px; }
 .hd { display:flex; justify-content:space-between; align-items:center;
-  padding-bottom:6px; border-bottom:2.5px solid #1C1C1E; margin-bottom:6px; flex-shrink:0 }
-.date { font-size:15pt; font-weight:900; letter-spacing:-.02em; }
-.stats { display:flex; gap:7px; align-items:center; }
-.stat { border-radius:7px; padding:3px 10px; text-align:center; }
-.stat-n { font-size:16pt; font-weight:900; line-height:1; }
-.stat-l { font-size:6.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.07em; opacity:.75; }
-.pills { display:flex; gap:4px; }
-.pill { font-size:9.5pt; font-weight:800; padding:3px 9px; border-radius:12px; color:#fff; }
-.bar { color:#fff; border-radius:5px; text-align:center; font-size:7.5pt; font-weight:800;
-  letter-spacing:.1em; text-transform:uppercase; padding:3px 0; margin:4px 0; flex-shrink:0 }
-.wrap { flex:1; min-height:0; }
-table { width:100%; border-collapse:collapse; height:100%; table-layout:fixed; }
-td,th { overflow:hidden; }
+  padding-bottom:5px; border-bottom:2.5px solid #1C1C1E; margin-bottom:4px; }
+.date { font-size:14pt; font-weight:900; letter-spacing:-.02em; }
+.stats { display:flex; gap:5px; align-items:center; }
+.stat { border-radius:6px; padding:2px 8px; text-align:center; }
+.stat-n { font-size:13pt; font-weight:900; line-height:1; }
+.stat-l { font-size:5.5pt; font-weight:700; text-transform:uppercase; letter-spacing:.07em; opacity:.75; }
+.pills { display:flex; gap:3px; }
+.pill { font-size:8.5pt; font-weight:800; padding:3px 8px; border-radius:10px; color:#fff; }
+.bar { color:#fff; border-radius:5px; text-align:center; font-size:7pt; font-weight:800;
+  letter-spacing:.1em; text-transform:uppercase; padding:2px 0; margin:3px 0; }
+.grid { display:grid; grid-template-rows:repeat(5,1fr);
+  height:148mm;
+  border:1px solid #D1D5DB; border-radius:8px; overflow:hidden; }
+.row { display:flex; align-items:stretch; border-bottom:1px solid #E5E7EB; overflow:hidden; }
+.row:last-child { border-bottom:none; }
+.row-lbl { width:36px; flex-shrink:0; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  border-right:1px solid #D1D5DB; padding:2px; }
+.sep { width:5px; flex-shrink:0; background:#F3F4F6;
+  border-left:1px dashed #D1D5DB; border-right:1px dashed #D1D5DB; }
 </style></head><body>
 <div class="no-print">
   <button class="btn" onclick="window.print()">⎙ Imprimer</button>
@@ -4826,20 +4824,17 @@ td,th { overflow:hidden; }
     <div class="stat" style="background:#DCFCE7"><div class="stat-n" style="color:#14532D">${nbSlots}</div><div class="stat-l" style="color:#14532D">transats</div></div>
     <div class="stat" style="background:#CCFBF1"><div class="stat-n" style="color:#134E4A">${nbRT}</div><div class="stat-l" style="color:#134E4A">RT</div></div>
     <div class="pills">
-      ${nbS1   ? `<span class="pill" style="background:#16A34A">S1 · ${nbS1}</span>`   : ''}
-      ${nbS2   ? `<span class="pill" style="background:#2563EB">S2 · ${nbS2}</span>`   : ''}
+      ${nbS1   ? `<span class="pill" style="background:#16A34A">S1 · ${nbS1}</span>` : ''}
+      ${nbS2   ? `<span class="pill" style="background:#2563EB">S2 · ${nbS2}</span>` : ''}
       ${nbSoir ? `<span class="pill" style="background:#7C3AED">Soir · ${nbSoir}</span>` : ''}
     </div>
     ${unplcd.length ? `<div class="stat" style="background:#FFFBEB"><div class="stat-n" style="color:#92400E">${unplcd.length}</div><div class="stat-l" style="color:#92400E">⚠ non placés</div></div>` : ''}
   </div>
 </div>
 <div class="bar" style="background:linear-gradient(90deg,#6B7280,#4B5563)">▲ Restaurant</div>
-<div class="wrap">
-  <table>
-    ${colHeaders}
-    ${renderRow100()}
-    ${TR_ROWS.filter(r=>r.id!==100).map(r=>renderDataRow(r.id,r.sea)).join('')}
-  </table>
+<div class="grid">
+  ${renderRow100()}
+  ${TR_ROWS.filter(r=>r.id!==100).map(r=>renderDataRow(r.id,r.sea)).join('')}
 </div>
 <div class="bar" style="background:linear-gradient(90deg,#0EA5E9,#0D9488)">〰 Mer Méditerranée 〰</div>
 ${unplacedHtml}
