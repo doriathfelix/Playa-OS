@@ -1127,16 +1127,19 @@ function renderTransats(){
       bg.setAttribute('fill', bgCol);
       svg.appendChild(bg);
 
-      // Subdivisions verticales entre transats
-      for(let i = 1; i < nSlots; i++){
-        const x = i * (svgW / nSlots);
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', x); line.setAttribute('x2', x);
-        line.setAttribute('y1', 0); line.setAttribute('y2', svgH);
-        line.setAttribute('stroke', bdCol);
-        line.setAttribute('stroke-width', '1');
-        line.setAttribute('opacity', '0.35');
-        svg.appendChild(line);
+      // Outline de chaque transat individuel (très léger)
+      for(let i = 0; i < nSlots; i++){
+        const cr = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        cr.setAttribute('x',      i * (TR_W + GAP) + 1);
+        cr.setAttribute('y',      '1');
+        cr.setAttribute('width',  TR_W - 2);
+        cr.setAttribute('height', TR_H - 2);
+        cr.setAttribute('rx',     '8');
+        cr.setAttribute('fill',   'none');
+        cr.setAttribute('stroke', bdCol);
+        cr.setAttribute('stroke-width', '1');
+        cr.setAttribute('opacity', '0.3');
+        svg.appendChild(cr);
       }
 
       // Contour
@@ -1161,7 +1164,7 @@ function renderTransats(){
       label.innerHTML = `
         <div style="text-align:center;min-width:0">
           <div style="font-size:11px;font-weight:600;color:${txCol};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15">${resa.name}</div>
-          <div style="font-size:10px;font-weight:700;color:${txCol};margin-top:1px;font-family:'DM Mono',monospace">⛱ ${totalTr}</div>
+          <div style="font-size:10px;font-weight:700;color:${txCol};margin-top:1px;font-family:'DM Mono',monospace">x${totalTr}</div>
         </div>
       `;
       bloc.appendChild(label);
@@ -1290,30 +1293,20 @@ function renderTransats(){
       }
     });
 
-    // ─── Subdivisions internes (traits fins à l'intérieur)
+    // ─── Outline individuel de chaque transat (très léger)
     slotsInBlk.forEach(slot => {
-      if(slotsInBlk.includes(slot + 1) && slotBlk(slot) === slotBlk(slot + 1)){
-        const box = slotToSvgBox(slot);
-        const x = box.x + box.w + GAP/2;
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', x); line.setAttribute('x2', x);
-        line.setAttribute('y1', box.y); line.setAttribute('y2', box.y + box.h);
-        line.setAttribute('stroke', bdCol);
-        line.setAttribute('stroke-width', '1');
-        line.setAttribute('opacity', '0.35');
-        svg.appendChild(line);
-      }
-      if(slotsInBlk.includes(slot + 100)){
-        const box = slotToSvgBox(slot);
-        const y = box.y + box.h + ROW_GAP/2;
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', box.x); line.setAttribute('x2', box.x + box.w);
-        line.setAttribute('y1', y); line.setAttribute('y2', y);
-        line.setAttribute('stroke', bdCol);
-        line.setAttribute('stroke-width', '1');
-        line.setAttribute('opacity', '0.35');
-        svg.appendChild(line);
-      }
+      const box = slotToSvgBox(slot);
+      const cr = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      cr.setAttribute('x',      box.x + 1);
+      cr.setAttribute('y',      box.y + 1);
+      cr.setAttribute('width',  box.w - 2);
+      cr.setAttribute('height', box.h - 2);
+      cr.setAttribute('rx',     '8');
+      cr.setAttribute('fill',   'none');
+      cr.setAttribute('stroke', bdCol);
+      cr.setAttribute('stroke-width', '1');
+      cr.setAttribute('opacity', '0.3');
+      svg.appendChild(cr);
     });
 
     // ─── Contour polygonal : UN SEUL PATH fermé suivant le polygone
@@ -1580,13 +1573,13 @@ if(pathD){
     label.innerHTML = `
       <div class="tr-group-label-inner" style="text-align:center;min-width:0;background:${bgCol};padding:3px 8px;border-radius:8px">
         <div style="font-size:11px;font-weight:600;color:${txCol};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;max-width:100%">${resa.name}</div>
-        <div style="font-size:10px;font-weight:700;color:${txCol};margin-top:1px;font-family:'DM Mono',monospace">⛱ ${totalTr}</div>
+        <div style="font-size:10px;font-weight:700;color:${txCol};margin-top:1px;font-family:'DM Mono',monospace">x${totalTr}</div>
       </div>
     `;
     container.appendChild(label);
 
     // Tooltip natif (fallback si nom trop long / caché)
-    container.title = resa.name + ' · ⛱ ' + totalTr + (resa.time ? ' · ' + resa.time : '');
+    container.title = resa.name + ' · x' + totalTr + (resa.time ? ' · ' + resa.time : '');
 
     // Hover : scale le label et boost z-index du container pour que rien ne passe devant
     container.style.zIndex = '2';
@@ -1659,7 +1652,7 @@ if(pathD){
         <div style="text-align:center;padding:0 6px">
           <div style="font-size:9px;font-weight:700;color:${txCol};opacity:.7;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1px">${salon.lbl}</div>
           <div style="font-size:11px;font-weight:600;color:${txCol};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px">${sr.name}</div>
-          <div style="font-size:10px;font-weight:700;color:${txCol};font-family:'DM Mono',monospace">⛱ ${sr.tr || 2}</div>
+          <div style="font-size:10px;font-weight:700;color:${txCol};font-family:'DM Mono',monospace">x${sr.tr || 2}</div>
         </div>
       `;
       cell.draggable = true;

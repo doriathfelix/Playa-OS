@@ -378,7 +378,7 @@ function findVertical(sm, needed){
     const minWidth = Math.ceil(needed / nRows);
 
     for(const blk of blkKeys){
-      const bSize = trSlots(rowIds[0])[blk].length;
+      const bSize = trSlots(200)[blk].length;
       if(minWidth > bSize) continue;
 
       // Essayer chaque rangée de départ
@@ -530,7 +530,7 @@ function findCompactVertical(sm, needed, avoidSingletons){
     if(width > 8) continue;
 
     for(const blk of blkKeys){
-      const bSize = trSlots(rowIds[0])[blk].length;
+      const bSize = trSlots(200)[blk].length;
       if(width > bSize) continue;
 
       // Priorité rangées centrales
