@@ -4637,11 +4637,11 @@ function printTransats(){
 
   const W=10.8, GAP=1.2, ALLEY=5, LBL=14;
 
-  // N&B : gris différents par service
+  // Fond blanc uniforme, distinction par pastille texte uniquement
   const C = {
     s1:   {bg:'#FFFFFF', tx:'#111', lbl:'S1',   bw:'0.6pt'},
-    s2:   {bg:'#E5E5E5', tx:'#111', lbl:'S2',   bw:'0.6pt'},
-    soir: {bg:'#B8B8B8', tx:'#111', lbl:'Soir', bw:'0.7pt'},
+    s2:   {bg:'#FFFFFF', tx:'#111', lbl:'S2',   bw:'0.6pt'},
+    soir: {bg:'#FFFFFF', tx:'#111', lbl:'Soir', bw:'0.6pt'},
     rt:   {bg:'#FFFFFF', tx:'#111', lbl:'RT',   bw:'1.4pt'},
   };
   function cFor(r){ return r.repas_transat ? C.rt : C[r.svc] || C.s1; }
@@ -4713,14 +4713,14 @@ function printTransats(){
 
     const fsName = N>=5?'8.5pt':N>=3?'7pt':N>=2?'6pt':'4.5pt';
     const fsCnt  = N>=3?'7.5pt':N>=2?'6.5pt':'5.5pt';
-    const fsLbl  = N>=3?'5.5pt':'4.5pt';
+    const fsLbl  = N>=4?'8pt':N>=2?'7pt':'6pt';
 
     return `<div style="grid-column:${cMin}/${cMax+1};grid-row:${gridRow};position:relative;overflow:hidden;border-radius:1.5mm;background:${c.bg};border:${c.bw} solid #222">
       ${slotOutlines}
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8mm;padding:2mm 1.5mm;z-index:1">
         <div style="font-size:${fsName};font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${resa.name}</div>
         <div style="font-size:${fsCnt};font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${tot}</div>
-        <div style="font-size:${fsLbl};font-weight:800;color:#555;line-height:1">${c.lbl}</div>
+        <div style="font-size:${fsLbl};font-weight:900;color:#000;line-height:1;background:#111;color:#fff;border-radius:0.8mm;padding:0.3mm 1.5mm">${c.lbl}</div>
       </div>
     </div>`;
   }
@@ -4743,7 +4743,7 @@ function printTransats(){
           <div style="font-size:3.5pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;line-height:1">${salon.lbl}</div>
           <div style="font-size:7pt;font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${r.name}</div>
           <div style="font-size:6.5pt;font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${r.tr||r.pax||2}</div>
-          <div style="font-size:4.5pt;font-weight:800;color:#555;line-height:1">${c.lbl}</div>
+          <div style="font-size:7pt;font-weight:900;color:#fff;line-height:1;background:#111;border-radius:0.8mm;padding:0.3mm 1.5mm">${c.lbl}</div>
         </div>
       </div>`;
     }
@@ -4813,10 +4813,10 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
   <div style="display:flex;align-items:center;gap:4mm">
     <div style="font-size:13pt;font-weight:800">⛱ ${dateStr}</div>
     <div>
-      <span class="leg"><span class="leg-box" style="background:#fff;border:0.6pt solid #222"></span>S1</span>
-      <span class="leg"><span class="leg-box" style="background:#E5E5E5;border:0.6pt solid #222"></span>S2</span>
-      <span class="leg"><span class="leg-box" style="background:#B8B8B8;border:0.7pt solid #222"></span>Soir</span>
-      <span class="leg"><span class="leg-box" style="background:#fff;border:1.4pt solid #000"></span>RT</span>
+      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">S1</span> Service 1</span>
+      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">S2</span> Service 2</span>
+      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">Soir</span> Soir</span>
+      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">RT</span> Repas-transat</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:2.5mm;flex-wrap:wrap">
@@ -4827,8 +4827,8 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
     ${nbRT?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbRT}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">RT</div></div>`:''}
     <div style="display:flex;gap:1.5mm;align-items:center;flex-wrap:wrap">
       ${nbS1  ?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333;background:#FFF">S1 · ${nbS1}</span>`:''}
-      ${nbS2  ?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333;background:#E5E5E5">S2 · ${nbS2}</span>`:''}
-      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.7pt solid #333;background:#B8B8B8">Soir · ${nbSoir}</span>`:''}
+      ${nbS2  ?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333;background:#FFF">S2 · ${nbS2}</span>`:''}
+      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333;background:#FFF">Soir · ${nbSoir}</span>`:''}
     </div>
     ${unplcd.length?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">⚠${unplcd.length}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">non placés</div></div>`:''}
   </div>
