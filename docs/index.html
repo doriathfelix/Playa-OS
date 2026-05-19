@@ -2428,16 +2428,19 @@ function renderTransats(){
       bg.setAttribute('fill', bgCol);
       svg.appendChild(bg);
 
-      // Subdivisions verticales entre transats
-      for(let i = 1; i < nSlots; i++){
-        const x = i * (svgW / nSlots);
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', x); line.setAttribute('x2', x);
-        line.setAttribute('y1', 0); line.setAttribute('y2', svgH);
-        line.setAttribute('stroke', bdCol);
-        line.setAttribute('stroke-width', '1');
-        line.setAttribute('opacity', '0.35');
-        svg.appendChild(line);
+      // Outline de chaque transat individuel (très léger)
+      for(let i = 0; i < nSlots; i++){
+        const cr = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        cr.setAttribute('x',      i * (TR_W + GAP) + 1);
+        cr.setAttribute('y',      '1');
+        cr.setAttribute('width',  TR_W - 2);
+        cr.setAttribute('height', TR_H - 2);
+        cr.setAttribute('rx',     '8');
+        cr.setAttribute('fill',   'none');
+        cr.setAttribute('stroke', bdCol);
+        cr.setAttribute('stroke-width', '1');
+        cr.setAttribute('opacity', '0.3');
+        svg.appendChild(cr);
       }
 
       // Contour
@@ -2462,7 +2465,7 @@ function renderTransats(){
       label.innerHTML = `
         <div style="text-align:center;min-width:0">
           <div style="font-size:11px;font-weight:600;color:${txCol};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15">${resa.name}</div>
-          <div style="font-size:10px;font-weight:700;color:${txCol};margin-top:1px;font-family:'DM Mono',monospace">⛱ ${totalTr}</div>
+          <div style="font-size:10px;font-weight:700;color:${txCol};margin-top:1px;font-family:'DM Mono',monospace">x${totalTr}</div>
         </div>
       `;
       bloc.appendChild(label);
@@ -2591,30 +2594,20 @@ function renderTransats(){
       }
     });
 
-    // ─── Subdivisions internes (traits fins à l'intérieur)
+    // ─── Outline individuel de chaque transat (très léger)
     slotsInBlk.forEach(slot => {
-      if(slotsInBlk.includes(slot + 1) && slotBlk(slot) === slotBlk(slot + 1)){
-        const box = slotToSvgBox(slot);
-        const x = box.x + box.w + GAP/2;
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', x); line.setAttribute('x2', x);
-        line.setAttribute('y1', box.y); line.setAttribute('y2', box.y + box.h);
-        line.setAttribute('stroke', bdCol);
-        line.setAttribute('stroke-width', '1');
-        line.setAttribute('opacity', '0.35');
-        svg.appendChild(line);
-      }
-      if(slotsInBlk.includes(slot + 100)){
-        const box = slotToSvgBox(slot);
-        const y = box.y + box.h + ROW_GAP/2;
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', box.x); line.setAttribute('x2', box.x + box.w);
-        line.setAttribute('y1', y); line.setAttribute('y2', y);
-        line.setAttribute('stroke', bdCol);
-        line.setAttribute('stroke-width', '1');
-        line.setAttribute('opacity', '0.35');
-        svg.appendChild(line);
-      }
+      const box = slotToSvgBox(slot);
+      const cr = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      cr.setAttribute('x',      box.x + 1);
+      cr.setAttribute('y',      box.y + 1);
+      cr.setAttribute('width',  box.w - 2);
+      cr.setAttribute('height', box.h - 2);
+      cr.setAttribute('rx',     '8');
+      cr.setAttribute('fill',   'none');
+      cr.setAttribute('stroke', bdCol);
+      cr.setAttribute('stroke-width', '1');
+      cr.setAttribute('opacity', '0.3');
+      svg.appendChild(cr);
     });
 
     // ─── Contour polygonal : UN SEUL PATH fermé suivant le polygone
@@ -2881,13 +2874,13 @@ if(pathD){
     label.innerHTML = `
       <div class="tr-group-label-inner" style="text-align:center;min-width:0;background:${bgCol};padding:3px 8px;border-radius:8px">
         <div style="font-size:11px;font-weight:600;color:${txCol};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;max-width:100%">${resa.name}</div>
-        <div style="font-size:10px;font-weight:700;color:${txCol};margin-top:1px;font-family:'DM Mono',monospace">⛱ ${totalTr}</div>
+        <div style="font-size:10px;font-weight:700;color:${txCol};margin-top:1px;font-family:'DM Mono',monospace">x${totalTr}</div>
       </div>
     `;
     container.appendChild(label);
 
     // Tooltip natif (fallback si nom trop long / caché)
-    container.title = resa.name + ' · ⛱ ' + totalTr + (resa.time ? ' · ' + resa.time : '');
+    container.title = resa.name + ' · x' + totalTr + (resa.time ? ' · ' + resa.time : '');
 
     // Hover : scale le label et boost z-index du container pour que rien ne passe devant
     container.style.zIndex = '2';
@@ -2960,7 +2953,7 @@ if(pathD){
         <div style="text-align:center;padding:0 6px">
           <div style="font-size:9px;font-weight:700;color:${txCol};opacity:.7;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1px">${salon.lbl}</div>
           <div style="font-size:11px;font-weight:600;color:${txCol};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px">${sr.name}</div>
-          <div style="font-size:10px;font-weight:700;color:${txCol};font-family:'DM Mono',monospace">⛱ ${sr.tr || 2}</div>
+          <div style="font-size:10px;font-weight:700;color:${txCol};font-family:'DM Mono',monospace">x${sr.tr || 2}</div>
         </div>
       `;
       cell.draggable = true;
@@ -3821,7 +3814,7 @@ function findVertical(sm, needed){
     const minWidth = Math.ceil(needed / nRows);
 
     for(const blk of blkKeys){
-      const bSize = trSlots(rowIds[0])[blk].length;
+      const bSize = trSlots(200)[blk].length;
       if(minWidth > bSize) continue;
 
       // Essayer chaque rangée de départ
@@ -3973,7 +3966,7 @@ function findCompactVertical(sm, needed, avoidSingletons){
     if(width > 8) continue;
 
     for(const blk of blkKeys){
-      const bSize = trSlots(rowIds[0])[blk].length;
+      const bSize = trSlots(200)[blk].length;
       if(width > bSize) continue;
 
       // Priorité rangées centrales
@@ -4704,7 +4697,7 @@ function printTransats(){
     return `<div style="flex:${flex};padding:1px;min-width:0">
       <div style="height:100%;background:${c.bg};border:${c.bw}px solid ${c.bd};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
         <div style="font-size:${fs};font-weight:700;color:${c.tx};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.15">${resa.name}</div>
-        <div style="font-size:${f2};font-weight:700;color:${c.tx};line-height:1">⛱ ${resa.tr||1}</div>
+        <div style="font-size:${f2};font-weight:700;color:${c.tx};line-height:1">x${resa.tr||1}</div>
         <span style="font-size:5pt;font-weight:800;background:${bdgBg};color:#fff;padding:0 4px;border-radius:3px;line-height:1.5">${c.lbl}</span>
       </div>
     </div>`;
@@ -4732,7 +4725,7 @@ function printTransats(){
       return `<div style="flex:${flex};padding:1px;min-width:0">
         <div style="height:100%;background:${c.bg};border:${c.bw}px solid ${c.bd};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px;overflow:hidden;gap:1px">
           <div style="font-size:8pt;font-weight:700;color:${c.tx};text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.15">${r.name}</div>
-          <div style="font-size:7.5pt;font-weight:700;color:${c.tx}">⛱ ${r.tr||2}</div>
+          <div style="font-size:7.5pt;font-weight:700;color:${c.tx}">x${r.tr||2}</div>
           <span style="font-size:5pt;font-weight:800;background:${bdgBg};color:#fff;padding:0 4px;border-radius:3px;line-height:1.5">${c.lbl}</span>
         </div>
       </div>`;
@@ -4778,7 +4771,7 @@ function printTransats(){
   if(unplcd.length){
     unplacedHtml=`<div style="border:2px solid #333;border-radius:6px;padding:4px 10px;margin-top:4px">
       <span style="font-size:8pt;font-weight:800">⚠ Non placés : </span>
-      ${unplcd.map(r=>{const c=cFor(r);return `<span style="font-size:8pt;font-weight:700;margin-right:8px">${r.name} ⛱${r.tr||1} <span style="background:#111;color:#fff;font-size:5pt;font-weight:800;padding:0 3px;border-radius:3px">${c.lbl}</span></span>`;}).join('')}
+      ${unplcd.map(r=>{const c=cFor(r);return `<span style="font-size:8pt;font-weight:700;margin-right:8px">${r.name} x${r.tr||1}<span style="background:#111;color:#fff;font-size:5pt;font-weight:800;padding:0 3px;border-radius:3px">${c.lbl}</span></span>`;}).join('')}
     </div>`;
   }
 
