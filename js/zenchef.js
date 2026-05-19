@@ -352,6 +352,27 @@ function parseExtremiteFromText(txt){
   );
 }
 
+// "en 501", "slot 501", "n°315", "#412" → numéro de slot → rangée = Math.floor(slot/100)*100
+// Couvre les notes comme "2T en 501" ou "transats n°315"
+function parseSlotFromText(txt){
+  if(!txt) return null;
+  const t = txt.toLowerCase().replace(/[°oa]/g,'o');
+  const patterns = [
+    /\ben\s*(\d{3})\b/,          // "en 501"
+    /\bslot\s*(\d{3})\b/,        // "slot 501"
+    /\bn[o°]?\s*(\d{3})\b/,      // "n°315", "no315"
+    /#(\d{3})\b/,                 // "#412"
+  ];
+  for(const p of patterns){
+    const m = t.match(p);
+    if(m){
+      const slot=parseInt(m[1]);
+      if(slot>=101 && slot<=521) return slot;
+    }
+  }
+  return null;
+}
+
 function zcToResa(b){
   const cf = b.custom_field || {};
   const typeExp = cf['quel-type-dexperience'] || '';
@@ -376,7 +397,8 @@ function zcToResa(b){
   if(isTablePlusTransat && nbTransats === 0 && !isBed) nbTransats = b.nb_guests || 1;
 
   // Rangée préférentielle : scan de tous les champs texte
-  const preferredRow = parsePreferredRowFromText(allTextFields);
+  const preferredRow = parsePreferredRowFromText(allTextFields)
+    || (()=>{ const s=parseSlotFromText(allTextFields); return s?Math.floor(s/100)*100:null; })();
   // Préférence extrémité : "en extrémité", "au bout" → slot 1 ou 20
   const preferExtremite = parseExtremiteFromText(allTextFields);
 
