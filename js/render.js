@@ -1780,6 +1780,7 @@ function showDetail(id){
   });
 
   renderSidebar();
+  if(window.innerWidth <= 1099) openRightPanel();
 }
 
 function addRpBtn(container, label, cls, onclick){
@@ -2131,5 +2132,55 @@ function showFusedDetail(fg){
     <div class="det-row"><div class="det-label">Tables</div><div class="det-val">${fg.tids.join(', ')}</div></div>`;
   const rpA=document.getElementById('rp-actions'); rpA.style.display='flex'; rpA.innerHTML='';
   addRpBtn(rpA,'⊘ Défusionner','rp-btn-defusion',()=>{saveUndo();fused[tk()]=fused[tk()].filter(g=>g.id!==fg.id);render();});
+  if(window.innerWidth <= 1099) openRightPanel();
+}
+
+// ══ RESPONSIVE PANEL ══
+function openRightPanel(){
+  document.getElementById('right-panel').classList.add('open');
+  document.getElementById('rp-backdrop').classList.add('open');
+}
+function closeRightPanel(){
+  document.getElementById('right-panel').classList.remove('open');
+  document.getElementById('rp-backdrop').classList.remove('open');
+}
+
+// ══ MOBILE VIEW TOGGLE ══
+let _mobileView='list';
+function mobileToggleView(){
+  if(typeof currentModule !== 'undefined' && currentModule !== 'service'){
+    goModule('service');
+    const sidebar=document.getElementById('sidebar');
+    const canvas=document.getElementById('canvas');
+    const fab=document.getElementById('mobile-toggle-fab');
+    sidebar.classList.add('mob-hidden');
+    canvas.classList.add('mob-active');
+    _mobileView='plan';
+    if(fab) fab.textContent='≡';
+    return;
+  }
+  _mobileView=_mobileView==='list'?'plan':'list';
+  const sidebar=document.getElementById('sidebar');
+  const canvas=document.getElementById('canvas');
+  const fab=document.getElementById('mobile-toggle-fab');
+  if(_mobileView==='plan'){
+    sidebar.classList.add('mob-hidden');
+    canvas.classList.add('mob-active');
+    if(fab) fab.textContent='≡';
+  } else {
+    sidebar.classList.remove('mob-hidden');
+    canvas.classList.remove('mob-active');
+    if(fab) fab.textContent='⊞';
+  }
+}
+
+// ══ MOBILE TAB SWITCH ══
+function mobileSwitchTab(i){
+  if(typeof currentModule !== 'undefined' && currentModule !== 'service') goModule('service');
+  switchTab(i);
+  document.querySelectorAll('.bttab').forEach((t,j)=>{
+    t.classList.remove('bttab-on');
+    if(j===i) t.classList.add('bttab-on');
+  });
 }
 

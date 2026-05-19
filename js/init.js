@@ -14,8 +14,9 @@
 // Initialiser le date picker avec aujourd'hui
 updateDateDisplay(currentDate);
 render();
-// Démarrer sur le dashboard (sidebar toujours visible)
-goModule('dash');
+// Mobile → service direct ; desktop → dashboard
+if(window.innerWidth <= 767) goModule('service');
+else goModule('dash');
 // Sync Zenchef au démarrage puis auto toutes les 5 min
 setTimeout(()=>{ syncZenchef(); startAutoSync(); }, 800);
 // Préchauffage cache : si le pool est périmé, fetch tout en arrière-plan

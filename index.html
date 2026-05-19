@@ -223,8 +223,12 @@
     <div id="floor-container"></div>
   </div>
 
+  <!-- BACKDROP panneau droit (tablet / mobile) -->
+  <div id="rp-backdrop" onclick="closeRightPanel()"></div>
+
   <!-- RIGHT PANEL -->
   <div id="right-panel">
+    <button id="rp-close-btn" onclick="closeRightPanel()">✕</button>
     <div class="rp-section">
       <div id="rp-content"><div class="rp-empty" style="padding-top:4px">Sélectionnez une réservation</div></div>
     </div>
@@ -357,6 +361,16 @@
 </div>
 
 </div><!-- /os-shell -->
+
+<!-- BARRE ONGLETS BAS — mobile uniquement -->
+<div id="bottom-tab-bar">
+  <button class="bttab t0 bttab-on" onclick="mobileSwitchTab(0)">S1<span>12h</span></button>
+  <button class="bttab t1" onclick="mobileSwitchTab(1)">S2<span>14h15</span></button>
+  <button class="bttab t2" onclick="mobileSwitchTab(2)">⛱<span>Transats</span></button>
+  <button class="bttab t3" onclick="mobileSwitchTab(3)">Soir</button>
+</div>
+<!-- FAB basculer liste / plan — mobile uniquement -->
+<button id="mobile-toggle-fab" onclick="mobileToggleView()" aria-label="Voir le plan">⊞</button>
 
 <!-- ═══════════════════════════════════════
      JAVASCRIPT — ordre de chargement obligatoire
