@@ -35,11 +35,14 @@ const TR_ROWS = [
   {id:400,lbl:'Rangée 400',sea:false},
   {id:500,lbl:'Rangée 500 — 1ère ligne mer',sea:true},
 ];
-const trSlots = b => ({
-  g:[1,2,3,4,5,6,7].map(n=>b+n),
-  m:[8,9,10,11,12,13].map(n=>b+n),   // pos 13 = 12bis
-  d:[14,15,16,17,18,19,20,21].map(n=>b+n)
-});
+const trSlots = b => {
+  if(b === 100) return { g:[], m:[], d:[] };
+  return {
+    g:[1,2,3,4,5,6,7].map(n=>b+n),
+    m:[8,9,10,11,12,13].map(n=>b+n),   // pos 13 = 12bis
+    d:[14,15,16,17,18,19,20,21].map(n=>b+n)
+  };
+};
 
 // ── Salons spéciaux — rangée 100 uniquement (remplacent les slots 108-116)
 // Chaque salon occupe la largeur de 2 transats (double bouton)
