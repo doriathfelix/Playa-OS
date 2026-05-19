@@ -224,11 +224,9 @@ function printTransats(){
     s2:   {bg:'#E0E0E0', bd:'#1A1A1A', tx:'#1A1A1A', lbl:'S2',   bw:1.5},
     soir: {bg:'#B0B0B0', bd:'#1A1A1A', tx:'#111111', lbl:'Soir',  bw:2},
     rt:   {bg:'#FFFFFF', bd:'#000000', tx:'#000000', lbl:'RT',    bw:2.5},
-    bed:  {bg:'#EBEBEB', bd:'#888888', tx:'#555555', lbl:'BED',   bw:1},
   };
 
   function cFor(r){
-    if(BED_SLOTS.includes(r.slot)) return C.bed;
     if(r.repas_transat) return C.rt;
     return C[r.svc] || C.s1;
   }
@@ -258,13 +256,10 @@ function printTransats(){
     const isBed = BED_SLOTS.includes(s);
     const lbl   = slotLabel(s);
     if(!resa){
-      const bg = isBed ? C.bed.bg : '#F7F7F7';
-      const bc = isBed ? C.bed.bd : '#CCCCCC';
-      const tx = isBed ? C.bed.tx : '#AAAAAA';
       return `<div style="flex:${flex};padding:1px;min-width:0">
-        <div style="height:100%;background:${bg};border:1px solid ${bc};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:1px">
-          ${isBed?`<div style="font-size:5pt;font-weight:800;color:${tx}">BED</div>`:''}
-          <div style="font-size:5.5pt;font-weight:500;color:${tx}">${lbl}</div>
+        <div style="height:100%;background:#F7F7F7;border:1px solid #CCCCCC;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:1px">
+          ${isBed?`<div style="font-size:5pt;font-weight:800;color:#AAAAAA">BED</div>`:''}
+          <div style="font-size:5.5pt;font-weight:500;color:#AAAAAA">${lbl}</div>
         </div>
       </div>`;
     }
