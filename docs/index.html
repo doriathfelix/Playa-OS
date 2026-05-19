@@ -4771,7 +4771,7 @@ function printTransats(){
     const dLen=rb===200?8:7;
     const d=Array.from({length:dLen},(_,i)=>rb+14+i);
     return `<div class="row">
-      <div class="row-lbl" style="${sea?'border-right:3px solid #333':'}">
+      <div class="row-lbl"${sea?' style="border-right:3px solid #333"':''}>
         <div class="rn">${rb}</div>
         <div class="rs">${sea?'⌊Mer⌋':''}</div>
       </div>
