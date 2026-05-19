@@ -93,9 +93,10 @@ function renderSidebar(){
           : `<div style="font-size:10px;font-weight:700;color:var(--s1t);margin-top:2px">→ T${r.tableId}</div>`)
       : '';
 
-    // Badge transats bas droite (chiffre+⛱)
+    // Badge transats bas droite (chiffre+⛱) — rouge si 1ère ligne mer (row_transats=500)
+    const is1ereLigne = r.row_transats === 500;
     const trBottomRight = (r.tr && r.tr > 0)
-      ? `<span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:var(--rtbg);border:0.5px solid var(--rtbd);color:var(--rtt)">${r.tr} ⛱</span>`
+      ? `<span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:${is1ereLigne?'#FFEAEA':'var(--rtbg)'};border:0.5px solid ${is1ereLigne?'#FF5555':'var(--rtbd)'};color:${is1ereLigne?'#CC0000':'var(--rtt)'}">${r.tr} ⛱</span>`
       : '';
 
     d.innerHTML = `
