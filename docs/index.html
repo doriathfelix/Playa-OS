@@ -480,9 +480,6 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .TR.TR-occ{cursor:grab}
 .TR.TR-extra{border:1.5px dashed var(--gdb);background:var(--gdbg)}
 .TR.TR-extra:hover{border-color:var(--gold);background:var(--obg)}
-.TR.TR-bed{border:1.5px solid #D97706;background:#FFFBEB}
-.TR.TR-bed:hover:not(.TR-occ){border-color:#B45309;background:#FEF3C7}
-.TR.TR-bed .tr-num{color:#92400E}
 .tr-num{font-size:9px;font-weight:600;color:var(--t4)}
 .tr-name{font-size:9px;font-weight:700;text-align:center;width:100%;padding:0 3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.2}
 .tr-sub{font-size:8px;font-weight:600;margin-top:1px;line-height:1}
@@ -1067,11 +1064,14 @@ const TR_ROWS = [
   {id:400,lbl:'Rangée 400',sea:false},
   {id:500,lbl:'Rangée 500 — 1ère ligne mer',sea:true},
 ];
-const trSlots = b => ({
-  g:[1,2,3,4,5,6,7].map(n=>b+n),
-  m:[8,9,10,11,12,13].map(n=>b+n),   // pos 13 = 12bis
-  d:[14,15,16,17,18,19,20,21].map(n=>b+n)
-});
+const trSlots = b => {
+  if(b === 100) return { g:[], m:[], d:[] };
+  return {
+    g:[1,2,3,4,5,6,7].map(n=>b+n),
+    m:[8,9,10,11,12,13].map(n=>b+n),   // pos 13 = 12bis
+    d:[14,15,16,17,18,19,20,21].map(n=>b+n)
+  };
+};
 
 // ── Salons spéciaux — rangée 100 uniquement (remplacent les slots 108-116)
 // Chaque salon occupe la largeur de 2 transats (double bouton)
@@ -4657,11 +4657,9 @@ function printTransats(){
     s2:   {bg:'#E0E0E0', bd:'#1A1A1A', tx:'#1A1A1A', lbl:'S2',   bw:1.5},
     soir: {bg:'#B0B0B0', bd:'#1A1A1A', tx:'#111111', lbl:'Soir',  bw:2},
     rt:   {bg:'#FFFFFF', bd:'#000000', tx:'#000000', lbl:'RT',    bw:2.5},
-    bed:  {bg:'#EBEBEB', bd:'#888888', tx:'#555555', lbl:'BED',   bw:1},
   };
 
   function cFor(r){
-    if(BED_SLOTS.includes(r.slot)) return C.bed;
     if(r.repas_transat) return C.rt;
     return C[r.svc] || C.s1;
   }
@@ -4691,13 +4689,10 @@ function printTransats(){
     const isBed = BED_SLOTS.includes(s);
     const lbl   = slotLabel(s);
     if(!resa){
-      const bg = isBed ? C.bed.bg : '#F7F7F7';
-      const bc = isBed ? C.bed.bd : '#CCCCCC';
-      const tx = isBed ? C.bed.tx : '#AAAAAA';
       return `<div style="flex:${flex};padding:1px;min-width:0">
-        <div style="height:100%;background:${bg};border:1px solid ${bc};border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:1px">
-          ${isBed?`<div style="font-size:5pt;font-weight:800;color:${tx}">BED</div>`:''}
-          <div style="font-size:5.5pt;font-weight:500;color:${tx}">${lbl}</div>
+        <div style="height:100%;background:#F7F7F7;border:1px solid #CCCCCC;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;gap:1px">
+          ${isBed?`<div style="font-size:5pt;font-weight:800;color:#AAAAAA">BED</div>`:''}
+          <div style="font-size:5.5pt;font-weight:500;color:#AAAAAA">${lbl}</div>
         </div>
       </div>`;
     }
