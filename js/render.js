@@ -157,6 +157,10 @@ function renderStats(){
     .filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+(x.tr||x.pax||0),0);
   const trTotal = trFromTables + trFromRT;
 
+  // 1ère ligne mer : transats avec row_transats === 500
+  const trMer = [...reservations.s1,...reservations.s2,...reservations.soir,...reservations.transats]
+    .filter(x=>!x.ns && x.row_transats===500).reduce((s,x)=>s+(x.tr||0),0);
+
   // Nb de resas par service (pour info dans le badge)
   const nS1   = reservations.s1.filter(x=>!x.ns&&!isSubResa(x)).length;
   const nS2   = reservations.s2.filter(x=>!x.ns&&!isSubResa(x)).length;
@@ -181,6 +185,7 @@ function renderStats(){
     <span class="stat-pill pill-blue" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Voir Transats">
       <span class="transat-ico"></span> ${trTotal}
     </span>
+    ${trMer>0?`<span class="stat-pill pill-red" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Transats 1ère ligne mer">🌊 ${trMer}</span>`:''}
   `;
 }
 
@@ -1031,8 +1036,7 @@ function renderTransats(){
       const isBed = BED_SLOTS.includes(slot);
       const cell = document.createElement('div');
       const isFuseSel = fuseMode && fuseTrTargets.includes(slot);
-      // BED : même couleur que les transats normaux, juste le label "BED" pour les distinguer
-      cell.className = 'TR' + (isFuseSel ? ' TR-fuse-sel' : '');
+      cell.className = 'TR' + (isBed ? ' TR-bed' : '') + (isFuseSel ? ' TR-fuse-sel' : '');
       cell.style.cssText = `grid-column:${col}; grid-row:${ri+1};`;
       cell.dataset.slot = slot;
       cell.innerHTML = isBed
@@ -2051,7 +2055,7 @@ function initTouchDrag(){
         if(src && src.id === id){ src.dragReady = true; }
       }, 400)
     };
-  }, {passive:true});
+  });
 
   document.addEventListener('touchmove', e => {
     if(!src) return;
@@ -2062,13 +2066,17 @@ function initTouchDrag(){
     if(!touchDragActive){
       if(src.dragReady && dist > 12){
         // Long press done + finger moving → start drag
+        e.preventDefault();
         startGhost(src.el, t.clientX, t.clientY);
+        // fall through to ghost movement below
       } else if(!src.dragReady && dist > 14){
         // Moved too early → cancel (let scroll happen)
         clearTimeout(src.timer);
         src = null;
+        return;
+      } else {
+        return;
       }
-      return;
     }
 
     e.preventDefault();

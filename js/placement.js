@@ -214,6 +214,32 @@ function findBestFusion(pax, used){
   return null;
 }
 
+function parseTableRequest(text){
+  if(!text) return null;
+  const t = text.toLowerCase();
+  const m = t.match(/table\s*(?:n[°oa]?\s*)?(\d+)/i) || t.match(/\bt(\d+)\b/);
+  if(m){ const n = parseInt(m[1]); if(n >= 1 && n <= 30 && TABLE_DATA[n]) return n; }
+  return null;
+}
+
+function findExtremity(sm, needed, forceRow){
+  const rowOrder = forceRow
+    ? TR_ROWS.filter(r => r.id === forceRow)
+    : TR_ROWS;
+  for(const row of rowOrder){
+    const {g, d} = trSlots(row.id);
+    if(g.length >= needed){
+      const gSlots = g.slice(0, needed);
+      if(gSlots.every(s => !sm[s])) return {slots: gSlots, start: gSlots[0]};
+    }
+    if(d.length >= needed){
+      const dSlots = d.slice(d.length - needed);
+      if(dSlots.every(s => !sm[s])) return {slots: dSlots, start: dSlots[0]};
+    }
+  }
+  return null;
+}
+
 function autoTables(resas, skipped=0){
   const used = new Set(gr().filter(r=>r.placed&&r.tableId).map(r=>r.tableId));
 
@@ -249,6 +275,13 @@ function autoTables(resas, skipped=0){
   let fusionsUsed = 0, fusionsCreated = 0;
 
   resas.forEach(r=>{
+    // ── PRIORITÉ -1 : table demandée explicitement dans le commentaire
+    const requestedTable = parseTableRequest(r.comment);
+    if(requestedTable && !used.has(requestedTable) && TABLE_DATA[requestedTable] && TABLE_DATA[requestedTable].hi >= r.pax){
+      r.placed = true; r.tableId = requestedTable; used.add(requestedTable);
+      return;
+    }
+
     // ── PRIORITÉ 0 : fusion sur mesure existante vide qui correspond au PAX
     const customFusion = emptyFusions.find(g => !g.occupied && g.totalHi >= r.pax);
     if(customFusion){
@@ -460,6 +493,16 @@ function placeTransat(r, sm, opts){
     // Rangée forcée vraiment pleine → fallback sans contrainte
   }
 
+  // ─── Extrémité demandée (côté/bord/coin) ───
+  if(r.pref_extremite){
+    const result = findExtremity(sm, needed, forceRow || null);
+    if(result){
+      r.placed = true; r.slot = result.start; r.extraSlots = null;
+      result.slots.forEach(s => sm[s] = r);
+      return true;
+    }
+  }
+
   // ─── Grands groupes (≥ 7 PAX) : VERTICAL COMPACT OBLIGATOIRE ───
   if(needed >= 7){
     const vert = findCompactVertical(sm, needed, opts.avoidSingletons);
@@ -589,6 +632,13 @@ function findCompactVertical(sm, needed, avoidSingletons){
 
 function autoTransats(resas, skipped=0){
   const sm = buildSlotMap();
+
+  // ─── Pré-traitement : lire les commentaires pour déduire bed / extrémité ───
+  resas.forEach(r => {
+    const text = (r.comment || '').toLowerCase();
+    if(!r.bed && /\b(bed|lit\s*double|cabane)\b/.test(text)) r.bed = true;
+    if(!r.pref_extremite && /\b(c[oô]t[eé]|extrem|bord|coin|bout|angle)\b/.test(text)) r.pref_extremite = true;
+  });
 
   // ─── Phase 0 : BEDS — placer exclusivement sur BED_SLOTS (lit double = 2 PAX max) ───
   // Les BED_SLOTS ne peuvent accueillir qu'UNE resa bed chacun.
