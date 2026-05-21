@@ -5756,15 +5756,45 @@ function parseSlotFromText(txt){
   return null;
 }
 
+// ── Extrait récursivement TOUS les textes utiles d'un booking Zenchef
+// Descend dans les objets imbriqués (customer, shift_slot, tags, custom_field…)
+// Ignore : IDs, timestamps, emails, téléphones, URLs, valeurs purement numériques
+function extractAllBookingText(obj, _depth){
+  if(_depth === undefined) _depth = 0;
+  if(obj === null || obj === undefined || _depth > 5) return [];
+  if(typeof obj === 'string'){
+    const s = obj.trim();
+    if(!s || s.length < 2) return [];
+    if(/^\d+$/.test(s)) return [];                              // purement numérique
+    if(/^\d{4}-\d{2}-\d{2}/.test(s)) return [];               // date ISO
+    if(/^https?:\/\//.test(s)) return [];                      // URL
+    if(/@/.test(s) && /\.\w{2,4}$/.test(s.split(' ')[0])) return []; // email
+    if(/^\+?\d[\d\s\-().]{6,}$/.test(s)) return [];           // téléphone
+    return [s];
+  }
+  if(Array.isArray(obj)){
+    return obj.flatMap(v => extractAllBookingText(v, _depth + 1));
+  }
+  if(typeof obj === 'object'){
+    // Champs techniques sans intérêt sémantique
+    const SKIP = new Set(['id','restaurant_id','table_id','shift_id','created_at','updated_at',
+      'deleted_at','color','hash','token','secret','password','avatar','photo','icon','url',
+      'href','email','phone_number','phone','mobile','nb_guests','page','limit','total',
+      'latitude','longitude','zip','country_code']);
+    return Object.entries(obj).flatMap(([k, v]) =>
+      SKIP.has(k) ? [] : extractAllBookingText(v, _depth + 1)
+    );
+  }
+  return [];
+}
+
 function zcToResa(b){
   const cf = b.custom_field || {};
   const typeExp = cf['quel-type-dexperience'] || '';
 
-  // ── Tous les champs texte libres — scan exhaustif de TOUS les champs string du booking
-  // (couvre "note sur la réservation" et tout champ ajouté manuellement via l'UI Zenchef)
-  const allTextFromB = Object.values(b).filter(v => typeof v === 'string' && v.trim()).join(' | ');
-  const allTextFromCf = Object.values(cf).filter(v => typeof v === 'string' && v.trim()).join(' | ');
-  const allTextFields = [allTextFromB, allTextFromCf].filter(Boolean).join(' | ');
+  // ── Extraction profonde : TOUS les champs texte du booking, y compris objets imbriqués
+  // (customer.comment, tags[], custom_field, shift_slot.shift.name, etc.)
+  const allTextFields = extractAllBookingText(b).join(' | ');
 
   // Nb transats : tous les champs texte libres prennent le dessus sur le formulaire structuré
   const nbTransatsText = parseTransatsFromText(allTextFields);
@@ -5786,10 +5816,17 @@ function zcToResa(b){
   const preferExtremite = parseExtremiteFromText(allTextFields);
 
   const heureTransats = cf['horaire-souhaite-pour-les-transats-entre-10h-et-14h30'] || null;
-  // Note affichée : champs texte libre uniquement (pas les dropdowns structurés comme typeExp)
+  // Note affichée : tous les champs texte humain, y compris commentaire profil client et custom fields libres
+  const cfFreeTexts = Object.entries(cf)
+    .filter(([k,v]) => typeof v === 'string' && v.trim().length > 2 && !/^\d+$/.test(v.trim())
+      && !['quel-type-dexperience','de-combien-de-transats-avez-vous-besoin',
+           'horaire-souhaite-pour-les-transats-entre-10h-et-14h30'].includes(k))
+    .map(([,v]) => v);
   const noteDisplay = [
     b.comment, b.note, b.internal_note, b.extra_comment, b.customer_comment,
     b.preparation, b.occasion, b.special_request,
+    b.customer?.comment, b.customer?.note,
+    ...cfFreeTexts,
   ].filter(v => v && typeof v === 'string' && v.trim()).join(' · ');
   const isRepasTransat = typeExp.toLowerCase().includes('transat');
   // Convention La Playa : uniquement 13h00 pile = repas transat
@@ -6083,7 +6120,51 @@ function applyBookings(bookings, date){
       reservations.transats.push(bedResa);
     }
   });
+  reAnalyzeAllResas();
   return { added, dupes, cancelled };
+}
+
+// ── Passe de ré-analyse sur toutes les resas chargées
+// Filet de sécurité : applique les parsers sur r.comment pour les resas manuelles
+// et rattrape tout ce qui aurait pu être raté à l'import Zenchef
+function reAnalyzeAllResas(){
+  Object.values(reservations).flat().forEach(r => {
+    const raw = (r.comment || '');
+    if(!raw.trim()) return;
+    const norm = raw.toLowerCase()
+      .replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u')
+      .replace(/[îï]/g,'i').replace(/[ôö]/g,'o');
+
+    // Extrémité : côté, bout, latéral… (même logique que parseExtremiteFromText)
+    if(!r.pref_extremite){
+      const hasCote = /\bcote\b/.test(norm) && !/cote\s*(?:du\s*)?(?:resto|restaurant)\b/.test(norm);
+      r.pref_extremite = hasCote
+        || /\bextremit[e]?\b/.test(norm) || /\bextreme\b/.test(norm)
+        || /\bau\s*bout\b/.test(norm) || /\ben\s*bout\b/.test(norm)
+        || /\blateral[e]?\b/.test(norm) || /\bon\s*the\s*side\b/.test(raw.toLowerCase());
+    }
+
+    // Rangée préférentielle non encore détectée
+    if(!r.row_transats && (r.tr > 0 || r.bed)){
+      const row = parsePreferredRowFromText(raw);
+      if(row) r.row_transats = row;
+      else {
+        const slot = parseSlotFromText(raw);
+        if(slot) r.row_transats = Math.floor(slot / 100) * 100;
+      }
+    }
+
+    // Nb transats si non encore fixé (resas manuelles)
+    if(r.source !== 'zenchef' && !r.tr && !r.bed){
+      const nbT = parseTransatsFromText(raw);
+      if(nbT > 0) r.tr = nbT;
+    }
+
+    // Bed si non encore détecté (resas manuelles)
+    if(r.source !== 'zenchef' && !r.bed){
+      if(parseBedFromText(raw) > 0) r.bed = true;
+    }
+  });
 }
 
 // ── Helpers UI sync
