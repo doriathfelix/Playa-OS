@@ -257,8 +257,8 @@ function parseBedFromText(txt){
   const t = txt.toLowerCase();
   // Exclure "sunbed" pour ne pas confondre
   const noSunbed = t.replace(/sunbeds?/gi, '');
-  // "bed double" / "double bed" / "lit double" = 1 slot
-  if(/\b(bed\s*double|double\s*bed|lit\s*double)\b/.test(noSunbed)) return 1;
+  // "bed double" / "double bed" / "lit double" / "cabane" = 1 slot
+  if(/\b(bed\s*double|double\s*bed|lit\s*double|cabane)\b/.test(noSunbed)) return 1;
   // "2 beds", "3 beds"
   const m = noSunbed.match(/(\d+)\s*x?\s*beds?\b/);
   if(m) return parseInt(m[1]);
@@ -309,10 +309,11 @@ function parsePreferredRowFromText(txt){
     /\bcote\s*(?:du\s*)?(?:resto|restaurant)\b/,
     /\brestaurant\s*side\b/,
     /\bnear\s*(?:the\s*)?restaurant\b/,
+    /\bcote\s*plage\s*resto\b/,
   ];
   if(pProche.some(p=>p.test(t))) return 200;
 
-  // "1ere ligne" / "ligne 1" / "front row" → 500 (1ère ligne mer = la plus loin du resto)
+  // "1ere ligne" / "ligne 1" / "front row" / "bord de mer" / "vue mer" → 500
   const p1 = [
     /\b1\s*(?:ere?|re?|st)?\s*(?:ligne|rang(?:ee?)?|row)\b/,
     /(?:ligne|rang(?:ee?)?|row)\s*(?:n[o°]?\s*)?1\b/,
@@ -321,6 +322,11 @@ function parsePreferredRowFromText(txt){
     /\bpremiere?\s*(?:ligne|rang)/,
     /\brang(?:ee?)?\s*1\b/,
     /\b1\s*(?:ere?|re?)?\s*ligne\b/,
+    /\bbord\s*(?:de\s*(?:la\s*)?)?mer\b/,   // "bord de mer"
+    /\bvue\s*(?:sur\s*(?:la\s*)?)?mer\b/,   // "vue mer" / "vue sur la mer"
+    /\bface\s*(?:a\s*(?:la\s*)?)?mer\b/,    // "face à la mer"
+    /\b(?:sea|ocean)\s*(?:view|front)\b/,   // "sea view" / "ocean front"
+    /\bfacing\s*(?:the\s*)?(?:sea|ocean|water)\b/,
   ];
   if(p1.some(p=>p.test(t))) return 500;
 
@@ -336,19 +342,30 @@ function parsePreferredRowFromText(txt){
 }
 
 // Détecte si le client veut un transat "en extrémité" (col 1 ou col 20, bouts de rangée)
+// Synonymes couverts : côté, extrémité, bout, bord de rang, latéral, coin de rang, side, edge
 function parseExtremiteFromText(txt){
   if(!txt) return false;
   const t = txt.toLowerCase()
     .replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u').replace(/[îï]/g,'i').replace(/[ôö]/g,'o');
+
+  // "côté" / "de côté" / "sur le côté" / "au côté" — SAUF "côté restaurant/resto" (= rangée)
+  const hasCote = /\bcote\b/.test(t) && !/cote\s*(?:du\s*)?(?:resto|restaurant|plage\s*resto)\b/.test(t);
+
   return (
+    hasCote ||
     /\bextremit[e]?\b/.test(t) ||
+    /\bextreme\b/.test(t) ||
     /\bau\s*bout\b/.test(t) ||
     /\bbout\s*(?:de\s*(?:la\s*)?)?(?:rang|ligne|row)\b/.test(t) ||
     /\ben\s*bout\b/.test(t) ||
     /\bcoin\s*(?:de\s*(?:la\s*)?)?(?:rang|ligne)\b/.test(t) ||
-    /\bextreme\b/.test(t) ||
+    /\bangle\s*(?:de\s*(?:la\s*)?)?(?:rang|ligne|plage)\b/.test(t) ||
+    /\blateral[e]?\b/.test(t) ||
+    /\bbord\s*(?:de\s*(?:la\s*)?)?rang/.test(t) ||     // "bord de rangée" (≠ "bord de mer")
     /\bend\s*(?:of\s*(?:the\s*)?)?(?:row|line)\b/.test(t) ||
-    /\bcorner\s*(?:spot|place|transat)\b/.test(t)
+    /\bcorner\s*(?:spot|place|transat)?\b/.test(t) ||   // "corner" en général
+    /\bon\s*the\s*side\b/.test(t) ||                    // "on the side"
+    /\bedge\s*(?:of\s*(?:the\s*)?)?(?:row|line|rang)\b/.test(t) // "edge of the row"
   );
 }
 

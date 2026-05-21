@@ -138,7 +138,7 @@ function renderStats(){
   // ── Comptage correct : on ne compte PAS les sous-resas _tr dans les totaux service
   // Les sous-resas ont zenchef_id se terminant par '_tr' — elles existent uniquement pour le
   // placement transats, pas pour compter des personnes supplémentaires.
-  const isSubResa = r => r.zenchef_id && String(r.zenchef_id).endsWith('_tr');
+  const isSubResa = r => r.zenchef_id && (String(r.zenchef_id).endsWith('_tr') || String(r.zenchef_id).endsWith('_bed'));
 
   // PAX par service : uniquement depuis les tableaux s1/s2/soir (pas transats)
   // + exclusion no-show
@@ -157,9 +157,16 @@ function renderStats(){
     .filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+(x.tr||x.pax||0),0);
   const trTotal = trFromTables + trFromRT;
 
-  // 1ère ligne mer : transats avec row_transats === 500
-  const trMer = [...reservations.s1,...reservations.s2,...reservations.soir,...reservations.transats]
-    .filter(x=>!x.ns && x.row_transats===500).reduce((s,x)=>s+(x.tr||0),0);
+  // 1ère ligne mer : même logique que trTotal mais filtrée sur row_transats===500
+  // On ne scanne PAS reservations.transats pour les _tr sub-resas (déjà comptées via main resa en s1/s2/soir)
+  const trMer =
+    [...reservations.s1,...reservations.s2,...reservations.soir]
+      .filter(x=>!x.ns && x.tr>0 && !isSubResa(x) && x.row_transats===500)
+      .reduce((s,x)=>s+(x.tr||0),0)
+    +
+    reservations.transats
+      .filter(x=>x.repas_transat && !x.ns && x.row_transats===500)
+      .reduce((s,x)=>s+(x.tr||x.pax||0),0);
 
   // Nb de resas par service (pour info dans le badge)
   const nS1   = reservations.s1.filter(x=>!x.ns&&!isSubResa(x)).length;
