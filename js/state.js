@@ -12,6 +12,7 @@ let rushMode = false;
 let undoStack = [];
 let nextId = 200;
 let fuseCounter = 1;
+let trZoom = 1.0; // zoom du plan transats (0.5–2.5)
 
 let fused = {s1:[],s2:[],transats:[],soir:[]};
 

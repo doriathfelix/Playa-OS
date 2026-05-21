@@ -18,13 +18,35 @@ function render(){
   else currentTab===2 ? renderTransats() : renderTables();
 }
 
+// ── Détecte les alertes importantes dans les commentaires/tags d'une résa
+function detectAlerts(r){
+  const alerts = [];
+  const raw = (r.comment||'').toLowerCase();
+  const t = raw.replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u').replace(/[îï]/g,'i').replace(/[ôö]/g,'o');
+  const tags = (r.tags||[]).join(' ').toLowerCase();
+  const all = t + ' ' + tags;
+  if(/\b(allergi[e]?|allerg[y]?|intoleran|sans\s*gluten|gluten.?free|lactose|noix|arachide|peanut|celiac|celiaque|nuts?)\b/.test(all))
+    alerts.push({icon:'⚠️', label:'Allergie', bg:'#FEF3C7', bd:'#FDE68A', col:'#92400E'});
+  if(/\b(anniversaire|birthday|fete\b|mariage|fiancailles|lune\s*de\s*miel|evjf|evg|pedida|proposal|noces|celebration)\b/.test(all))
+    alerts.push({icon:'🎂', label:'Occasion', bg:'#FFF1F2', bd:'#FECDD3', col:'#BE123C'});
+  if(/\b(pmr|fauteuil\s*roulant|wheelchair|handicap|mobilite\s*reduite|personne\s*a\s*mobilite)\b/.test(all))
+    alerts.push({icon:'♿', label:'PMR', bg:'#EFF6FF', bd:'#BFDBFE', col:'#1D4ED8'});
+  if(/\b(vegetari[e]?n|vegan|vegetal|halal|casher|kosher|sans\s*viande|no\s*meat|pescetarien)\b/.test(all))
+    alerts.push({icon:'🍃', label:'Régime', bg:'#F0FDF4', bd:'#BBF7D0', col:'#15803D'});
+  if(/\b(chaise\s*haute|bebe|nourisson|poussette|highchair|baby|nourrisson)\b/.test(all))
+    alerts.push({icon:'👶', label:'Bébé', bg:'#FDF4FF', bd:'#F0ABFC', col:'#7E22CE'});
+  return alerts;
+}
+
 // ── SIDEBAR
 function renderSidebar(){
-  const q = document.getElementById('search-input').value.toLowerCase();
+  const q = (document.getElementById('search-input').value||'').toLowerCase().trim();
   const list = document.getElementById('resa-list');
   list.innerHTML='';
   const rows = sortByBookedAt(gr()).filter(r => {
-    if(!r.name.toLowerCase().includes(q)) return false;
+    if(q && !r.name.toLowerCase().includes(q)
+         && !(r.phone||'').replace(/\s/g,'').includes(q.replace(/\s/g,''))
+         && !(r.comment||'').toLowerCase().includes(q)) return false;
     if(placementFilter === 'placed')   return r.placed && !r.ns;
     if(placementFilter === 'unplaced') return !r.placed && !r.ns;
     return true;
@@ -74,6 +96,12 @@ function renderSidebar(){
       ? `<span style="display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:var(--rtbg);border:0.5px solid var(--rtbd);color:var(--rtt);flex-shrink:0">${r.tr}⛱</span>`
       : '';
 
+    // Alertes demandes spéciales (allergie, occasion, PMR…)
+    const alerts = detectAlerts(r);
+    const alertLine = alerts.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${alerts.map(a=>`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px;background:${a.bg};border:0.5px solid ${a.bd};color:${a.col}">${a.icon} ${a.label}</span>`).join('')}</div>`
+      : '';
+
     // Ligne du bas : note (commentaire client + note interne) — tronqué avec ...
     const commentLine = r.comment
       ? `<div class="rc-sub" style="margin-top:3px;font-size:11px;color:var(--t2);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;word-break:break-word">💬 ${r.comment.length>60?r.comment.substring(0,60)+'…':r.comment}</div>`
@@ -109,6 +137,7 @@ function renderSidebar(){
           <div class="rc-name">${r.urgent?'<span class="urgent-dot"></span>':''}${r.name}</div>
           ${!r.repas_transat?`<div style="font-size:11px;font-weight:600;color:var(--t2);margin-top:3px">${r.time}</div>`:''}
           ${attBadge}
+          ${alertLine}
           ${commentLine}
           ${placedLine}
         </div>
@@ -906,11 +935,53 @@ function renderTablesCustomLayout(){
 // ══════════════════════════════════════════
 // RENDER TRANSATS — CSS Grid 2D + blocs polygonaux
 // ══════════════════════════════════════════
+function setTrZoom(z){
+  trZoom = Math.max(0.5, Math.min(2.5, Math.round(z * 10) / 10));
+  renderTransats();
+}
+
 function renderTransats(){
   const fc = document.getElementById('floor-container'); fc.innerHTML='';
+
+  // ── Barre de zoom
+  const zb = document.createElement('div');
+  zb.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-shrink:0';
+  const pct = Math.round(trZoom * 100);
+  zb.innerHTML = `
+    <button onclick="setTrZoom(trZoom-0.1)" style="width:28px;height:28px;border:1px solid var(--sep2);border-radius:8px;background:var(--card);font-size:16px;cursor:pointer;color:var(--t2);line-height:1;display:flex;align-items:center;justify-content:center" title="Dézoomer">−</button>
+    <span style="font-size:11px;font-weight:700;color:var(--t3);min-width:36px;text-align:center">${pct}%</span>
+    <button onclick="setTrZoom(trZoom+0.1)" style="width:28px;height:28px;border:1px solid var(--sep2);border-radius:8px;background:var(--card);font-size:16px;cursor:pointer;color:var(--t2);line-height:1;display:flex;align-items:center;justify-content:center" title="Zoomer">+</button>
+    ${pct!==100?`<button onclick="setTrZoom(1)" style="font-size:10px;font-weight:700;padding:3px 8px;border:1px solid var(--sep2);border-radius:8px;background:var(--card);cursor:pointer;color:var(--t3)">100%</button>`:''}
+  `;
+  fc.appendChild(zb);
+
+  // ── Pinch-to-zoom tactile
+  let _p0=null, _z0=1;
+  fc.addEventListener('touchstart', e=>{
+    if(e.touches.length===2){
+      _p0=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      _z0=trZoom;
+    }
+  },{passive:true,once:false});
+  fc.addEventListener('touchmove', e=>{
+    if(e.touches.length===2 && _p0){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+      const nz=Math.max(0.5,Math.min(2.5,_z0*(d/_p0)));
+      const c=fc.querySelector('.beach-card');
+      if(c) c.style.zoom=nz;
+    }
+  },{passive:true});
+  fc.addEventListener('touchend', e=>{
+    if(_p0 && e.touches.length<2){
+      const c=fc.querySelector('.beach-card');
+      if(c){ trZoom=Math.max(0.5,Math.min(2.5,parseFloat(c.style.zoom)||trZoom)); renderTransats(); }
+      _p0=null;
+    }
+  },{passive:true});
+
   const sm = buildSlotMap();
   const card = document.createElement('div'); card.className='beach-card';
-  card.style.minWidth = 'max-content';
+  card.style.cssText = 'min-width:max-content;zoom:'+trZoom;
   card.innerHTML='<div class="beach-shore-label">▲ RESTAURANT</div>';
 
   const TR_W = 48, TR_H = 42, GAP = 5, ALLEY_W = 22, LABEL_W = 62, EXTRA_W = 84, ROW_GAP = 16;

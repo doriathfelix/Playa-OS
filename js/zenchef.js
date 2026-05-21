@@ -549,7 +549,7 @@ function zcToResa(b){
       time,
       date: b.shift_date || b.day || null,
       comment: noteDisplay,
-      tags: [],
+      tags: Array.isArray(b.tags) ? b.tags.map(t=>typeof t==='string'?t:(t.name||t.label||'')).filter(Boolean) : [],
       svc: svcFinal,
       repas_transat: isRepasTransatFinal,
       tr: nbTransats > 0 ? nbTransats : (isRepasTransatFinal ? (b.nb_guests || 1) : null),
