@@ -275,8 +275,8 @@ function autoTables(resas, skipped=0){
   let fusionsUsed = 0, fusionsCreated = 0;
 
   resas.forEach(r=>{
-    // ── PRIORITÉ -1 : table demandée explicitement dans le commentaire
-    const requestedTable = parseTableRequest(r.comment);
+    // ── PRIORITÉ -1 : table demandée explicitement (stockée à l'import ou dans le commentaire)
+    const requestedTable = r.requested_table_id || parseTableRequest(r.comment);
     if(requestedTable && !used.has(requestedTable) && TABLE_DATA[requestedTable] && TABLE_DATA[requestedTable].hi >= r.pax){
       r.placed = true; r.tableId = requestedTable; used.add(requestedTable);
       return;
@@ -473,7 +473,18 @@ function placeTransat(r, sm, opts){
   const needed = r.tr || r.pax || 1;
   const forceRow = r.row_transats || null;
 
-  // ─── Rangée forcée par note client — priorité absolue ───
+  // ─── Rangée forcée + extrémité (ex: "1ère ligne sur le côté") — priorité max ───
+  if(forceRow && r.pref_extremite){
+    const ext = findExtremity(sm, needed, forceRow);
+    if(ext){
+      r.placed = true; r.slot = ext.start; r.extraSlots = null;
+      ext.slots.forEach(s => sm[s] = r);
+      return true;
+    }
+    // Extrémité de la rangée forcée indispo → fall-through vers rangée forcée normale
+  }
+
+  // ─── Rangée forcée seule ───
   if(forceRow){
     const horiz = findHorizontal(sm, needed, false, false, forceRow);
     if(horiz){
