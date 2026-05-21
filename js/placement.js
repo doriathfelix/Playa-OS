@@ -634,10 +634,17 @@ function autoTransats(resas, skipped=0){
   const sm = buildSlotMap();
 
   // ─── Pré-traitement : lire les commentaires pour déduire bed / extrémité ───
+  // (backup pour resas manuelles — les resas Zenchef sont déjà traitées par zcToResa)
   resas.forEach(r => {
-    const text = (r.comment || '').toLowerCase();
-    if(!r.bed && /\b(bed|lit\s*double|cabane)\b/.test(text)) r.bed = true;
-    if(!r.pref_extremite && /\b(c[oô]t[eé]|extrem|bord|coin|bout|angle)\b/.test(text)) r.pref_extremite = true;
+    const raw = (r.comment || '').toLowerCase();
+    const t = raw.replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u').replace(/[îï]/g,'i').replace(/[ôö]/g,'o');
+    if(!r.bed && /\b(bed\s*double|double\s*bed|lit\s*double|cabane)\b/.test(raw)) r.bed = true;
+    if(!r.pref_extremite){
+      const hasCote = /\bcote\b/.test(t) && !/cote\s*(?:du\s*)?(?:resto|restaurant)\b/.test(t);
+      if(hasCote || /\b(extremit[e]?|extreme|lateral[e]?)\b/.test(t) || /\b(au\s*bout|en\s*bout)\b/.test(t) || /\bon\s*the\s*side\b/.test(raw)){
+        r.pref_extremite = true;
+      }
+    }
   });
 
   // ─── Phase 0 : BEDS — placer exclusivement sur BED_SLOTS (lit double = 2 PAX max) ───
