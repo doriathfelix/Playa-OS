@@ -97,7 +97,7 @@ function renderSidebar(){
     const is1ereLigne = r.row_transats === 500;
     const rowLabels = {500:'L1',400:'L2',300:'L3',200:'L4',100:'L5'};
     const trBottomRight = (r.tr && r.tr > 0)
-      ? `<span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:${is1ereLigne?'#FFEAEA':'var(--rtbg)'};border:0.5px solid ${is1ereLigne?'#FF5555':'var(--rtbd)'};color:${is1ereLigne?'#CC0000':'var(--rtt)'}">${r.tr}⛱${r.row_transats&&rowLabels[r.row_transats]?' '+rowLabels[r.row_transats]:''}</span>`
+      ? `<span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:${is1ereLigne?'#FFEAEA':'var(--rtbg)'};border:0.5px solid ${is1ereLigne?'#FF5555':'var(--rtbd)'};color:${is1ereLigne?'#CC0000':'var(--rtt)'}">${r.tr}⛱</span>`
       : '';
     const extBadge = r.pref_extremite
       ? `<span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:20px;background:var(--gdbg);border:0.5px solid var(--gdb);color:var(--gdt)">⟺ côté</span>`
