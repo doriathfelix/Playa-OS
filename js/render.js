@@ -93,10 +93,14 @@ function renderSidebar(){
           : `<div style="font-size:10px;font-weight:700;color:var(--s1t);margin-top:2px">→ T${r.tableId}</div>`)
       : '';
 
-    // Badge transats bas droite (chiffre+⛱) — rouge si 1ère ligne mer (row_transats=500)
+    // Badge transats + badges préférences placement
     const is1ereLigne = r.row_transats === 500;
+    const rowLabels = {500:'L1',400:'L2',300:'L3',200:'L4',100:'L5'};
     const trBottomRight = (r.tr && r.tr > 0)
-      ? `<span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:${is1ereLigne?'#FFEAEA':'var(--rtbg)'};border:0.5px solid ${is1ereLigne?'#FF5555':'var(--rtbd)'};color:${is1ereLigne?'#CC0000':'var(--rtt)'}">${r.tr} ⛱</span>`
+      ? `<span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:${is1ereLigne?'#FFEAEA':'var(--rtbg)'};border:0.5px solid ${is1ereLigne?'#FF5555':'var(--rtbd)'};color:${is1ereLigne?'#CC0000':'var(--rtt)'}">${r.tr}⛱${r.row_transats&&rowLabels[r.row_transats]?' '+rowLabels[r.row_transats]:''}</span>`
+      : '';
+    const extBadge = r.pref_extremite
+      ? `<span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:20px;background:var(--gdbg);border:0.5px solid var(--gdb);color:var(--gdt)">⟺ côté</span>`
       : '';
 
     d.innerHTML = `
@@ -114,6 +118,7 @@ function renderSidebar(){
             <div class="rc-pax">${r.pax} PAX</div>
           </div>
           ${trBottomRight}
+          ${extBadge}
         </div>
       </div>
     `;
@@ -156,6 +161,9 @@ function renderStats(){
   const trFromRT = reservations.transats
     .filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+(x.tr||x.pax||0),0);
   const trTotal = trFromTables + trFromRT;
+  // Beds (lits doubles) — affichage séparé car produit différent
+  const trBeds = reservations.transats
+    .filter(x=>x.bed&&!x.ns&&isSubResa(x)).reduce((s,x)=>s+(x.tr||1),0);
 
   // 1ère ligne mer : même logique que trTotal mais filtrée sur row_transats===500
   // On ne scanne PAS reservations.transats pour les _tr sub-resas (déjà comptées via main resa en s1/s2/soir)
@@ -192,6 +200,7 @@ function renderStats(){
     <span class="stat-pill pill-blue" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Voir Transats">
       <span class="transat-ico"></span> ${trTotal}
     </span>
+    ${trBeds>0?`<span class="stat-pill" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer;background:var(--gdbg);border-color:var(--gdb);color:var(--gdt)" title="Lits doubles">🛏 ${trBeds}</span>`:''}
     ${trMer>0?`<span class="stat-pill pill-red" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Transats 1ère ligne mer">🌊 ${trMer}</span>`:''}
   `;
 }

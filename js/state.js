@@ -76,6 +76,8 @@ function mkResa(fields){
     time_transats: fields.time_transats ?? null,
     row_transats: fields.row_transats ?? null, // rangée préférentielle (500=1ere ligne mer, 400=2eme…)
     pref_extremite: fields.pref_extremite ?? false, // préfère un slot en extrémité (col 1 ou 20)
+    requested_table_id: fields.requested_table_id ?? null, // table demandée explicitement ("table 5")
+    bed: fields.bed ?? false, // lit double → BED_SLOTS
   };
 }
 

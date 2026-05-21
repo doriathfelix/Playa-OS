@@ -273,20 +273,25 @@ function parseBedFromText(txt){
 function parseTransatsFromText(txt){
   if(!txt) return 0;
   const patterns = [
-    /(\d+)\s*x?\s*transats?/i,           // "6 transats", "8transats", "2x transats"
-    /transats?\s*[x:=]?\s*(\d+)/i,       // "transats: 4", "transat=3"
-    /\bT\s*[:=]?\s*(\d+)/,               // "T: 2", "T=2", "T2", "T 4"
-    /(\d+)\s*T\b/,                        // "2T", "8T"
+    /(\d+)\s*x?\s*transats?/i,
+    /transats?\s*[x:=]?\s*(\d+)/i,
+    /\bT\s*[:=]?\s*(\d+)/,
+    /(\d+)\s*T\b/,
     /(\d+)\s*x?\s*matelas?/i,
     /(\d+)\s*x?\s*chaises?\s*(?:longues?|de\s*plage)/i,
     /(\d+)\s*x?\s*chaise\s*longue/i,
     /(\d+)\s*x?\s*sunbeds?/i,
+    /(\d+)\s*x?\s*(?:deck\s*chairs?|beach\s*chairs?|lounge\s*chairs?)/i,
     /(\d+)\s*x?\s*parasols?/i,
+    /(\d+)\s*x?\s*lettini?/i,             // lettino / lettini (italien)
+    /(\d+)\s*x?\s*sdraio/i,               // sdraio (italien)
   ];
   for(const p of patterns){
     const m = txt.match(p);
     if(m) return parseInt(m[1]);
   }
+  // Formes sans nombre : "sunbed", "transat", "chaise longue" → 1 (si présent seul)
+  if(/\b(?:sunbed|deck\s*chair|beach\s*chair|lounge\s*chair|lettino|sdraio)\b/i.test(txt)) return 1;
   return 0;
 }
 
@@ -329,6 +334,26 @@ function parsePreferredRowFromText(txt){
     /\bfacing\s*(?:the\s*)?(?:sea|ocean|water)\b/,
   ];
   if(p1.some(p=>p.test(t))) return 500;
+
+  // "loin du resto" / "loin du restaurant" / "éloigné du restaurant" → 1ère ligne (row 500)
+  const pLoin = [
+    /\bloin\s*(?:du\s*)?(?:resto|restaurant)\b/,
+    /\beloigne\s*(?:du\s*)?(?:resto|restaurant)\b/,
+    /\bpas\s*proche\s*(?:du\s*)?(?:resto|restaurant)\b/,
+    /\bfar\s*from\s*(?:the\s*)?restaurant\b/,
+  ];
+  if(pLoin.some(p=>p.test(t))) return 500;
+
+  // "au milieu" / "milieu de plage" / "centre" / "au centre" → row 300 (milieu de la plage)
+  const pMilieu = [
+    /\bau\s*milieu\b/,
+    /\bmilieu\s*(?:de\s*(?:la\s*)?plage)?\b/,
+    /\bau\s*centre\b/,
+    /\bcentre\s*(?:de\s*(?:la\s*)?plage)?\b/,
+    /\bmiddle\s*(?:of\s*(?:the\s*)?beach)?\b/,
+    /\bcenter\s*(?:of\s*(?:the\s*)?beach)?\b/,
+  ];
+  if(pMilieu.some(p=>p.test(t))) return 300;
 
   const p2 = [/\b2\s*(?:eme?)?\s*(?:ligne|rang(?:ee?)?|row)\b/, /(?:ligne|rang(?:ee?)?|row)\s*(?:n[o°]?\s*)?2\b/];
   if(p2.some(p=>p.test(t))) return 400;
@@ -446,8 +471,10 @@ function zcToResa(b){
   // Rangée préférentielle : scan de tous les champs texte
   const preferredRow = parsePreferredRowFromText(allTextFields)
     || (()=>{ const s=parseSlotFromText(allTextFields); return s?Math.floor(s/100)*100:null; })();
-  // Préférence extrémité : "en extrémité", "au bout" → slot 1 ou 20
+  // Préférence extrémité : "en extrémité", "au bout", "côté" → slot 1 ou 20
   const preferExtremite = parseExtremiteFromText(allTextFields);
+  // Table spécifique demandée : "table 5", "T3" → stocké pour le placement
+  const requestedTableId = typeof parseTableRequest === 'function' ? parseTableRequest(allTextFields) : null;
 
   const heureTransats = cf['horaire-souhaite-pour-les-transats-entre-10h-et-14h30'] || null;
   // Note affichée : tous les champs texte humain, y compris commentaire profil client et custom fields libres
@@ -534,8 +561,9 @@ function zcToResa(b){
       slot: null,
       booked_at: b.date || b.created_at || null,
       time_transats: heureTransats || null,
-      row_transats: preferredRow,      // rangée préférentielle détectée dans les commentaires
-      pref_extremite: preferExtremite, // veut un slot en extrémité (col 1 ou 20)
+      row_transats: preferredRow,
+      pref_extremite: preferExtremite,
+      requested_table_id: requestedTableId,
     })
   };
 }
