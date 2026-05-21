@@ -1310,6 +1310,8 @@ function mkResa(fields){
     time_transats: fields.time_transats ?? null,
     row_transats: fields.row_transats ?? null, // rangée préférentielle (500=1ere ligne mer, 400=2eme…)
     pref_extremite: fields.pref_extremite ?? false, // préfère un slot en extrémité (col 1 ou 20)
+    requested_table_id: fields.requested_table_id ?? null, // table demandée explicitement ("table 5")
+    bed: fields.bed ?? false, // lit double → BED_SLOTS
   };
 }
 
@@ -1537,10 +1539,14 @@ function renderSidebar(){
           : `<div style="font-size:10px;font-weight:700;color:var(--s1t);margin-top:2px">→ T${r.tableId}</div>`)
       : '';
 
-    // Badge transats bas droite (chiffre+⛱) — rouge si 1ère ligne mer (row_transats=500)
+    // Badge transats + badges préférences placement
     const is1ereLigne = r.row_transats === 500;
+    const rowLabels = {500:'L1',400:'L2',300:'L3',200:'L4',100:'L5'};
     const trBottomRight = (r.tr && r.tr > 0)
-      ? `<span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:${is1ereLigne?'#FFEAEA':'var(--rtbg)'};border:0.5px solid ${is1ereLigne?'#FF5555':'var(--rtbd)'};color:${is1ereLigne?'#CC0000':'var(--rtt)'}">${r.tr} ⛱</span>`
+      ? `<span style="font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:${is1ereLigne?'#FFEAEA':'var(--rtbg)'};border:0.5px solid ${is1ereLigne?'#FF5555':'var(--rtbd)'};color:${is1ereLigne?'#CC0000':'var(--rtt)'}">${r.tr}⛱${r.row_transats&&rowLabels[r.row_transats]?' '+rowLabels[r.row_transats]:''}</span>`
+      : '';
+    const extBadge = r.pref_extremite
+      ? `<span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:20px;background:var(--gdbg);border:0.5px solid var(--gdb);color:var(--gdt)">⟺ côté</span>`
       : '';
 
     d.innerHTML = `
@@ -1558,6 +1564,7 @@ function renderSidebar(){
             <div class="rc-pax">${r.pax} PAX</div>
           </div>
           ${trBottomRight}
+          ${extBadge}
         </div>
       </div>
     `;
@@ -1600,6 +1607,9 @@ function renderStats(){
   const trFromRT = reservations.transats
     .filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+(x.tr||x.pax||0),0);
   const trTotal = trFromTables + trFromRT;
+  // Beds (lits doubles) — affichage séparé car produit différent
+  const trBeds = reservations.transats
+    .filter(x=>x.bed&&!x.ns&&isSubResa(x)).reduce((s,x)=>s+(x.tr||1),0);
 
   // 1ère ligne mer : même logique que trTotal mais filtrée sur row_transats===500
   // On ne scanne PAS reservations.transats pour les _tr sub-resas (déjà comptées via main resa en s1/s2/soir)
@@ -1636,6 +1646,7 @@ function renderStats(){
     <span class="stat-pill pill-blue" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Voir Transats">
       <span class="transat-ico"></span> ${trTotal}
     </span>
+    ${trBeds>0?`<span class="stat-pill" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer;background:var(--gdbg);border-color:var(--gdb);color:var(--gdt)" title="Lits doubles">🛏 ${trBeds}</span>`:''}
     ${trMer>0?`<span class="stat-pill pill-red" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Transats 1ère ligne mer">🌊 ${trMer}</span>`:''}
   `;
 }
@@ -3921,8 +3932,8 @@ function autoTables(resas, skipped=0){
   let fusionsUsed = 0, fusionsCreated = 0;
 
   resas.forEach(r=>{
-    // ── PRIORITÉ -1 : table demandée explicitement dans le commentaire
-    const requestedTable = parseTableRequest(r.comment);
+    // ── PRIORITÉ -1 : table demandée explicitement (stockée à l'import ou dans le commentaire)
+    const requestedTable = r.requested_table_id || parseTableRequest(r.comment);
     if(requestedTable && !used.has(requestedTable) && TABLE_DATA[requestedTable] && TABLE_DATA[requestedTable].hi >= r.pax){
       r.placed = true; r.tableId = requestedTable; used.add(requestedTable);
       return;
@@ -4119,7 +4130,18 @@ function placeTransat(r, sm, opts){
   const needed = r.tr || r.pax || 1;
   const forceRow = r.row_transats || null;
 
-  // ─── Rangée forcée par note client — priorité absolue ───
+  // ─── Rangée forcée + extrémité (ex: "1ère ligne sur le côté") — priorité max ───
+  if(forceRow && r.pref_extremite){
+    const ext = findExtremity(sm, needed, forceRow);
+    if(ext){
+      r.placed = true; r.slot = ext.start; r.extraSlots = null;
+      ext.slots.forEach(s => sm[s] = r);
+      return true;
+    }
+    // Extrémité de la rangée forcée indispo → fall-through vers rangée forcée normale
+  }
+
+  // ─── Rangée forcée seule ───
   if(forceRow){
     const horiz = findHorizontal(sm, needed, false, false, forceRow);
     if(horiz){
@@ -5639,20 +5661,25 @@ function parseBedFromText(txt){
 function parseTransatsFromText(txt){
   if(!txt) return 0;
   const patterns = [
-    /(\d+)\s*x?\s*transats?/i,           // "6 transats", "8transats", "2x transats"
-    /transats?\s*[x:=]?\s*(\d+)/i,       // "transats: 4", "transat=3"
-    /\bT\s*[:=]?\s*(\d+)/,               // "T: 2", "T=2", "T2", "T 4"
-    /(\d+)\s*T\b/,                        // "2T", "8T"
+    /(\d+)\s*x?\s*transats?/i,
+    /transats?\s*[x:=]?\s*(\d+)/i,
+    /\bT\s*[:=]?\s*(\d+)/,
+    /(\d+)\s*T\b/,
     /(\d+)\s*x?\s*matelas?/i,
     /(\d+)\s*x?\s*chaises?\s*(?:longues?|de\s*plage)/i,
     /(\d+)\s*x?\s*chaise\s*longue/i,
     /(\d+)\s*x?\s*sunbeds?/i,
+    /(\d+)\s*x?\s*(?:deck\s*chairs?|beach\s*chairs?|lounge\s*chairs?)/i,
     /(\d+)\s*x?\s*parasols?/i,
+    /(\d+)\s*x?\s*lettini?/i,             // lettino / lettini (italien)
+    /(\d+)\s*x?\s*sdraio/i,               // sdraio (italien)
   ];
   for(const p of patterns){
     const m = txt.match(p);
     if(m) return parseInt(m[1]);
   }
+  // Formes sans nombre : "sunbed", "transat", "chaise longue" → 1 (si présent seul)
+  if(/\b(?:sunbed|deck\s*chair|beach\s*chair|lounge\s*chair|lettino|sdraio)\b/i.test(txt)) return 1;
   return 0;
 }
 
@@ -5695,6 +5722,26 @@ function parsePreferredRowFromText(txt){
     /\bfacing\s*(?:the\s*)?(?:sea|ocean|water)\b/,
   ];
   if(p1.some(p=>p.test(t))) return 500;
+
+  // "loin du resto" / "loin du restaurant" / "éloigné du restaurant" → 1ère ligne (row 500)
+  const pLoin = [
+    /\bloin\s*(?:du\s*)?(?:resto|restaurant)\b/,
+    /\beloigne\s*(?:du\s*)?(?:resto|restaurant)\b/,
+    /\bpas\s*proche\s*(?:du\s*)?(?:resto|restaurant)\b/,
+    /\bfar\s*from\s*(?:the\s*)?restaurant\b/,
+  ];
+  if(pLoin.some(p=>p.test(t))) return 500;
+
+  // "au milieu" / "milieu de plage" / "centre" / "au centre" → row 300 (milieu de la plage)
+  const pMilieu = [
+    /\bau\s*milieu\b/,
+    /\bmilieu\s*(?:de\s*(?:la\s*)?plage)?\b/,
+    /\bau\s*centre\b/,
+    /\bcentre\s*(?:de\s*(?:la\s*)?plage)?\b/,
+    /\bmiddle\s*(?:of\s*(?:the\s*)?beach)?\b/,
+    /\bcenter\s*(?:of\s*(?:the\s*)?beach)?\b/,
+  ];
+  if(pMilieu.some(p=>p.test(t))) return 300;
 
   const p2 = [/\b2\s*(?:eme?)?\s*(?:ligne|rang(?:ee?)?|row)\b/, /(?:ligne|rang(?:ee?)?|row)\s*(?:n[o°]?\s*)?2\b/];
   if(p2.some(p=>p.test(t))) return 400;
@@ -5812,8 +5859,10 @@ function zcToResa(b){
   // Rangée préférentielle : scan de tous les champs texte
   const preferredRow = parsePreferredRowFromText(allTextFields)
     || (()=>{ const s=parseSlotFromText(allTextFields); return s?Math.floor(s/100)*100:null; })();
-  // Préférence extrémité : "en extrémité", "au bout" → slot 1 ou 20
+  // Préférence extrémité : "en extrémité", "au bout", "côté" → slot 1 ou 20
   const preferExtremite = parseExtremiteFromText(allTextFields);
+  // Table spécifique demandée : "table 5", "T3" → stocké pour le placement
+  const requestedTableId = typeof parseTableRequest === 'function' ? parseTableRequest(allTextFields) : null;
 
   const heureTransats = cf['horaire-souhaite-pour-les-transats-entre-10h-et-14h30'] || null;
   // Note affichée : tous les champs texte humain, y compris commentaire profil client et custom fields libres
@@ -5900,8 +5949,9 @@ function zcToResa(b){
       slot: null,
       booked_at: b.date || b.created_at || null,
       time_transats: heureTransats || null,
-      row_transats: preferredRow,      // rangée préférentielle détectée dans les commentaires
-      pref_extremite: preferExtremite, // veut un slot en extrémité (col 1 ou 20)
+      row_transats: preferredRow,
+      pref_extremite: preferExtremite,
+      requested_table_id: requestedTableId,
     })
   };
 }
