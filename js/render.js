@@ -102,9 +102,9 @@ function renderSidebar(){
       ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${alerts.map(a=>`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px;background:${a.bg};border:0.5px solid ${a.bd};color:${a.col}">${a.icon} ${a.label}</span>`).join('')}</div>`
       : '';
 
-    // Ligne du bas : note (commentaire client + note interne) — tronqué avec ...
+    // Ligne du bas : note (commentaire client + note interne) — 2 lignes max
     const commentLine = r.comment
-      ? `<div class="rc-sub" style="margin-top:3px;font-size:11px;color:var(--t2);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;text-overflow:ellipsis;word-break:break-word">💬 ${r.comment.length>60?r.comment.substring(0,60)+'…':r.comment}</div>`
+      ? `<div class="rc-sub" style="margin-top:3px;font-size:11px;color:var(--t2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;line-height:1.4">💬 ${r.comment}</div>`
       : '';
 
     // Badge en attente
@@ -1825,6 +1825,16 @@ function showDetail(id){
     ${trCount>0?`<div class="det-row"><div class="det-label">⛱ Transats</div><div class="det-val" style="font-weight:800;color:var(--rtt)">${trCount} transat${trCount>1?'s':''}</div></div>`:''}
     ${r.time_transats?`<div class="det-row"><div class="det-label">Heure transats</div><div class="det-val" style="color:var(--t3)">${r.time_transats}</div></div>`:''}
     ${r.comment?`<div class="det-row"><div class="det-label">Note</div><div class="det-val" style="color:var(--t3);font-size:11px">${r.comment}</div></div>`:''}
+    ${(()=>{
+      const tags=[];
+      if(r.requested_table_id) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--s1bg);border:0.5px solid var(--s1bd);color:var(--s1t)">🪑 Table ${r.requested_table_id} demandée</span>`);
+      if(r.row_transats===500) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FFEAEA;border:0.5px solid #FF5555;color:#CC0000">🌊 1ère ligne mer</span>`);
+      else if(r.row_transats===400) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--rtbg);border:0.5px solid var(--rtbd);color:var(--rtt)">🌊 2ème ligne</span>`);
+      else if(r.row_transats===300) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--rtbg);border:0.5px solid var(--rtbd);color:var(--rtt)">🌊 Milieu</span>`);
+      if(r.pref_extremite) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--gdbg);border:0.5px solid var(--gdb);color:var(--gdt)">⟺ Extrémité</span>`);
+      if(r.bed) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FFF8E1;border:0.5px solid #FFD54F;color:#8A6200">🛏 Lit double</span>`);
+      return tags.length?`<div class="det-row"><div class="det-label">Détecté</div><div class="det-val" style="display:flex;flex-wrap:wrap;gap:4px">${tags.join('')}</div></div>`:'';
+    })()}
     ${r.repas_transat?`<div class="det-row"><div class="det-label">Type</div><div class="det-val"><span style="background:var(--rtbg);color:var(--rtt);border:0.5px solid var(--rtbd);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">⛱ Repas transat</span></div></div>`:''}
     ${(!r.repas_transat&&trCount>0)?`<div class="det-row"><div class="det-label">Type</div><div class="det-val"><span style="background:var(--s1bg);color:var(--s1t);border:0.5px solid var(--s1bd);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">🍽 + ⛱ Table & transats</span></div></div>`:''}`;
 
@@ -2142,7 +2152,7 @@ function initTouchDrag(){
         if(src && src.id === id){ src.dragReady = true; }
       }, 400)
     };
-  });
+  }, {passive:false});
 
   document.addEventListener('touchmove', e => {
     if(!src) return;

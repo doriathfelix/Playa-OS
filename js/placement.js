@@ -135,6 +135,7 @@ function confirmFuse(){
 // Lance l'auto-placement pour un service précis, sans changer l'onglet affiché
 function autoPlaceFor(svcKey){
   saveUndo();
+  reAnalyzeAllResas();
   const prevTab = currentTab;
   currentTab = TAB_KEYS.indexOf(svcKey);
   const all = reservations[svcKey];
@@ -149,6 +150,7 @@ function autoPlaceFor(svcKey){
 
 function autoPlace(){
   saveUndo();
+  reAnalyzeAllResas();
   const svcKey = tk(); // 's1' | 's2' | 'transats' | 'soir'
   const all = gr();
 
