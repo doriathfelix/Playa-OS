@@ -797,6 +797,12 @@ function reAnalyzeAllResas(){
       .replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u')
       .replace(/[îï]/g,'i').replace(/[ôö]/g,'o');
 
+    // Table demandée explicitement si non encore détectée
+    if(!r.requested_table_id){
+      const tid = parseTableRequest(raw);
+      if(tid) r.requested_table_id = tid;
+    }
+
     // Extrémité : côté, bout, latéral… (même logique que parseExtremiteFromText)
     if(!r.pref_extremite){
       const hasCote = /\bcote\b/.test(norm) && !/cote\s*(?:du\s*)?(?:resto|restaurant)\b/.test(norm);
