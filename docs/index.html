@@ -5999,15 +5999,19 @@ function zcToResa(b){
 
   // Service selon shift name ou heure (shiftName défini en haut de la fonction)
   const h = parseFloat(timeRaw.replace(':','.'));
-  const snLow = shiftName.toLowerCase();
+  const snLow = shiftName.toLowerCase().replace(/[\s_-]/g,''); // normalise "soir 1" → "soir1"
   const isSoirShift = snLow.includes('soir') || snLow.includes('diner') || snLow.includes('dîner')
-    || snLow.includes('dinner') || snLow.includes('evening') || snLow.includes('nuit');
+    || snLow.includes('dinner') || snLow.includes('evening') || snLow.includes('nuit')
+    || snLow.includes('service2') || snLow.includes('2emesvc') // cas "service 2" du soir
+    || /soir[12]?$/.test(snLow);
   let svc = 's1';
   if(isSoirShift || h >= 18) svc = 'soir';
   else if(h >= 14) svc = 's2';
   else svc = 's1';
-  // Les repas transats auront svc='transats' pour forcer couleur bleue RT
-  // (sera corrigé après calcul de isRepasTransatFinal)
+
+  // LOG diagnostic — visible dans la console navigateur pour débugger les classements
+  if(h >= 16 || isSoirShift)
+    console.log(`[ZC svc] ${name} | time:${b.time} | shift:"${shiftName}" | svc→${svc}`);
 
   // Statut
   let ns = false, zenchef_status = b.status || 'waiting';
