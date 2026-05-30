@@ -5748,8 +5748,8 @@ function parseTransatsFromText(txt){
   const patterns = [
     /(\d+)\s*x?\s*transats?/i,
     /transats?\s*[x:=]?\s*(\d+)/i,
-    /\bT\s*[:=]?\s*(\d+)/,
-    /(\d+)\s*T\b/,
+    /\bT\s*[:=]\s*(\d+)/,          // "T: 3" ou "T=3" seulement (T17 sans séparateur = table)
+    /(\d+)\s*T\b(?!\d)/,           // "3T" → 3 transats
     /(\d+)\s*x?\s*matelas?/i,
     /(\d+)\s*x?\s*chaises?\s*(?:longues?|de\s*plage)/i,
     /(\d+)\s*x?\s*chaise\s*longue/i,
