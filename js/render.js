@@ -2114,7 +2114,7 @@ function initTouchDrag(){
   function startGhost(el, x, y){
     if(navigator.vibrate) navigator.vibrate(30);
     touchDragActive = true;
-    dragId = src.id;
+    dragId = parseInt(src.id, 10);
     const rect = el.getBoundingClientRect();
     ghost = el.cloneNode(true);
     ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;opacity:.88;z-index:9999;pointer-events:none;border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.22);transform:scale(1.05) translateY(-4px);transition:none`;
