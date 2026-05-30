@@ -197,12 +197,13 @@ function renderStats(){
   const trFromRT = reservations.transats
     .filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+(x.tr||x.pax||0),0);
   const trTotal = trFromTables + trFromRT;
-  // Beds (lits doubles) — affichage séparé car produit différent
+  // Beds (lits doubles) — chaque lit = 2 transats dans le total
   const trBeds = reservations.transats
     .filter(x=>x.bed&&!x.ns&&isSubResa(x)).reduce((s,x)=>s+(x.tr||1),0);
+  // Grand total transats journée : transats normaux + beds×2
+  const trGrandTotal = trTotal + trBeds * 2;
 
-  // 1ère ligne mer : même logique que trTotal mais filtrée sur row_transats===500
-  // On ne scanne PAS reservations.transats pour les _tr sub-resas (déjà comptées via main resa en s1/s2/soir)
+  // 1ère ligne mer : row_transats===500 + beds row 500 × 2
   const trMer =
     [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[])]
       .filter(x=>!x.ns && x.tr>0 && !isSubResa(x) && x.row_transats===500)
@@ -210,7 +211,11 @@ function renderStats(){
     +
     reservations.transats
       .filter(x=>x.repas_transat && !x.ns && x.row_transats===500)
-      .reduce((s,x)=>s+(x.tr||x.pax||0),0);
+      .reduce((s,x)=>s+(x.tr||x.pax||0),0)
+    +
+    reservations.transats
+      .filter(x=>x.bed&&!x.ns&&isSubResa(x)&&x.row_transats===500)
+      .reduce((s,x)=>s+(x.tr||1)*2,0);
 
   // Nb de resas par service (pour info dans le badge)
   const nS1   = reservations.s1.filter(x=>!x.ns&&!isSubResa(x)).length;
@@ -234,11 +239,11 @@ function renderStats(){
       <div class="pax-c-label">Soir</div><div class="pax-c-val">${paxSoir}</div>
     </div>
     ${paxSoir2>0?`<div class="pax-circle pax-soir" onclick="${nav(4)}" style="cursor:pointer" title="Voir Soir 2"><div class="pax-c-label">Soir2</div><div class="pax-c-val">${paxSoir2}</div></div>`:''}
-    <span class="stat-pill pill-blue" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Voir Transats">
-      <span class="transat-ico"></span> ${trTotal}
+    <span class="stat-pill pill-blue" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Total transats journée (beds = 2 transats chacun)">
+      <span class="transat-ico"></span> ${trGrandTotal}
     </span>
-    ${trBeds>0?`<span class="stat-pill" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer;background:var(--gdbg);border-color:var(--gdb);color:var(--gdt)" title="Lits doubles">🛏 ${trBeds}</span>`:''}
     ${trMer>0?`<span class="stat-pill pill-red" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Transats 1ère ligne mer">🌊 ${trMer}</span>`:''}
+    ${trBeds>0?`<span class="stat-pill" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer;background:var(--gdbg);border-color:var(--gdb);color:var(--gdt)" title="${trBeds} lit${trBeds>1?'s':''} double${trBeds>1?'s':''}">🛏 ${trBeds}</span>`:''}
   `;
 }
 
