@@ -1483,6 +1483,12 @@ function detectAlerts(r){
     alerts.push({icon:'🍃', label:'Régime', bg:'#F0FDF4', bd:'#BBF7D0', col:'#15803D'});
   if(/\b(chaise\s*haute|bebe|nourisson|poussette|highchair|baby|nourrisson)\b/.test(all))
     alerts.push({icon:'👶', label:'Bébé', bg:'#FDF4FF', bd:'#F0ABFC', col:'#7E22CE'});
+  // Tags Zenchef bruts : tous ceux non déjà couverts par une alerte ci-dessus
+  const coveredRe = /allergi|intoleran|gluten|lactose|noix|arachide|peanut|celiac|nuts|anniversaire|birthday|fiancailles|mariage|evjf|evg|pedida|noces|proposal|celebration|pmr|wheelchair|handicap|mobilite|fauteuil|vegetar|vegan|vegetal|halal|casher|kosher|viande|pescet|highchair|nourrisson|poussette/i;
+  (r.tags||[]).forEach(tag => {
+    if(tag && !coveredRe.test(tag))
+      alerts.push({icon:'🏷', label:tag, bg:'#EEF2FF', bd:'#C7D2FE', col:'#3730A3'});
+  });
   return alerts;
 }
 
@@ -1550,9 +1556,9 @@ function renderSidebar(){
       ? `<div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${alerts.map(a=>`<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:20px;background:${a.bg};border:0.5px solid ${a.bd};color:${a.col}">${a.icon} ${a.label}</span>`).join('')}</div>`
       : '';
 
-    // Ligne du bas : note (commentaire client + note interne) — 2 lignes max
+    // Commentaire : fond teinté, texte foncé, 3 lignes max — tout ce qui vient de Zenchef
     const commentLine = r.comment
-      ? `<div class="rc-sub" style="margin-top:3px;font-size:11px;color:var(--t2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;line-height:1.4">💬 ${r.comment}</div>`
+      ? `<div class="rc-sub" style="margin-top:5px;font-size:11px;font-weight:500;color:var(--t1);background:rgba(37,99,235,0.06);border-left:2px solid rgba(37,99,235,0.25);border-radius:0 5px 5px 0;padding:4px 7px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;line-height:1.5">💬 ${r.comment}</div>`
       : '';
 
     // Badge en attente
