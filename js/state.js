@@ -36,7 +36,7 @@ let extraTransats = loadExtra();
 //   date          : string|null (ISO, ex: '2026-04-11') — pour import multi-jours
 //   comment       : string — notes internes
 //   tags          : string[] — labels Zenchef (ex: ['VIP','Anniversaire'])
-//   svc           : 's1'|'s2'|'transats'|'soir'
+//   svc           : 's1'|'s2'|'transats'|'soir'|'soir2'
 //   repas_transat : boolean
 //   tr            : number|null — nb transats (onglet transats)
 //   placed        : boolean

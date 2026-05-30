@@ -18,12 +18,13 @@ function selectType(type){
 function selectSvc(svc){
   modalSvc = svc;
   document.getElementById('f-svc').value = svc;
-  ['s1','s2','soir'].forEach(s=>{
+  ['s1','s2','soir','soir2'].forEach(s=>{
     const b=document.getElementById('svc-'+s);
-    if(b) b.className='svc-btn'+(svc===s?' on-'+svc:'');
+    const onCls = s==='s1'?'on-s1':s==='s2'?'on-s2':'on-soir';
+    if(b) b.className='svc-btn'+(svc===s?' '+onCls:'');
   });
   // Heure par défaut selon service
-  const t={'s1':'12h00','s2':'14h15','soir':'19h30'};
+  const t={'s1':'12h00','s2':'14h15','soir':'19h30','soir2':'21h00'};
   document.getElementById('f-time').value = t[svc]||'12h00';
 }
 
@@ -35,7 +36,7 @@ function openModal(){
     selectSvc('s1');
   } else {
     selectType('salle');
-    const svcMap={0:'s1',1:'s2',3:'soir'};
+    const svcMap={0:'s1',1:'s2',3:'soir',4:'soir2'};
     selectSvc(svcMap[currentTab]||'s1');
   }
   document.getElementById('modal-overlay').classList.add('open');
@@ -101,7 +102,7 @@ function submitModal(){
     const resa=mkResa({id,name,pax,time,comment,phone,source:'manual',
       svc,repas_transat:false,tr:tr>0?tr:null,
     });
-    const tab=svc==='s2'?'s2':svc==='soir'?'soir':'s1';
+    const tab=svc==='s2'?'s2':svc==='soir2'?'soir2':svc==='soir'?'soir':'s1';
     reservations[tab].push({...resa,tableId:null});
     if(tr>0){
       const trResa=mkResa({id:nextId++,name,pax,time,comment:'',phone:null,
