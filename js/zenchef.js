@@ -451,6 +451,16 @@ function zcToResa(b){
   const cf = b.custom_field || {};
   const typeExp = cf['quel-type-dexperience'] || '';
 
+  // ── Nom propre (défini tôt car utilisé pour filtrer le noteDisplay)
+  const rawFirst = (b.firstname||'').trim();
+  const rawLast  = (b.lastname||'').trim();
+  const capWord  = w => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : '';
+  const nameFmt  = [capWord(rawLast), capWord(rawFirst)].filter(Boolean).join(' ');
+  const name     = nameFmt || rawFirst || rawLast || 'Sans nom';
+
+  // ── Shift name (défini tôt pour l'exclure des notes)
+  const shiftName = (b.shift_slot && b.shift_slot.shift && b.shift_slot.shift.name) || '';
+
   // ── Extraction profonde : TOUS les champs texte du booking, y compris objets imbriqués
   // (customer.comment, tags[], custom_field, shift_slot.shift.name, etc.)
   const allTextFields = extractAllBookingText(b).join(' | ');
@@ -477,18 +487,43 @@ function zcToResa(b){
   const requestedTableId = typeof parseTableRequest === 'function' ? parseTableRequest(allTextFields) : null;
 
   const heureTransats = cf['horaire-souhaite-pour-les-transats-entre-10h-et-14h30'] || null;
-  // Note affichée : tous les champs texte humain, y compris commentaire profil client et custom fields libres
+
+  // ── noteDisplay : capture TOUS les textes utiles du booking Zenchef
+  // 1. Champs explicites connus
   const cfFreeTexts = Object.entries(cf)
     .filter(([k,v]) => typeof v === 'string' && v.trim().length > 2 && !/^\d+$/.test(v.trim())
       && !['quel-type-dexperience','de-combien-de-transats-avez-vous-besoin',
            'horaire-souhaite-pour-les-transats-entre-10h-et-14h30'].includes(k))
     .map(([,v]) => v);
-  const noteDisplay = [
-    b.comment, b.note, b.internal_note, b.extra_comment, b.customer_comment,
-    b.preparation, b.occasion, b.special_request,
-    b.customer?.comment, b.customer?.note,
+  const explicitNotes = [
+    b.comment, b.note, b.internal_note, b.internal_comment, b.extra_comment,
+    b.customer_comment, b.restaurant_comment, b.private_comment, b.public_comment,
+    b.preparation, b.occasion, b.special_request, b.wishes, b.message, b.remarks,
+    b.allergy, b.dietary,
+    b.customer?.comment, b.customer?.note, b.customer?.message, b.customer?.wishes,
+    b.customer?.preferences, b.customer?.remarks, b.customer?.restriction,
+    b.customer?.allergy, b.customer?.dietary, b.customer?.profile_comment,
     ...cfFreeTexts,
-  ].filter(v => v && typeof v === 'string' && v.trim()).join(' · ');
+  ].filter(v => v && typeof v === 'string' && v.trim().length >= 2);
+
+  // 2. Filet : textes extraits récursivement non encore capturés ci-dessus
+  // Filtre les données structurelles déjà affichées ailleurs
+  const _opExcl = new Set([
+    rawFirst.toLowerCase(), rawLast.toLowerCase(), name.toLowerCase(),
+    typeExp.toLowerCase(), shiftName.toLowerCase(),
+    'confirmed','pending','cancelled','waiting','noshow','deleted','no_show_cancelled',
+    'widget','google','direct','tripadvisor','walkin','phone','manual','zenchef',
+    'active','booked','accepted','rejected',
+  ].filter(Boolean));
+  const explicitLower = new Set(explicitNotes.map(s => s.toLowerCase().trim()));
+  const extraTexts = extractAllBookingText(b).filter(s => {
+    const sl = s.toLowerCase().trim();
+    return sl.length >= 3 && !_opExcl.has(sl) && !explicitLower.has(sl);
+  });
+
+  const noteDisplay = [...explicitNotes, ...extraTexts]
+    .filter((v, i, arr) => arr.findIndex(x => x.toLowerCase().trim() === v.toLowerCase().trim()) === i)
+    .join(' · ');
   const isRepasTransat = typeExp.toLowerCase().includes('transat');
   // Convention La Playa : uniquement 13h00 pile = repas transat
   const is13h00 = (b.time || '').startsWith('13:00');
@@ -500,8 +535,7 @@ function zcToResa(b){
   const timeRaw = b.time || '12:00';
   const time = timeRaw.replace(':','h').substring(0,5);
 
-  // Service selon shift name ou heure
-  const shiftName = (b.shift_slot && b.shift_slot.shift && b.shift_slot.shift.name) || '';
+  // Service selon shift name ou heure (shiftName défini en haut de la fonction)
   const h = parseFloat(timeRaw.replace(':','.'));
   let svc = 's1';
   if(shiftName.toLowerCase().includes('soir') || h >= 19) svc = 'soir';
@@ -519,12 +553,7 @@ function zcToResa(b){
     console.log('ATTENTE:', b.lastname, b.firstname, 'status:', b.status, 'phase:', b.phase, 'shift_date:', b.shift_date, 'time:', b.time);
   }
 
-  // Nom propre
-  const rawFirst = (b.firstname||'').trim();
-  const rawLast = (b.lastname||'').trim();
-  const capWord = w => w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : '';
-  const nameFmt = [capWord(rawLast), capWord(rawFirst)].filter(Boolean).join(' ');
-  const name = nameFmt || rawFirst || rawLast || 'Sans nom';
+  // (rawFirst, rawLast, name définis en haut de la fonction)
 
   // Forcer svc='transats' pour les repas transats purs → couleur bleue RT
   const svcFinal = isRepasTransatFinal ? 'transats' : svc;
