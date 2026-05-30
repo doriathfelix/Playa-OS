@@ -5997,21 +5997,29 @@ function zcToResa(b){
   const timeRaw = b.time || '12:00';
   const time = timeRaw.replace(':','h').substring(0,5);
 
-  // Service selon shift name ou heure (shiftName défini en haut de la fonction)
+  // Service selon shift name, heure du shift, ou heure de réservation
   const h = parseFloat(timeRaw.replace(':','.'));
-  const snLow = shiftName.toLowerCase().replace(/[\s_-]/g,''); // normalise "soir 1" → "soir1"
+
+  // Heure de début du shift (ex: "19:00:00" → 19) — plus fiable que le nom
+  const shiftStartRaw = b.shift_slot?.shift?.start_time || b.shift_slot?.start_time || '';
+  const hShift = shiftStartRaw ? parseFloat(shiftStartRaw.replace(':','.')) : null;
+
+  const snLow = shiftName.toLowerCase().replace(/[\s_-]/g,'');
   const isSoirShift = snLow.includes('soir') || snLow.includes('diner') || snLow.includes('dîner')
     || snLow.includes('dinner') || snLow.includes('evening') || snLow.includes('nuit')
-    || snLow.includes('service2') || snLow.includes('2emesvc') // cas "service 2" du soir
-    || /soir[12]?$/.test(snLow);
+    || /soir\d*$/.test(snLow);
+
+  // Soir si : nom shift contient un mot-clé soir, OU shift démarre à 17h+, OU resa à 17h30+
+  const isSoir = isSoirShift || (hShift !== null && hShift >= 17) || h >= 17.5;
+
   let svc = 's1';
-  if(isSoirShift || h >= 18) svc = 'soir';
-  else if(h >= 14) svc = 's2';
+  if(isSoir) svc = 'soir';
+  else if(h >= 14 || (hShift !== null && hShift >= 14)) svc = 's2';
   else svc = 's1';
 
-  // LOG diagnostic — visible dans la console navigateur pour débugger les classements
-  if(h >= 16 || isSoirShift)
-    console.log(`[ZC svc] ${name} | time:${b.time} | shift:"${shiftName}" | svc→${svc}`);
+  // LOG diagnostic (console navigateur) — à garder pour débug
+  if(h >= 16 || isSoirShift || (hShift && hShift >= 16))
+    console.log(`[ZC svc] ${name} | resa:${b.time} | shiftStart:${shiftStartRaw||'?'} | shift:"${shiftName}" → ${svc}`);
 
   // Statut
   let ns = false, zenchef_status = b.status || 'waiting';
