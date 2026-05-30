@@ -488,14 +488,14 @@ function zcToResa(b){
 
   const heureTransats = cf['horaire-souhaite-pour-les-transats-entre-10h-et-14h30'] || null;
 
-  // ── noteDisplay : capture TOUS les textes utiles du booking Zenchef
-  // 1. Champs explicites connus
+  // ── noteDisplay : uniquement les champs texte humains explicites
+  // (pas de fallback récursif — il attrape des UUIDs, métadonnées internes, etc.)
   const cfFreeTexts = Object.entries(cf)
     .filter(([k,v]) => typeof v === 'string' && v.trim().length > 2 && !/^\d+$/.test(v.trim())
       && !['quel-type-dexperience','de-combien-de-transats-avez-vous-besoin',
            'horaire-souhaite-pour-les-transats-entre-10h-et-14h30'].includes(k))
     .map(([,v]) => v);
-  const explicitNotes = [
+  const noteDisplay = [
     b.comment, b.note, b.internal_note, b.internal_comment, b.extra_comment,
     b.customer_comment, b.restaurant_comment, b.private_comment, b.public_comment,
     b.preparation, b.occasion, b.special_request, b.wishes, b.message, b.remarks,
@@ -504,26 +504,9 @@ function zcToResa(b){
     b.customer?.preferences, b.customer?.remarks, b.customer?.restriction,
     b.customer?.allergy, b.customer?.dietary, b.customer?.profile_comment,
     ...cfFreeTexts,
-  ].filter(v => v && typeof v === 'string' && v.trim().length >= 2);
-
-  // 2. Filet : textes extraits récursivement non encore capturés ci-dessus
-  // Filtre les données structurelles déjà affichées ailleurs
-  const _opExcl = new Set([
-    rawFirst.toLowerCase(), rawLast.toLowerCase(), name.toLowerCase(),
-    typeExp.toLowerCase(), shiftName.toLowerCase(),
-    'confirmed','pending','cancelled','waiting','noshow','deleted','no_show_cancelled',
-    'widget','google','direct','tripadvisor','walkin','phone','manual','zenchef',
-    'active','booked','accepted','rejected',
-  ].filter(Boolean));
-  const explicitLower = new Set(explicitNotes.map(s => s.toLowerCase().trim()));
-  const extraTexts = extractAllBookingText(b).filter(s => {
-    const sl = s.toLowerCase().trim();
-    return sl.length >= 3 && !_opExcl.has(sl) && !explicitLower.has(sl);
-  });
-
-  const noteDisplay = [...explicitNotes, ...extraTexts]
-    .filter((v, i, arr) => arr.findIndex(x => x.toLowerCase().trim() === v.toLowerCase().trim()) === i)
-    .join(' · ');
+  ].filter(v => v && typeof v === 'string' && v.trim().length >= 2)
+   .filter((v, i, arr) => arr.findIndex(x => x.toLowerCase().trim() === v.toLowerCase().trim()) === i)
+   .join(' · ');
   const isRepasTransat = typeExp.toLowerCase().includes('transat');
   // Convention La Playa : uniquement 13h00 pile = repas transat
   const is13h00 = (b.time || '').startsWith('13:00');
@@ -537,8 +520,11 @@ function zcToResa(b){
 
   // Service selon shift name ou heure (shiftName défini en haut de la fonction)
   const h = parseFloat(timeRaw.replace(':','.'));
+  const snLow = shiftName.toLowerCase();
+  const isSoirShift = snLow.includes('soir') || snLow.includes('diner') || snLow.includes('dîner')
+    || snLow.includes('dinner') || snLow.includes('evening') || snLow.includes('nuit');
   let svc = 's1';
-  if(shiftName.toLowerCase().includes('soir') || h >= 19) svc = 'soir';
+  if(isSoirShift || h >= 18) svc = 'soir';
   else if(h >= 14) svc = 's2';
   else svc = 's1';
   // Les repas transats auront svc='transats' pour forcer couleur bleue RT
