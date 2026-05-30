@@ -70,7 +70,7 @@ function renderSidebar(){
       if(r.repas_transat || r.svc==='transats') cls+=' svc-rt';
       else if(r.svc==='s1') cls+=' svc-s1';
       else if(r.svc==='s2') cls+=' svc-s2';
-      else if(r.svc==='soir') cls+=' svc-soir';
+      else if(r.svc==='soir'||r.svc==='soir2') cls+=' svc-soir';
     }
     d.className=cls; d.draggable=!r.ns; d.dataset.id=r.id;
     const ptag = r.placed
@@ -81,8 +81,8 @@ function renderSidebar(){
           : `<div class="rc-placed-tag" style="color:${r.svc==='s1'?'var(--s1t)':r.svc==='s2'?'var(--s2t)':'var(--sot)'}">→ T${r.tableId}</div>`)
       : '';
     const isRT = r.svc==='transats' || r.repas_transat;
-    const svcLabel = r.svc==='s1'?'S1':r.svc==='s2'?'S2':r.svc==='soir'?'Soir':isRT?'RT':'—';
-    const svcCssKey = isRT?'rt':r.svc==='s1'?'s1':r.svc==='s2'?'s2':r.svc==='soir'?'soir':'s1';
+    const svcLabel = r.svc==='s1'?'S1':r.svc==='s2'?'S2':r.svc==='soir'?'Soir':r.svc==='soir2'?'Soir2':isRT?'RT':'—';
+    const svcCssKey = isRT?'rt':r.svc==='s1'?'s1':r.svc==='s2'?'s2':(r.svc==='soir'||r.svc==='soir2')?'soir':'s1';
     const svcTag = `<span class="rc-svc-badge rc-svc-${svcCssKey}">${svcLabel}</span>`;
     // Tag transats : affiché sur toutes les resas qui ont des transats
     const trBadge = (r.tr && r.tr > 0)
@@ -182,16 +182,17 @@ function renderStats(){
 
   // PAX par service : uniquement depuis les tableaux s1/s2/soir (pas transats)
   // + exclusion no-show
-  const paxS1   = reservations.s1.filter(x=>!x.ns&&!isSubResa(x)).reduce((s,x)=>s+x.pax,0);
-  const paxS2   = reservations.s2.filter(x=>!x.ns&&!isSubResa(x)).reduce((s,x)=>s+x.pax,0);
-  const paxSoir = reservations.soir.filter(x=>!x.ns&&!isSubResa(x)).reduce((s,x)=>s+x.pax,0);
+  const paxS1    = reservations.s1.filter(x=>!x.ns&&!isSubResa(x)).reduce((s,x)=>s+x.pax,0);
+  const paxS2    = reservations.s2.filter(x=>!x.ns&&!isSubResa(x)).reduce((s,x)=>s+x.pax,0);
+  const paxSoir  = reservations.soir.filter(x=>!x.ns&&!isSubResa(x)).reduce((s,x)=>s+x.pax,0);
+  const paxSoir2 = (reservations.soir2||[]).filter(x=>!x.ns&&!isSubResa(x)).reduce((s,x)=>s+x.pax,0);
 
   // RT = repas transats purs (resa dans transats[] avec repas_transat=true)
   const paxRT = reservations.transats.filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+x.pax,0);
 
   // Total transats : somme des tr sur les resas table (pas sous-resas pour éviter doublon)
   // + tr des repas transats purs
-  const trFromTables = [...reservations.s1,...reservations.s2,...reservations.soir]
+  const trFromTables = [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[])]
     .filter(x=>!x.ns && x.tr>0 && !isSubResa(x)).reduce((s,x)=>s+(x.tr||0),0);
   const trFromRT = reservations.transats
     .filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+(x.tr||x.pax||0),0);
@@ -203,7 +204,7 @@ function renderStats(){
   // 1ère ligne mer : même logique que trTotal mais filtrée sur row_transats===500
   // On ne scanne PAS reservations.transats pour les _tr sub-resas (déjà comptées via main resa en s1/s2/soir)
   const trMer =
-    [...reservations.s1,...reservations.s2,...reservations.soir]
+    [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[])]
       .filter(x=>!x.ns && x.tr>0 && !isSubResa(x) && x.row_transats===500)
       .reduce((s,x)=>s+(x.tr||0),0)
     +
