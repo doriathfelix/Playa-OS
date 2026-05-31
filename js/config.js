@@ -1,25 +1,47 @@
 // ══════════════════════════════════════════
 // CONFIG TABLES
 // ══════════════════════════════════════════
-// Données capacités par table (pour autoplace + tooltip)
+// prio : ordre de priorité auto-placement (1=meilleur). Extérieur gauche → salle → bar/hautes/salon13.
+// sun  : 'ombre' | 'soleil' | 'mi' — info ombre/soleil pour demandes particulières.
+// p    : true = terrasse (affichage visuel distinctif)
 const TABLE_DATA = {
-  16:{lo:2,hi:3,p:true}, 17:{lo:2,hi:2,p:true}, 18:{lo:2,hi:2,p:true},
-  19:{lo:4,hi:5,p:true}, 20:{lo:2,hi:2,p:true}, 21:{lo:4,hi:5,p:true},
-  22:{lo:2,hi:2,p:true}, 23:{lo:4,hi:5,p:true}, 24:{lo:2,hi:2,p:true},
-  1:{lo:2,hi:3,p:false}, 2:{lo:2,hi:2,p:false}, 3:{lo:2,hi:3,p:false},
-  4:{lo:4,hi:4,p:false}, 5:{lo:5,hi:6,p:false}, 6:{lo:2,hi:2,p:false},
-  7:{lo:4,hi:6,p:false}, 8:{lo:5,hi:6,p:false},
-  9:{lo:2,hi:3,p:false}, 10:{lo:4,hi:5,p:false,note:'banc'},
-  11:{lo:2,hi:3,p:false}, 12:{lo:2,hi:3,p:false},
-  13:{lo:4,hi:4,p:false,lbl:'Salon 13'}, 14:{lo:2,hi:3,p:false},
-  25:{lo:2,hi:2,p:false}, 26:{lo:2,hi:2,p:false},
-  27:{lo:2,hi:3,p:false}, 28:{lo:2,hi:2,p:false},
-  29:{lo:2,hi:2,p:false}, 30:{lo:2,hi:3,p:false},
-  // Salons côté salle (mêmes droits que les tables — drag & drop + auto-placement)
-  1001:{lo:4,hi:4,p:false,lbl:'Salon 1'},
-  1002:{lo:4,hi:4,p:false,lbl:'Salon 2'},
-  1003:{lo:2,hi:2,p:false,lbl:'Salon 3'},
-  1004:{lo:3,hi:3,p:false,lbl:'Salon 4'},
+  // ── Terrasse gauche (extérieur = priorité maximale, de gauche à droite) ──
+  16:{lo:2,hi:3,p:true, prio:1,  sun:'ombre'},
+  17:{lo:2,hi:2,p:true, prio:2,  sun:'soleil'},
+  18:{lo:2,hi:2,p:true, prio:3,  sun:'soleil'},
+  19:{lo:4,hi:5,p:true, prio:4,  sun:'mi'},
+  21:{lo:4,hi:5,p:true, prio:5,  sun:'mi'},
+  23:{lo:4,hi:5,p:true, prio:6,  sun:'mi'},
+  22:{lo:2,hi:2,p:true, prio:7,  sun:'ombre'},
+  20:{lo:2,hi:2,p:true, prio:8,  sun:'mi'},
+  24:{lo:2,hi:2,p:true, prio:9,  sun:'mi'},
+  // ── Salle intérieure (priorité moyenne, de gauche à droite) ──
+  1:{lo:2,hi:3,p:false, prio:10, sun:'ombre'},
+  2:{lo:2,hi:2,p:false, prio:11, sun:'ombre'},
+  3:{lo:2,hi:3,p:false, prio:12, sun:'ombre'},
+  4:{lo:4,hi:4,p:false, prio:13, sun:'ombre'},
+  5:{lo:5,hi:6,p:false, prio:14, sun:'ombre'},
+  6:{lo:2,hi:2,p:false, prio:15, sun:'ombre'},
+  8:{lo:5,hi:6,p:false, prio:16, sun:'ombre'},
+  7:{lo:4,hi:6,p:false, prio:17, sun:'ombre'},
+  9:{lo:4,hi:4,p:false, prio:18, sun:'ombre'},
+  10:{lo:4,hi:5,p:false,prio:19, sun:'ombre', note:'banc'},
+  11:{lo:2,hi:3,p:false, prio:20, sun:'soleil'},
+  12:{lo:2,hi:3,p:false, prio:21, sun:'soleil'},
+  14:{lo:2,hi:3,p:false, prio:22, sun:'soleil'},
+  // ── Salons côté salle ──
+  1001:{lo:4,hi:4,p:false,prio:23, sun:'ombre', lbl:'Salon 1'},
+  1002:{lo:4,hi:4,p:false,prio:24, sun:'ombre', lbl:'Salon 2'},
+  1003:{lo:2,hi:2,p:false,prio:25, sun:'ombre', lbl:'Salon 3'},
+  1004:{lo:3,hi:3,p:false,prio:26, sun:'ombre', lbl:'Salon 4'},
+  // ── Bar + Salon 13 + Tables hautes (moins bonnes) ──
+  25:{lo:2,hi:2,p:false, prio:27, sun:'soleil'},
+  26:{lo:2,hi:2,p:false, prio:28, sun:'soleil'},
+  13:{lo:4,hi:4,p:false, prio:29, sun:'soleil', lbl:'Salon 13'},
+  27:{lo:2,hi:3,p:false, prio:30, sun:'ombre'},
+  28:{lo:2,hi:2,p:false, prio:31, sun:'ombre'},
+  29:{lo:2,hi:2,p:false, prio:32, sun:'ombre'},
+  30:{lo:2,hi:3,p:false, prio:33, sun:'ombre'},
 };
 // Compat autoplace
 const TABLES = Object.entries(TABLE_DATA).map(([id,d])=>({id:+id,...d,z:'',sz:d.hi>=4?'md':'sm',lo:d.lo,hi:d.hi}));

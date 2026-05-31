@@ -257,7 +257,7 @@ function autoTables(resas, skipped=0){
   const emptyFusions = existingFusions.filter(g => !g.occupied);
 
   const all     = Object.entries(TABLE_DATA).map(([id,d])=>({id:+id,...d}));
-  const ordered = [...all.filter(t=>t.p), ...all.filter(t=>!t.p)];
+  const ordered = [...all].sort((a,b) => (a.prio||99) - (b.prio||99));
 
   // Tri : grands groupes (besoin de fusion) EN PREMIER → réservent les combos avant les petits
   // puis PAX décroissant, enfin ancienneté de réservation

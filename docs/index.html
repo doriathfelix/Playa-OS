@@ -1176,25 +1176,47 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 // ══════════════════════════════════════════
 // CONFIG TABLES
 // ══════════════════════════════════════════
-// Données capacités par table (pour autoplace + tooltip)
+// prio : ordre de priorité auto-placement (1=meilleur). Extérieur gauche → salle → bar/hautes/salon13.
+// sun  : 'ombre' | 'soleil' | 'mi' — info ombre/soleil pour demandes particulières.
+// p    : true = terrasse (affichage visuel distinctif)
 const TABLE_DATA = {
-  16:{lo:2,hi:3,p:true}, 17:{lo:2,hi:2,p:true}, 18:{lo:2,hi:2,p:true},
-  19:{lo:4,hi:5,p:true}, 20:{lo:2,hi:2,p:true}, 21:{lo:4,hi:5,p:true},
-  22:{lo:2,hi:2,p:true}, 23:{lo:4,hi:5,p:true}, 24:{lo:2,hi:2,p:true},
-  1:{lo:2,hi:3,p:false}, 2:{lo:2,hi:2,p:false}, 3:{lo:2,hi:3,p:false},
-  4:{lo:4,hi:4,p:false}, 5:{lo:5,hi:6,p:false}, 6:{lo:2,hi:2,p:false},
-  7:{lo:4,hi:6,p:false}, 8:{lo:5,hi:6,p:false},
-  9:{lo:2,hi:3,p:false}, 10:{lo:4,hi:5,p:false,note:'banc'},
-  11:{lo:2,hi:3,p:false}, 12:{lo:2,hi:3,p:false},
-  13:{lo:4,hi:4,p:false,lbl:'Salon 13'}, 14:{lo:2,hi:3,p:false},
-  25:{lo:2,hi:2,p:false}, 26:{lo:2,hi:2,p:false},
-  27:{lo:2,hi:3,p:false}, 28:{lo:2,hi:2,p:false},
-  29:{lo:2,hi:2,p:false}, 30:{lo:2,hi:3,p:false},
-  // Salons côté salle (mêmes droits que les tables — drag & drop + auto-placement)
-  1001:{lo:4,hi:4,p:false,lbl:'Salon 1'},
-  1002:{lo:4,hi:4,p:false,lbl:'Salon 2'},
-  1003:{lo:2,hi:2,p:false,lbl:'Salon 3'},
-  1004:{lo:3,hi:3,p:false,lbl:'Salon 4'},
+  // ── Terrasse gauche (extérieur = priorité maximale, de gauche à droite) ──
+  16:{lo:2,hi:3,p:true, prio:1,  sun:'ombre'},
+  17:{lo:2,hi:2,p:true, prio:2,  sun:'soleil'},
+  18:{lo:2,hi:2,p:true, prio:3,  sun:'soleil'},
+  19:{lo:4,hi:5,p:true, prio:4,  sun:'mi'},
+  21:{lo:4,hi:5,p:true, prio:5,  sun:'mi'},
+  23:{lo:4,hi:5,p:true, prio:6,  sun:'mi'},
+  22:{lo:2,hi:2,p:true, prio:7,  sun:'ombre'},
+  20:{lo:2,hi:2,p:true, prio:8,  sun:'mi'},
+  24:{lo:2,hi:2,p:true, prio:9,  sun:'mi'},
+  // ── Salle intérieure (priorité moyenne, de gauche à droite) ──
+  1:{lo:2,hi:3,p:false, prio:10, sun:'ombre'},
+  2:{lo:2,hi:2,p:false, prio:11, sun:'ombre'},
+  3:{lo:2,hi:3,p:false, prio:12, sun:'ombre'},
+  4:{lo:4,hi:4,p:false, prio:13, sun:'ombre'},
+  5:{lo:5,hi:6,p:false, prio:14, sun:'ombre'},
+  6:{lo:2,hi:2,p:false, prio:15, sun:'ombre'},
+  8:{lo:5,hi:6,p:false, prio:16, sun:'ombre'},
+  7:{lo:4,hi:6,p:false, prio:17, sun:'ombre'},
+  9:{lo:4,hi:4,p:false, prio:18, sun:'ombre'},
+  10:{lo:4,hi:5,p:false,prio:19, sun:'ombre', note:'banc'},
+  11:{lo:2,hi:3,p:false, prio:20, sun:'soleil'},
+  12:{lo:2,hi:3,p:false, prio:21, sun:'soleil'},
+  14:{lo:2,hi:3,p:false, prio:22, sun:'soleil'},
+  // ── Salons côté salle ──
+  1001:{lo:4,hi:4,p:false,prio:23, sun:'ombre', lbl:'Salon 1'},
+  1002:{lo:4,hi:4,p:false,prio:24, sun:'ombre', lbl:'Salon 2'},
+  1003:{lo:2,hi:2,p:false,prio:25, sun:'ombre', lbl:'Salon 3'},
+  1004:{lo:3,hi:3,p:false,prio:26, sun:'ombre', lbl:'Salon 4'},
+  // ── Bar + Salon 13 + Tables hautes (moins bonnes) ──
+  25:{lo:2,hi:2,p:false, prio:27, sun:'soleil'},
+  26:{lo:2,hi:2,p:false, prio:28, sun:'soleil'},
+  13:{lo:4,hi:4,p:false, prio:29, sun:'soleil', lbl:'Salon 13'},
+  27:{lo:2,hi:3,p:false, prio:30, sun:'ombre'},
+  28:{lo:2,hi:2,p:false, prio:31, sun:'ombre'},
+  29:{lo:2,hi:2,p:false, prio:32, sun:'ombre'},
+  30:{lo:2,hi:3,p:false, prio:33, sun:'ombre'},
 };
 // Compat autoplace
 const TABLES = Object.entries(TABLE_DATA).map(([id,d])=>({id:+id,...d,z:'',sz:d.hi>=4?'md':'sm',lo:d.lo,hi:d.hi}));
@@ -4012,7 +4034,7 @@ function autoTables(resas, skipped=0){
   const emptyFusions = existingFusions.filter(g => !g.occupied);
 
   const all     = Object.entries(TABLE_DATA).map(([id,d])=>({id:+id,...d}));
-  const ordered = [...all.filter(t=>t.p), ...all.filter(t=>!t.p)];
+  const ordered = [...all].sort((a,b) => (a.prio||99) - (b.prio||99));
 
   // Tri : grands groupes (besoin de fusion) EN PREMIER → réservent les combos avant les petits
   // puis PAX décroissant, enfin ancienneté de réservation
@@ -5273,7 +5295,7 @@ function printServiceSheet() {
     {id:5,lbl:'5'},{id:6,lbl:'6'},{id:7,lbl:'7'},{id:8,lbl:'8'},
     {id:9,lbl:'9'},{id:10,lbl:'10'},{id:11,lbl:'11'},{id:12,lbl:'12'},
     {id:13,lbl:'SALON 13',long:true},
-    {id:14,lbl:'14'},{id:15,lbl:'15'},{id:16,lbl:'16'},{id:17,lbl:'17'},
+    {id:14,lbl:'14'},{id:16,lbl:'16'},{id:17,lbl:'17'},
     {id:18,lbl:'18'},{id:19,lbl:'19'},{id:20,lbl:'20'},{id:21,lbl:'21'},
     {id:22,lbl:'22'},{id:23,lbl:'23'},{id:24,lbl:'24'},
     {id:25,lbl:'BAR PLAGE 25',long:true},{id:26,lbl:'BAR PLAGE 26',long:true},
@@ -5399,7 +5421,7 @@ function printSoirSheet() {
     {id:5,lbl:'5'},{id:6,lbl:'6'},{id:7,lbl:'7'},{id:8,lbl:'8'},
     {id:9,lbl:'9'},{id:10,lbl:'10'},{id:11,lbl:'11'},{id:12,lbl:'12'},
     {id:13,lbl:'SALON 13',long:true},
-    {id:14,lbl:'14'},{id:15,lbl:'15'},{id:16,lbl:'16'},{id:17,lbl:'17'},
+    {id:14,lbl:'14'},{id:16,lbl:'16'},{id:17,lbl:'17'},
     {id:18,lbl:'18'},{id:19,lbl:'19'},{id:20,lbl:'20'},{id:21,lbl:'21'},
     {id:22,lbl:'22'},{id:23,lbl:'23'},{id:24,lbl:'24'},
     {id:25,lbl:'BAR PLAGE 25',long:true},{id:26,lbl:'BAR PLAGE 26',long:true},
