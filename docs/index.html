@@ -8320,6 +8320,7 @@ function renderCuisine(c){
 
     const tabs = [
       {k:'fiches', label:'📋 Fiches techniques'},
+      {k:'foodcost', label:'💰 Food Cost'},
       {k:'recettes', label:'👨‍🍳 Recettes & briefs'},
       {k:'process', label:'⏱ Process service'},
       {k:'formation', label:'🎓 Formation'}
@@ -8327,6 +8328,7 @@ function renderCuisine(c){
     body.appendChild(makeSubNav(tabs, currentTab, k => { currentTab = k; rebuild(); }));
 
     if(currentTab === 'fiches') renderFichesTab();
+    else if(currentTab === 'foodcost') renderFoodcostTab();
     else if(currentTab === 'recettes') renderRecettesTab();
     else if(currentTab === 'process') renderProcessTab();
     else if(currentTab === 'formation') renderFormationTab();
@@ -8381,6 +8383,176 @@ function renderCuisine(c){
       grid.appendChild(card);
     });
     body.appendChild(grid);
+  }
+
+  function renderFoodcostTab(){
+    const fiches = [
+      {
+        nom:'Ballotine volaille', pv:26.36, prProduit:3.73, prVendu:4.10, perte:10,
+        margebr:22.26, taux:543, coef:6.43,
+        ing:[
+          {art:'Dinde',         four:'Pomona',           unite:'pièce', cu:8.90,  qte:0.200, pr:1.78},
+          {art:'Pistache',      four:'Pomona',           unite:'kg',    cu:35.00, qte:0.020, pr:0.70},
+          {art:'Échalotte',     four:'Compère',          unite:'kg',    cu:3.00,  qte:0.020, pr:0.06},
+          {art:'Sarriette',     four:'Compère',          unite:'pièce', cu:15.00, qte:0.009, pr:0.14},
+          {art:'Petit pois',    four:'Pomona',           unite:'—',     cu:3.00,  qte:0.090, pr:0.27},
+          {art:'Carotte fane',  four:'Compère',          unite:'kg',    cu:4.00,  qte:0.070, pr:0.28},
+          {art:'Crème fraîche', four:'Pomona',           unite:'—',     cu:5.00,  qte:0.050, pr:0.25},
+          {art:'Sauce poulette',four:'Maison',           unite:'—',     cu:5.00,  qte:0.050, pr:0.25}
+        ]
+      },
+      {
+        nom:'Bao tentacule de poulpe', pv:15.45, prProduit:2.55, prVendu:2.81, perte:10,
+        margebr:12.64, taux:450, coef:5.50,
+        ing:[
+          {art:'Bao',              four:'Maison',            unite:'pièce', cu:0.08,  qte:2.000, pr:0.16},
+          {art:'Tentacule poulpe', four:'Pomona',            unite:'kg',    cu:29.90, qte:0.050, pr:1.50},
+          {art:'Mangue piment',    four:'Les Compères',      unite:'pièce', cu:0.30,  qte:1.000, pr:0.30},
+          {art:'Huile olive',      four:'Pomona Es',         unite:'L',     cu:5.90,  qte:0.010, pr:0.06},
+          {art:'Ail',              four:'Les Compères',      unite:'kg',    cu:4.00,  qte:0.010, pr:0.04},
+          {art:'Sel',              four:'Pomona · Episaveurs',unite:'boîte',cu:5.00,  qte:0.100, pr:0.50}
+        ]
+      },
+      {
+        nom:'Smash burger galice', pv:21.81, prProduit:3.33, prVendu:3.66, perte:10,
+        margebr:18.15, taux:495, coef:5.95,
+        ing:[
+          {art:'Pain',      four:'Compère', unite:'pièce', cu:0.40, qte:1.000, pr:0.40},
+          {art:'Viande',    four:'Pomona',  unite:'kg',    cu:1.89, qte:1.000, pr:1.89},
+          {art:'Mayo fumée',four:'Pomona',  unite:'kg',    cu:0.05, qte:1.000, pr:0.05},
+          {art:'Cheddar',   four:'Compère', unite:'pièce', cu:0.19, qte:1.000, pr:0.19},
+          {art:'Condiment', four:'Pomona',  unite:'—',     cu:0.30, qte:1.000, pr:0.30},
+          {art:'Frite',     four:'Maison',  unite:'kg',    cu:0.50, qte:1.000, pr:0.50}
+        ]
+      },
+      {
+        nom:'Clafoutis piña colada', pv:26.00, prProduit:3.55, prVendu:3.91, perte:10,
+        margebr:22.09, taux:565, coef:6.65,
+        ing:[
+          {art:'Purée ananas',   four:'Pomona · Terre Azur',       unite:'kg', cu:1.53, qte:1.500, pr:2.30},
+          {art:'Beurre',         four:'SAF',                        unite:'kg', cu:1.50, qte:0.500, pr:0.75},
+          {art:'Ananas',         four:'Compères',                   unite:'L',  cu:6.32, qte:0.015, pr:0.09},
+          {art:'Rhum',           four:'SAF',                        unite:'—',  cu:0,    qte:0,     pr:0},
+          {art:'Œuf',            four:'SAF · Sysco · Episaveurs',   unite:'kg', cu:2.83, qte:0.040, pr:0.11},
+          {art:'Lait coco',      four:'—',                          unite:'—',  cu:0,    qte:0,     pr:0},
+          {art:'Crème Debic',    four:'SAF · Sysco · Passion Froid',unite:'kg', cu:7.00, qte:0.010, pr:0.07},
+          {art:'Noix coco rapée',four:'Passion Froid',              unite:'L',  cu:4.62, qte:0.050, pr:0.23}
+        ]
+      },
+      {
+        nom:'Faux filet wagyu', pv:50.00, prProduit:12.26, prVendu:13.49, perte:10,
+        margebr:36.51, taux:271, coef:3.71,
+        ing:[
+          {art:'Faux filet wagyu',four:'S2F',       unite:'kg', cu:62.00, qte:0.180, pr:11.16},
+          {art:'Jus umami',       four:'Sysco',     unite:'L',  cu:0.80,  qte:1.000, pr:0.80},
+          {art:'Carotte',         four:'Episaveurs',unite:'kg', cu:0.30,  qte:1.000, pr:0.30}
+        ]
+      }
+    ];
+
+    // colour based on coef: ≥6 green, ≥5 amber, <5 red
+    function coefCol(c){ return c >= 6 ? '#16A34A' : c >= 5 ? '#D97706' : '#DC2626'; }
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;gap:12px';
+
+    fiches.forEach(f => {
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--card);border:1px solid var(--sep);border-radius:14px;overflow:hidden';
+
+      const col = coefCol(f.coef);
+
+      // Header
+      const hdr = document.createElement('div');
+      hdr.style.cssText = `padding:12px 16px;border-bottom:.5px solid var(--sep);display:flex;align-items:center;justify-content:space-between;background:${col}08;cursor:pointer`;
+      hdr.innerHTML = `
+        <div>
+          <div style="font-size:13.5px;font-weight:800;color:var(--t1)">${f.nom}</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:1px">1 portion · perte ${f.perte}%</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--t4);text-transform:uppercase;font-weight:700">Coef marge</div>
+          <div style="font-size:22px;font-weight:900;color:${col};font-family:'DM Mono',monospace;line-height:1">${f.coef.toFixed(2)}</div>
+        </div>
+      `;
+
+      // KPI row
+      const kpis = document.createElement('div');
+      kpis.style.cssText = 'display:grid;grid-template-columns:repeat(4,1fr);border-bottom:.5px solid var(--sep)';
+      [
+        {l:'PR produit', v:f.prProduit.toFixed(2)+'€', c:'var(--t1)'},
+        {l:'PR vendu',   v:f.prVendu.toFixed(2)+'€',   c:'var(--t1)'},
+        {l:'PV HT',      v:f.pv.toFixed(2)+'€',         c:'var(--t1)'},
+        {l:'Taux marge', v:f.taux+'%',                   c:col}
+      ].forEach((k,i) => {
+        kpis.innerHTML += `<div style="padding:10px 12px;${i<3?'border-right:.5px solid var(--sep)':''}">
+          <div style="font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase">${k.l}</div>
+          <div style="font-size:13px;font-weight:800;color:${k.c};font-family:'DM Mono',monospace">${k.v}</div>
+        </div>`;
+      });
+
+      // Ingredient table (initially hidden, toggled)
+      const tblWrap = document.createElement('div');
+      tblWrap.style.display = 'none';
+      tblWrap.style.padding = '0 0 8px';
+
+      let tblHtml = `<table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead>
+          <tr style="background:var(--bg)">
+            <th style="padding:7px 12px;text-align:left;font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase">Article</th>
+            <th style="padding:7px 8px;text-align:left;font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase">Fournisseur</th>
+            <th style="padding:7px 8px;text-align:center;font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase">Unité</th>
+            <th style="padding:7px 8px;text-align:right;font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase">Coût/u</th>
+            <th style="padding:7px 8px;text-align:right;font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase">Qté</th>
+            <th style="padding:7px 12px;text-align:right;font-size:9px;font-weight:700;color:var(--t4);text-transform:uppercase">PR HT</th>
+          </tr>
+        </thead><tbody>`;
+
+      f.ing.forEach((ing, i) => {
+        const bg = i % 2 === 0 ? '' : 'background:var(--bg)';
+        const prStr = ing.pr > 0 ? ing.pr.toFixed(2)+'€' : '—';
+        const cuStr = ing.cu > 0 ? ing.cu.toFixed(2)+'€' : '—';
+        const qteStr = ing.qte > 0 ? ing.qte.toFixed(3) : '—';
+        tblHtml += `<tr style="${bg}">
+          <td style="padding:6px 12px;font-weight:600;color:var(--t1)">${ing.art}</td>
+          <td style="padding:6px 8px;color:var(--t3)">${ing.four}</td>
+          <td style="padding:6px 8px;color:var(--t3);text-align:center">${ing.unite}</td>
+          <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--t2)">${cuStr}</td>
+          <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--t2)">${qteStr}</td>
+          <td style="padding:6px 12px;text-align:right;font-family:'DM Mono',monospace;font-weight:700;color:var(--t1)">${prStr}</td>
+        </tr>`;
+      });
+
+      tblHtml += `</tbody>
+        <tfoot>
+          <tr style="background:${col}10;border-top:1.5px solid ${col}40">
+            <td colspan="5" style="padding:8px 12px;font-weight:800;color:var(--t1);font-size:11.5px">Total PR HT</td>
+            <td style="padding:8px 12px;text-align:right;font-weight:900;color:${col};font-family:'DM Mono',monospace;font-size:13px">${f.prProduit.toFixed(2)}€</td>
+          </tr>
+        </tfoot>
+      </table>`;
+
+      tblWrap.innerHTML = tblHtml;
+
+      // Toggle on header click
+      let open = false;
+      const toggleBtn = document.createElement('button');
+      toggleBtn.style.cssText = `width:100%;padding:8px 16px;border:none;border-top:.5px solid var(--sep);background:var(--bg);font-size:11px;font-weight:600;color:var(--t3);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px`;
+      toggleBtn.innerHTML = '▾ Voir les ingrédients';
+      toggleBtn.onclick = () => {
+        open = !open;
+        tblWrap.style.display = open ? 'block' : 'none';
+        toggleBtn.innerHTML = open ? '▴ Masquer les ingrédients' : '▾ Voir les ingrédients';
+      };
+
+      card.appendChild(hdr);
+      card.appendChild(kpis);
+      card.appendChild(tblWrap);
+      card.appendChild(toggleBtn);
+      wrap.appendChild(card);
+    });
+
+    body.appendChild(wrap);
   }
 
   function renderRecettesTab(){
