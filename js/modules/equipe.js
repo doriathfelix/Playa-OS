@@ -16,8 +16,8 @@ const EQ_MEMBRES = [
   // ── SALLE ─────────────────────────────────────────────────────────────
   { id:'antoine', nom:'Antoine', role:'Manager',   poste:'Management', team:'salle', color:'#E89A3C' },
   { id:'mathis',  nom:'Mathis',  role:'Service',   poste:'Salle',      team:'salle', color:'#2563EB' },
-  { id:'paulie',  nom:'Paulie',  role:'Service',   poste:'Salle',      team:'salle', color:'#3B82F6' },
-  { id:'inuit',   nom:'Inuit',   role:'Plage',     poste:'Plage',      team:'salle', color:'#0284C7' },
+  { id:'aurelie', nom:'Aurélie', role:'Service',   poste:'Salle',      team:'salle', color:'#3B82F6' },
+  { id:'eliott',  nom:'Eliott',  role:'Plage',     poste:'Plage',      team:'salle', color:'#0284C7' },
   { id:'sam',     nom:'Sam',     role:'Plage',     poste:'Plage',      team:'salle', color:'#0EA5E9' },
   { id:'felix',   nom:'Felix',   role:'Service',   poste:'Salle',      team:'salle', color:'#4F46E5' },
   { id:'eva',     nom:'Eva',     role:'Bar',       poste:'Bar',        team:'salle', color:'#16A34A' },
@@ -47,7 +47,7 @@ function eqGetConfig() {
       chef:'lundi', carla:'mardi', noa:'lundi', ju:'mercredi',
       che:'lundi', joanna:'lundi', fifou:'mardi', teo:'mercredi',
       // salle
-      antoine:'vendredi', mathis:'lundi', paulie:'mardi', inuit:'mercredi',
+      antoine:'vendredi', mathis:'lundi', aurelie:'mardi', eliott:'mercredi',
       sam:'jeudi', felix:'mercredi', eva:'lundi', ninon:'mardi'
     },
     overrides: {}
