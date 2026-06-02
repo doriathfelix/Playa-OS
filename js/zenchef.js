@@ -140,8 +140,8 @@ async function setDate(dateStr){
   // ── Chemin ultra-rapide : pool mémoire frais → aucun accès réseau/localStorage
   const fromPool = memoryPoolGet(dateStr);
   if(fromPool !== undefined){
-    reservations = {s1:[], s2:[], transats:[], soir:[]};
-    fused = {s1:[],s2:[],transats:[],soir:[]};
+    reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
+    fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
     selectedId = null;
     saveUndo();
     applyBookings(fromPool, dateStr);
@@ -152,8 +152,8 @@ async function setDate(dateStr){
   }
 
   // ── Chemin normal : pas de pool → vider + charger (réseau ou localStorage)
-  reservations = {s1:[], s2:[], transats:[], soir:[]};
-  fused = {s1:[],s2:[],transats:[],soir:[]};
+  reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
+  fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
   selectedId = null;
   lastSyncAt = null;
   updateSyncAge();
@@ -755,7 +755,7 @@ function applyBookings(bookings, date){
     if(conv._cancelled){ cancelled++; return; }
     if(isDupe(String(b.id))){ dupes++; return; }
     const svc = conv._svc;
-    const tab = svc === 's2' ? 's2' : svc === 'soir' ? 'soir' : 's1';
+    const tab = svc === 's2' ? 's2' : svc === 'soir2' ? 'soir2' : svc === 'soir' ? 'soir' : 's1';
     if(conv.resa.repas_transat){
       reservations.transats.push({...conv.resa, slot: null});
     } else {
@@ -900,8 +900,8 @@ async function syncZenchef(date){
   // ── ÉTAPE 1 : cache (IndexedDB/localStorage) valide → retour immédiat
   const cached = await zcCacheGet(date);
   if(cached){
-    reservations = {s1:[], s2:[], transats:[], soir:[]};
-    fused = {s1:[],s2:[],transats:[],soir:[]};
+    reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
+    fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
     selectedId = null;
     saveUndo();
     applyBookings(cached, date);
@@ -918,8 +918,8 @@ async function syncZenchef(date){
         null, date
       ).then(byDate=>{
         const bkgs = byDate[date] || [];
-        reservations = {s1:[], s2:[], transats:[], soir:[]};
-        fused = {s1:[],s2:[],transats:[],soir:[]};
+        reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
+        fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
         selectedId = null;
         applyBookings(bkgs, date);
         lastSyncAt = new Date();
@@ -937,8 +937,8 @@ async function syncZenchef(date){
   zcSetSpinner(true);
   zcSetProgress(10);
   zcSetLabel('connexion Zenchef…');
-  reservations = {s1:[], s2:[], transats:[], soir:[]};
-  fused = {s1:[],s2:[],transats:[],soir:[]};
+  reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
+  fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
   selectedId = null;
   render();
 
@@ -1008,8 +1008,8 @@ async function syncZenchef(date){
         (d, bkgs) => {
           if(firstDataShown) return;
           firstDataShown = true;
-          reservations = {s1:[], s2:[], transats:[], soir:[]};
-          fused = {s1:[],s2:[],transats:[],soir:[]};
+          reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
+          fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
           selectedId = null;
           applyBookings(bkgs, date);
           lastSyncAt = new Date();
@@ -1066,8 +1066,8 @@ function startAutoSync(){
     if(currentDate >= today){
       fetchAllPagesAndCacheAll().then(byDate => {
         const bookings = byDate[currentDate] || [];
-        reservations = {s1:[], s2:[], transats:[], soir:[]};
-        fused = {s1:[],s2:[],transats:[],soir:[]};
+        reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
+        fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
         selectedId = null;
         applyBookings(bookings, currentDate);
         lastSyncAt = new Date();

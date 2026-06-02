@@ -58,10 +58,10 @@ function makeDashCard(title){
 
 // ── DASHBOARD — cartes avec traits colorés
 function renderDash(c){
-  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir,...reservations.transats];
+  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[]),...reservations.transats];
   const paxS1 = allResas.filter(x=>x.svc==='s1'&&!x.ns&&!x.repas_transat).reduce((s,x)=>s+x.pax,0);
   const paxS2 = allResas.filter(x=>x.svc==='s2'&&!x.ns&&!x.repas_transat).reduce((s,x)=>s+x.pax,0);
-  const paxSoir = allResas.filter(x=>x.svc==='soir'&&!x.ns&&!x.repas_transat).reduce((s,x)=>s+x.pax,0);
+  const paxSoir = allResas.filter(x=>(x.svc==='soir'||x.svc==='soir2')&&!x.ns&&!x.repas_transat).reduce((s,x)=>s+x.pax,0);
   const trTotal = allResas.filter(x=>!x.ns).reduce((s,x)=>s+(x.tr||0),0);
   const nonPlaces = allResas.filter(x=>!x.placed&&!x.ns&&!x.waiting).length;
 

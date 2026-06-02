@@ -237,6 +237,32 @@ function findExtremity(sm, needed, forceRow){
   return null;
 }
 
+function parseTableRequest(text){
+  if(!text) return null;
+  const t = text.toLowerCase();
+  const m = t.match(/table\s*(?:n[°oa]?\s*)?(\d+)/i) || t.match(/\bt(\d+)\b/);
+  if(m){ const n = parseInt(m[1]); if(n >= 1 && n <= 30 && TABLE_DATA[n]) return n; }
+  return null;
+}
+
+function findExtremity(sm, needed, forceRow){
+  const rowOrder = forceRow
+    ? TR_ROWS.filter(r => r.id === forceRow)
+    : TR_ROWS;
+  for(const row of rowOrder){
+    const {g, d} = trSlots(row.id);
+    if(g.length >= needed){
+      const gSlots = g.slice(0, needed);
+      if(gSlots.every(s => !sm[s])) return {slots: gSlots, start: gSlots[0]};
+    }
+    if(d.length >= needed){
+      const dSlots = d.slice(d.length - needed);
+      if(dSlots.every(s => !sm[s])) return {slots: dSlots, start: dSlots[0]};
+    }
+  }
+  return null;
+}
+
 function autoTables(resas, skipped=0){
   const used = new Set(gr().filter(r=>r.placed&&r.tableId).map(r=>r.tableId));
 
