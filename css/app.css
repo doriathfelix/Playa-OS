@@ -429,9 +429,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .TR.TR-occ{cursor:grab}
 .TR.TR-extra{border:1.5px dashed var(--gdb);background:var(--gdbg)}
 .TR.TR-extra:hover{border-color:var(--gold);background:var(--obg)}
-.TR.TR-bed{background:var(--gdbg);border-color:var(--gdb);border-width:1.5px;color:var(--gdt)}
-.TR.TR-bed .tr-num{color:var(--gdt)}
-.TR.TR-bed:hover:not(.TR-occ){border-color:var(--gold);background:#FEF3C7}
+@media print{.TR.TR-bed{width:48px;height:48px}}
 .tr-num{font-size:9px;font-weight:600;color:var(--t4)}
 .tr-name{font-size:9px;font-weight:700;text-align:center;width:100%;padding:0 3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.2}
 .tr-sub{font-size:8px;font-weight:600;margin-top:1px;line-height:1}

@@ -1137,9 +1137,7 @@ function renderTransats(){
       cell.className = 'TR' + (isBed ? ' TR-bed' : '') + (isFuseSel ? ' TR-fuse-sel' : '');
       cell.style.cssText = `grid-column:${col}; grid-row:${ri+1};`;
       cell.dataset.slot = slot;
-      cell.innerHTML = isBed
-        ? `<div class="tr-num" style="font-size:8px;font-weight:800;line-height:1.25;text-align:center">BED<br>${slotLabel(slot)}</div>`
-        : `<div class="tr-num">${slotLabel(slot)}</div>`;
+      cell.innerHTML = `<div class="tr-num">${slotLabel(slot)}</div>`;
 
       cell.addEventListener('dragover', e => { e.preventDefault(); cell.classList.add('TR-drop'); });
       cell.addEventListener('dragleave', () => cell.classList.remove('TR-drop'));
