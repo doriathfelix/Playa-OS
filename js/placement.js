@@ -181,8 +181,10 @@ const TABLE_ZONES = {
 // Règle : chaque fusion de 2 tables gagne +1 chaise → n tables fusionnées = +(n-1) au total.
 // ⚠ Jamais : 7+8 (pas fusionnables physiquement)
 const FUSION_COMBOS = [
-  // ── Terrasse (paires côte-à-côte) ──
-  {tids:[19,20]}, {tids:[21,22]}, {tids:[23,24]},
+  // ── Terrasse (paires côte-à-côte) — jamais en auto, max 7 PAX si demandé ──
+  {tids:[19,20], noAuto:true, hi:7},
+  {tids:[21,22], noAuto:true, hi:7},
+  {tids:[23,24], noAuto:true, hi:7},
   // ── Salle intérieure ──
   {tids:[1,2]},  {tids:[2,3]},  {tids:[11,12]},
   {tids:[3,4]},  {tids:[5,6]},  {tids:[10,11]}, {tids:[9,10]},
@@ -195,14 +197,17 @@ const FUSION_COMBOS = [
   {tids:[27,28,29,30]}, {tids:[1,2,3,4]},
 ];
 
-// Capacité d'une fusion = somme des hi individuels + (n_tables - 1) chaises bonus
+// Capacité d'une fusion = somme des hi + (n-1) chaises bonus, plafonné si défini dans FUSION_COMBOS
 function fusionHi(tids){
+  const combo = FUSION_COMBOS.find(c => c.tids.length === tids.length && c.tids.every(t => tids.includes(t)));
+  if(combo && combo.hi !== undefined) return combo.hi;
   return tids.reduce((s,tid)=>s+(TABLE_DATA[tid]?.hi||0),0) + tids.length - 1;
 }
 
-// Trouve la meilleure fusion : la plus petite combo libre qui couvre le PAX
+// Trouve la meilleure fusion auto (exclut les combos noAuto sauf demande explicite)
 function findBestFusion(pax, used){
   const available = FUSION_COMBOS
+    .filter(c => !c.noAuto)
     .filter(c => !c.tids.some(tid => used.has(tid)))
     .map(c => ({...c, hi: fusionHi(c.tids)}))
     .filter(c => c.hi >= pax);
@@ -257,7 +262,7 @@ function autoTables(resas, skipped=0){
   // On calcule leur capacité totale et si elles sont déjà occupées
   const existingFusions = (fused[tk()]||[]).map(g => {
     const occupied = gr().some(r => r.placed && g.tids.includes(r.tableId));
-    const totalHi  = g.tids.reduce((s, tid) => s + (TABLE_DATA[tid]?.hi || 0), 0) + g.tids.length - 1;
+    const totalHi  = fusionHi(g.tids);
     g.tids.forEach(tid => used.add(tid)); // marquer toutes leurs tables comme prises
     return { ...g, occupied, totalHi };
   });
