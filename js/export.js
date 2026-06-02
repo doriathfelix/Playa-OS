@@ -513,7 +513,19 @@ function printServiceSheet() {
       const fg = !entry.tranat && (fusedGroups||[]).find(f => f.tids.includes(id));
       if (fg && !done.has(fg.tids[0])) {
         const r = fg.tids.map(t => map[t]).find(x => x) || null;
-        rows += dataRow(fg.tids.join('+'), r);
+        // Première table de la fusion : ligne normale avec la resa
+        rows += dataRow(String(fg.tids[0]), r);
+        // Tables suivantes : ligne avec séparateur pointillé + signe +
+        fg.tids.slice(1).forEach(tid => {
+          const dotBorder = 'border-top:2px dotted #000';
+          rows += `<tr>
+            <td class="d-tbl" style="${dotBorder}">
+              <span style="display:block;font-size:6pt;font-weight:900;line-height:1;margin-bottom:1px">+</span>${tid}
+            </td>
+            <td class="d-cov" style="${dotBorder}"></td>
+            <td class="d-nom" style="${dotBorder}"></td>
+          </tr>`;
+        });
         fg.tids.forEach(t => done.add(t));
         return;
       }
@@ -636,7 +648,17 @@ function printSoirSheet() {
     const fg = !entry.tranat && [...(fused.soir||[])].find(f => f.tids.includes(id));
     if (fg && !done.has(fg.tids[0])) {
       const r = fg.tids.map(t => mapSoir[t]).find(x => x) || null;
-      rows += dataRow(fg.tids.join('+'), r);
+      rows += dataRow(String(fg.tids[0]), r);
+      fg.tids.slice(1).forEach(tid => {
+        const dotBorder = 'border-top:2px dotted #000';
+        rows += `<tr>
+          <td class="d-tbl" style="${dotBorder}">
+            <span style="display:block;font-size:6pt;font-weight:900;line-height:1;margin-bottom:1px">+</span>${tid}
+          </td>
+          <td class="d-cov" style="${dotBorder}"></td>
+          <td class="d-nom" style="${dotBorder}"></td>
+        </tr>`;
+      });
       fg.tids.forEach(t => done.add(t));
       return;
     }
