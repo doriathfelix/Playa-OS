@@ -48,7 +48,10 @@ function printFloorPlan(){
     if(fg){
       if(!rendered.has(fg.tids[0])){
         const r = fg.tids.map(t => tMap[t]).find(x => x);
-        rows.push({ label: fg.tids.map(t=>'T'+t).join(' · '), resa: r || null, salon: false });
+        fg.tids.forEach((tid, idx) => {
+          rows.push({ label:'T'+tid, resa: idx===0 ? (r||null) : null, salon:false,
+            fusionResa: r||null, fusionIdx: idx, fusionTotal: fg.tids.length });
+        });
         fg.tids.forEach(t => rendered.add(t));
       }
     } else {
@@ -97,12 +100,32 @@ function printFloorPlan(){
       </td></tr>`;
     }
 
-    if(!r){
+    const isFusion = row.fusionTotal !== undefined;
+    const isFusionCont = isFusion && row.fusionIdx > 0;
+    const sf = isFusion ? svc(row.fusionResa) : s;
+    const fuseBadge = isFusion
+      ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;min-width:15px;background:#EDE9FE;border:1.5px solid #7C3AED;border-radius:50%;font-size:8px;font-weight:900;color:#7C3AED;margin-right:4px">⊕</span>`
+      : '';
+
+    if(isFusionCont){
+      const isLast = row.fusionIdx === row.fusionTotal - 1;
+      rowsHtml += `<tr style="background:${sf.bg};border-bottom:1px solid rgba(0,0,0,.03);border-left:3px dashed ${sf.left};opacity:.8">
+        <td style="padding:5px 14px;color:#C7C7CC;font-size:11px;font-family:'Courier New',monospace">—</td>
+        <td style="padding:5px 14px;font-size:18px;font-weight:900;color:${sf.tx};font-family:'Courier New',monospace">
+          <div style="display:flex;align-items:center">${fuseBadge}${row.label}</div>
+        </td>
+        <td style="padding:5px 14px;font-size:10px;color:${sf.tx};opacity:.5;font-style:italic">↳ fusionné</td>
+        <td style="padding:5px 14px;text-align:right;color:#C7C7CC">—</td>
+        <td></td>
+      </tr>`;
+    } else if(!r){
       // Table libre — ligne très sobre
       rowsHtml += `<tr style="border-bottom:1px solid #F5F5F7">
         <td style="padding:9px 14px;font-size:13px;font-weight:400;color:#D1D1D6;font-family:'Courier New',monospace">—</td>
-        <td style="padding:9px 14px;font-size:13px;font-weight:700;color:#D1D1D6;font-family:'Courier New',monospace">${row.label}</td>
-        <td style="padding:9px 14px;font-size:12px;color:#D1D1D6;font-style:italic">Libre</td>
+        <td style="padding:9px 14px;font-size:13px;font-weight:700;color:#D1D1D6;font-family:'Courier New',monospace">
+          <div style="display:flex;align-items:center">${fuseBadge}${row.label}</div>
+        </td>
+        <td style="padding:9px 14px;font-size:12px;color:#D1D1D6;font-style:italic">${isFusion ? 'Fusionné · libre' : 'Libre'}</td>
         <td style="padding:9px 14px;text-align:right;color:#D1D1D6">—</td>
         <td style="padding:9px 14px"></td>
       </tr>`;
@@ -114,7 +137,9 @@ function printFloorPlan(){
 
       rowsHtml += `<tr style="background:${s.bg};border-bottom:1px solid rgba(0,0,0,.04);border-left:4px solid ${s.left}">
         <td style="padding:10px 14px;font-size:11px;font-weight:500;color:${s.tx};opacity:.7;font-family:'Courier New',monospace;white-space:nowrap">${r.time}</td>
-        <td style="padding:10px 14px;font-size:22px;font-weight:900;color:${s.tx};font-family:'Courier New',monospace;white-space:nowrap;letter-spacing:-.02em">${row.label}</td>
+        <td style="padding:10px 14px;font-size:22px;font-weight:900;color:${s.tx};font-family:'Courier New',monospace;white-space:nowrap;letter-spacing:-.02em">
+          <div style="display:flex;align-items:center">${fuseBadge}${row.label}</div>
+        </td>
         <td style="padding:10px 14px">
           <div style="display:flex;align-items:center;font-size:15px;font-weight:600;color:${s.tx}">${r.name}${rtBadge}</div>
           ${note}
