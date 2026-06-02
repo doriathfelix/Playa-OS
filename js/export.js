@@ -515,18 +515,15 @@ function printServiceSheet() {
         const r = fg.tids.map(t => map[t]).find(x => x) || null;
         // Première table de la fusion : ligne normale avec la resa
         rows += dataRow(String(fg.tids[0]), r);
-        // Tables suivantes : séparateur ─ ─ [+] ─ ─ puis ligne table vide
+        // Tables suivantes : border-top pointillée + [+] encadré centré sur la bordure
         fg.tids.slice(1).forEach(tid => {
-          const dot = 'border-top:1.5px dotted #555';
-          const plus = `<span style="border:1.5px solid #555;padding:0 3px;font-size:7pt;font-weight:900;line-height:1.4;background:#fff">+</span>`;
+          const dot = 'border-top:2px dotted #555';
+          const plus = `<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);border:1.5px solid #555;border-radius:2px;padding:0 4px;font-size:7pt;font-weight:900;line-height:1.5;background:#fff;white-space:nowrap">+</span>`;
           rows += `<tr>
-            <td class="d-tbl" style="padding:2px 3px">
-              <div style="display:flex;align-items:center;gap:3px"><div style="flex:1;${dot}"></div>${plus}<div style="flex:1;${dot}"></div></div>
-            </td>
-            <td class="d-cov" style="padding:2px 3px"><div style="${dot}"></div></td>
-            <td class="d-nom" style="padding:2px 3px"><div style="${dot}"></div></td>
-          </tr>
-          <tr><td class="d-tbl">${tid}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
+            <td class="d-tbl" style="${dot};position:relative;overflow:visible">${plus}${tid}</td>
+            <td class="d-cov" style="${dot}"></td>
+            <td class="d-nom" style="${dot}"></td>
+          </tr>`;
         });
         fg.tids.forEach(t => done.add(t));
         return;
@@ -652,16 +649,13 @@ function printSoirSheet() {
       const r = fg.tids.map(t => mapSoir[t]).find(x => x) || null;
       rows += dataRow(String(fg.tids[0]), r);
       fg.tids.slice(1).forEach(tid => {
-        const dot = 'border-top:1.5px dotted #555';
-        const plus = `<span style="border:1.5px solid #555;padding:0 3px;font-size:7pt;font-weight:900;line-height:1.4;background:#fff">+</span>`;
+        const dot = 'border-top:2px dotted #555';
+        const plus = `<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);border:1.5px solid #555;border-radius:2px;padding:0 4px;font-size:7pt;font-weight:900;line-height:1.5;background:#fff;white-space:nowrap">+</span>`;
         rows += `<tr>
-          <td class="d-tbl" style="padding:2px 3px">
-            <div style="display:flex;align-items:center;gap:3px"><div style="flex:1;${dot}"></div>${plus}<div style="flex:1;${dot}"></div></div>
-          </td>
-          <td class="d-cov" style="padding:2px 3px"><div style="${dot}"></div></td>
-          <td class="d-nom" style="padding:2px 3px"><div style="${dot}"></div></td>
-        </tr>
-        <tr><td class="d-tbl">${tid}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
+          <td class="d-tbl" style="${dot};position:relative;overflow:visible">${plus}${tid}</td>
+          <td class="d-cov" style="${dot}"></td>
+          <td class="d-nom" style="${dot}"></td>
+        </tr>`;
       });
       fg.tids.forEach(t => done.add(t));
       return;
