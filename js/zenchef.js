@@ -257,10 +257,10 @@ function parseBedFromText(txt){
   const t = txt.toLowerCase();
   // Exclure "sunbed" pour ne pas confondre
   const noSunbed = t.replace(/sunbeds?/gi, '');
-  // "bed double" / "double bed" / "lit double" / "cabane" = 1 slot
-  if(/\b(bed\s*double|double\s*bed|lit\s*double|cabane)\b/.test(noSunbed)) return 1;
-  // "2 beds", "3 beds"
-  const m = noSunbed.match(/(\d+)\s*x?\s*beds?\b/);
+  // "bed double" / "double bed" / "lit double" / "lits doubles" / "cabane" = 1 slot
+  if(/\b(beds?\s*doubles?|doubles?\s*beds?|lits?\s*doubles?|cabane)\b/.test(noSunbed)) return 1;
+  // "2 beds", "3 beds", "2 lits"
+  const m = noSunbed.match(/(\d+)\s*x?\s*(?:beds?|lits?)\b/);
   if(m) return parseInt(m[1]);
   // "bed" seul
   if(/\bbed\b/.test(noSunbed)) return 1;
@@ -757,7 +757,7 @@ function applyBookings(bookings, date){
     const svc = conv._svc;
     const tab = svc === 's2' ? 's2' : svc === 'soir' ? 'soir' : 's1';
     if(conv.resa.repas_transat){
-      reservations.transats.push({...conv.resa, slot: null});
+      reservations.transats.push({...conv.resa, slot: null, ...(conv._isBed ? {bed: true} : {})});
     } else {
       reservations[tab].push({...conv.resa, tableId: null});
     }
@@ -856,10 +856,8 @@ function reAnalyzeAllResas(){
       if(nbT > 0) r.tr = nbT;
     }
 
-    // Bed si non encore détecté (resas manuelles)
-    if(r.source !== 'zenchef' && !r.bed){
-      if(parseBedFromText(raw) > 0) r.bed = true;
-    }
+    // Bed si non encore détecté (toutes sources)
+    if(!r.bed && parseBedFromText(raw) > 0) r.bed = true;
   });
 }
 

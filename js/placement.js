@@ -237,30 +237,17 @@ function findExtremity(sm, needed, forceRow){
   return null;
 }
 
-function parseTableRequest(text){
-  if(!text) return null;
-  const t = text.toLowerCase();
-  const m = t.match(/table\s*(?:n[°oa]?\s*)?(\d+)/i) || t.match(/\bt(\d+)\b/);
-  if(m){ const n = parseInt(m[1]); if(n >= 1 && n <= 30 && TABLE_DATA[n]) return n; }
-  return null;
-}
-
-function findExtremity(sm, needed, forceRow){
-  const rowOrder = forceRow
-    ? TR_ROWS.filter(r => r.id === forceRow)
-    : TR_ROWS;
-  for(const row of rowOrder){
-    const {g, d} = trSlots(row.id);
-    if(g.length >= needed){
-      const gSlots = g.slice(0, needed);
-      if(gSlots.every(s => !sm[s])) return {slots: gSlots, start: gSlots[0]};
-    }
-    if(d.length >= needed){
-      const dSlots = d.slice(d.length - needed);
-      if(dSlots.every(s => !sm[s])) return {slots: dSlots, start: dSlots[0]};
-    }
-  }
-  return null;
+function parseTablePreference(text){
+  if(!text) return {};
+  const t = text.toLowerCase()
+    .replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u')
+    .replace(/[îï]/g,'i').replace(/[ôö]/g,'o');
+  return {
+    wantTerrasse:  /\b(terrasse|dehors|exterieur|outside|outdoor|plein\s*air)\b/.test(t),
+    wantInterieur: /\b(interieur|dedans|indoor|inside)\b/.test(t),
+    wantOmbre:     /\b(ombre|ombrage|shade|shadow)\b/.test(t),
+    wantSoleil:    /\b(soleil|ensoleille|sun|sunny)\b/.test(t),
+  };
 }
 
 function autoTables(resas, skipped=0){
@@ -314,8 +301,14 @@ function autoTables(resas, skipped=0){
       return;
     }
 
-    // ── PRIORITÉ 1 : table seule suffisante
-    const single = ordered.find(t => !used.has(t.id) && t.hi >= r.pax);
+    // ── PRIORITÉ 1 : table seule suffisante, avec préférences issues du commentaire
+    const pref1 = parseTablePreference(r.comment);
+    let pool1 = ordered.filter(t => !used.has(t.id) && t.hi >= r.pax);
+    if(pref1.wantTerrasse){ const f = pool1.filter(t => t.p);  if(f.length) pool1 = f; }
+    else if(pref1.wantInterieur){ const f = pool1.filter(t => !t.p); if(f.length) pool1 = f; }
+    if(pref1.wantOmbre){ const f = pool1.filter(t => t.sun==='ombre'); if(f.length) pool1 = f; }
+    else if(pref1.wantSoleil){ const f = pool1.filter(t => t.sun==='soleil'||t.sun==='mi'); if(f.length) pool1 = f; }
+    const single = pool1[0] || null;
     if(single){
       r.placed=true; r.tableId=single.id; used.add(single.id);
       return;
@@ -672,7 +665,7 @@ function autoTransats(resas, skipped=0){
   resas.forEach(r => {
     const raw = (r.comment || '').toLowerCase();
     const t = raw.replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u').replace(/[îï]/g,'i').replace(/[ôö]/g,'o');
-    if(!r.bed && /\b(bed\s*double|double\s*bed|lit\s*double|cabane)\b/.test(raw)) r.bed = true;
+    if(!r.bed && /\b(beds?\s*doubles?|doubles?\s*beds?|lits?\s*doubles?|cabane)\b/.test(raw)) r.bed = true;
     if(!r.pref_extremite){
       const hasCote = /\bcote\b/.test(t) && !/cote\s*(?:du\s*)?(?:resto|restaurant)\b/.test(t);
       if(hasCote || /\b(extremit[e]?|extreme|lateral[e]?)\b/.test(t) || /\b(au\s*bout|en\s*bout)\b/.test(t) || /\bon\s*the\s*side\b/.test(raw)){
