@@ -420,11 +420,16 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .TBL.dropping{background:var(--bbg);border-color:var(--blue);border-style:dashed;border-width:2px}
 .TBL.prio{border-color:var(--gdb)}
 .TBL.fuse-sel{border:3px solid var(--gold);background:var(--gdbg);box-shadow:0 0 0 3px rgba(245,158,11,0.2)}
-.TBL.fused-entity{background:var(--pbg);border-color:var(--pb);border-style:dashed}
-.tbl-num{font-size:26px;font-weight:600;color:var(--t5);line-height:1;letter-spacing:-.5px;font-family:'DM Mono',monospace}
+.TBL.fused-entity{background:var(--pbg);border-color:var(--pb);border-width:2px;padding:4px 0 5px}
+.TBL.fused-entity.occ{background:var(--pbg);border-color:var(--pb)}
+.fuse-nums{display:flex;align-items:stretch;justify-content:center;width:100%;margin-bottom:2px}
+.fuse-tnum{flex:1;font-size:13px;font-weight:800;color:var(--pt);font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;line-height:1}
+.TBL.fused-entity.occ .fuse-tnum{color:var(--gt)}
+.fuse-sep{position:relative;width:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fuse-sep::before{content:'';position:absolute;left:50%;top:0;bottom:0;border-left:1.5px dashed var(--sep2);transform:translateX(-50%)}
+.fuse-sep-badge{position:relative;z-index:1;font-size:7px;font-weight:900;color:var(--purple);background:var(--pbg);border:1.5px solid var(--pb);border-radius:50%;width:13px;height:13px;display:flex;align-items:center;justify-content:center;line-height:1}.tbl-num{font-size:26px;font-weight:600;color:var(--t5);line-height:1;letter-spacing:-.5px;font-family:'DM Mono',monospace}
 .TBL.occ .tbl-num{font-size:21px;color:var(--gt)}
 .TBL.urg .tbl-num{font-size:21px;color:var(--rt)}
-.TBL.fused-entity .tbl-num{font-size:15px;color:var(--pt);font-weight:800;letter-spacing:-.3px}
 .tbl-name{font-size:10px;font-weight:600;color:var(--t2);max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
 .tbl-time{font-size:9px;font-weight:600;color:var(--gt);margin-top:1px}
 .tbl-time.urg{color:var(--rt)}
@@ -2206,11 +2211,15 @@ function makeCell(id, tMap){
     const w = fg.tids.length*68+(fg.tids.length-1)*6;
     const cell = document.createElement('div');
     cell.className='TBL md fused-entity'+(rr?' occ':'')+(fuseMode&&fuseTargets.some(x=>fg.tids.includes(x))?' fuse-sel':'');
-    cell.style.cssText=`width:${Math.min(w,220)}px;height:68px`;
+    cell.style.cssText=`width:${w}px;height:68px`;
     cell.dataset.fgid=fg.id;
+    const segsHtml = fg.tids.map((tid,i) =>
+      (i>0 ? `<div class="fuse-sep"><span class="fuse-sep-badge">⊕</span></div>` : '') +
+      `<span class="fuse-tnum">${TABLE_DATA[tid]?.lbl||tid}</span>`
+    ).join('');
     cell.innerHTML = rr
-      ? `<div class="tbl-num" style="font-size:13px;color:var(--gt)">${fg.tids.join('-')}</div><div class="tbl-name">${rr.name}</div><div class="pax-bubble fused">${rr.pax}</div>`
-      : `<div class="tbl-num" style="font-size:13px">${fg.tids.join('-')}</div><div class="tbl-fuse-tag">fusionné</div>`;
+      ? `<div class="fuse-nums">${segsHtml}</div><div class="tbl-name">${rr.name}</div><div class="pax-bubble fused">${rr.pax}</div>`
+      : `<div class="fuse-nums">${segsHtml}</div><div class="tbl-fuse-tag">fusionné</div>`;
     cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('dropping')});
     cell.addEventListener('dragleave',()=>cell.classList.remove('dropping'));
     cell.addEventListener('drop',e=>{e.preventDefault();cell.classList.remove('dropping');if(!dragId)return;saveUndo();const dr=gr().find(x=>x.id===dragId);if(!dr)return;fg.tids.forEach(tid=>{gr().forEach(x=>{if(x.id!==dr.id&&x.tableId===tid){x.placed=false;x.tableId=null;}})});dr.placed=true;dr.tableId=fg.tids[0];dragId=null;selectedId=dr.id;render();});

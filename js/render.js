@@ -733,11 +733,15 @@ function makeCell(id, tMap){
     const w = fg.tids.length*68+(fg.tids.length-1)*6;
     const cell = document.createElement('div');
     cell.className='TBL md fused-entity'+(rr?' occ':'')+(fuseMode&&fuseTargets.some(x=>fg.tids.includes(x))?' fuse-sel':'');
-    cell.style.cssText=`width:${Math.min(w,220)}px;height:68px`;
+    cell.style.cssText=`width:${w}px;height:68px`;
     cell.dataset.fgid=fg.id;
+    const segsHtml = fg.tids.map((tid,i) =>
+      (i>0 ? `<div class="fuse-sep"><span class="fuse-sep-badge">⊕</span></div>` : '') +
+      `<span class="fuse-tnum">${TABLE_DATA[tid]?.lbl||tid}</span>`
+    ).join('');
     cell.innerHTML = rr
-      ? `<div class="tbl-num" style="font-size:13px;color:var(--gt)">${fg.tids.join('-')}</div><div class="tbl-name">${rr.name}</div><div class="pax-bubble fused">${rr.pax}</div>`
-      : `<div class="tbl-num" style="font-size:13px">${fg.tids.join('-')}</div><div class="tbl-fuse-tag">fusionné</div>`;
+      ? `<div class="fuse-nums">${segsHtml}</div><div class="tbl-name">${rr.name}</div><div class="pax-bubble fused">${rr.pax}</div>`
+      : `<div class="fuse-nums">${segsHtml}</div><div class="tbl-fuse-tag">fusionné</div>`;
     cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('dropping')});
     cell.addEventListener('dragleave',()=>cell.classList.remove('dropping'));
     cell.addEventListener('drop',e=>{e.preventDefault();cell.classList.remove('dropping');if(!dragId)return;saveUndo();const dr=gr().find(x=>x.id===dragId);if(!dr)return;fg.tids.forEach(tid=>{gr().forEach(x=>{if(x.id!==dr.id&&x.tableId===tid){x.placed=false;x.tableId=null;}})});dr.placed=true;dr.tableId=fg.tids[0];dragId=null;selectedId=dr.id;render();});
