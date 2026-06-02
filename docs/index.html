@@ -484,6 +484,9 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .TR.TR-bed{background:var(--gdbg);border-color:var(--gdb);border-width:1.5px;color:var(--gdt)}
 .TR.TR-bed .tr-num{color:var(--gdt)}
 .TR.TR-bed:hover:not(.TR-occ){border-color:var(--gold);background:#FEF3C7}
+.TR.TR-sea{background:#FFF0F0;border-color:#FFAAAA}
+.TR.TR-sea .tr-num{color:#CC0000;font-weight:700}
+.TR.TR-sea:hover:not(.TR-occ){border-color:#FF5555;background:#FFEAEA}
 .tr-num{font-size:9px;font-weight:600;color:var(--t4)}
 .tr-name{font-size:9px;font-weight:700;text-align:center;width:100%;padding:0 3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.2}
 .tr-sub{font-size:8px;font-weight:600;margin-top:1px;line-height:1}
@@ -2607,9 +2610,10 @@ function renderTransats(){
 
       const col = slotToCol(slot);
       const isBed = BED_SLOTS.includes(slot);
+      const isSea = rowBase === 500;
       const cell = document.createElement('div');
       const isFuseSel = fuseMode && fuseTrTargets.includes(slot);
-      cell.className = 'TR' + (isBed ? ' TR-bed' : '') + (isFuseSel ? ' TR-fuse-sel' : '');
+      cell.className = 'TR' + (isBed ? ' TR-bed' : '') + (isSea ? ' TR-sea' : '') + (isFuseSel ? ' TR-fuse-sel' : '');
       cell.style.cssText = `grid-column:${col}; grid-row:${ri+1};`;
       cell.dataset.slot = slot;
       cell.innerHTML = isBed
@@ -2656,13 +2660,17 @@ function renderTransats(){
     const { resa, slotsInBlk, byRow, rowBases, isMultiRow, repartition } = block;
 
     const isRT = resa.repas_transat || resa.svc === 'transats';
-    const bgCol = resa.svc === 's2' ? 'var(--s2bg)'
+    const isSea500 = slotsInBlk.length > 0 && slotsInBlk[0] >= 501 && slotsInBlk[0] <= 521;
+    const bgCol = isSea500 ? '#FFEAEA'
+                : resa.svc === 's2' ? 'var(--s2bg)'
                 : (resa.svc === 'soir' ) ? 'var(--sobg)'
                 : isRT ? 'var(--rtbg)' : 'var(--s1bg)';
-    const bdCol = resa.svc === 's2' ? 'var(--s2)'
+    const bdCol = isSea500 ? '#FF5555'
+                : resa.svc === 's2' ? 'var(--s2)'
                 : (resa.svc === 'soir' ) ? 'var(--so)'
                 : isRT ? 'var(--teal)' : 'var(--s1)';
-    const txCol = resa.svc === 's2' ? 'var(--s2t)'
+    const txCol = isSea500 ? '#CC0000'
+                : resa.svc === 's2' ? 'var(--s2t)'
                 : (resa.svc === 'soir' ) ? 'var(--sot)'
                 : isRT ? 'var(--rtt)' : 'var(--s1t)';
 
