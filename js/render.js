@@ -70,7 +70,7 @@ function renderSidebar(){
       if(r.repas_transat || r.svc==='transats') cls+=' svc-rt';
       else if(r.svc==='s1') cls+=' svc-s1';
       else if(r.svc==='s2') cls+=' svc-s2';
-      else if(r.svc==='soir'||r.svc==='soir2') cls+=' svc-soir';
+      else if(r.svc==='soir') cls+=' svc-soir';
     }
     d.className=cls; d.draggable=!r.ns; d.dataset.id=r.id;
     const ptag = r.placed
@@ -81,8 +81,8 @@ function renderSidebar(){
           : `<div class="rc-placed-tag" style="color:${r.svc==='s1'?'var(--s1t)':r.svc==='s2'?'var(--s2t)':'var(--sot)'}">→ T${r.tableId}</div>`)
       : '';
     const isRT = r.svc==='transats' || r.repas_transat;
-    const svcLabel = r.svc==='s1'?'S1':r.svc==='s2'?'S2':r.svc==='soir'?'Soir':r.svc==='soir2'?'Soir2':isRT?'RT':'—';
-    const svcCssKey = isRT?'rt':r.svc==='s1'?'s1':r.svc==='s2'?'s2':(r.svc==='soir'||r.svc==='soir2')?'soir':'s1';
+    const svcLabel = r.svc==='s1'?'S1':r.svc==='s2'?'S2':r.svc==='soir'?'Soir':isRT?'RT':'—';
+    const svcCssKey = isRT?'rt':r.svc==='s1'?'s1':r.svc==='s2'?'s2':(r.svc==='soir')?'soir':'s1';
     const svcTag = `<span class="rc-svc-badge rc-svc-${svcCssKey}">${svcLabel}</span>`;
     // Tag transats : affiché sur toutes les resas qui ont des transats
     const trBadge = (r.tr && r.tr > 0)
@@ -191,7 +191,7 @@ function renderStats(){
 
   // Total transats : somme des tr sur les resas table (pas sous-resas pour éviter doublon)
   // + tr des repas transats purs
-  const trFromTables = [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[])]
+  const trFromTables = [...reservations.s1,...reservations.s2,...reservations.soir]
     .filter(x=>!x.ns && x.tr>0 && !isSubResa(x)).reduce((s,x)=>s+(x.tr||0),0);
   const trFromRT = reservations.transats
     .filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+(x.tr||x.pax||0),0);
@@ -693,7 +693,7 @@ function getDefaultPositions(){
 function makeSalonCell(id, h, tMap){
   const d = TABLE_DATA[id]; if(!d) return null;
   const r = tMap[id];
-  const svcCls = r?(r.svc==='s1'?' tbl-s1':r.svc==='s2'?' tbl-s2':(r.svc==='soir'||r.svc==='soir2')?' tbl-soir':''):'';
+  const svcCls = r?(r.svc==='s1'?' tbl-s1':r.svc==='s2'?' tbl-s2':(r.svc==='soir')?' tbl-soir':''):'';
   const cell = document.createElement('div');
   cell.className = 'TBL sm' + (r?' occ'+svcCls:'');
   cell.style.cssText = `width:84px;height:${h}px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px`;
@@ -752,7 +752,7 @@ function makeCell(id, tMap){
   else if(r){
     cls+=(r.urgent?' urg':' occ');
     // Bordure basse colorée = service de la resa
-    if(!r.urgent) cls+=(r.svc==='s1'?' tbl-s1':r.svc==='s2'?' tbl-s2':(r.svc==='soir'||r.svc==='soir2')?' tbl-soir':'');
+    if(!r.urgent) cls+=(r.svc==='s1'?' tbl-s1':r.svc==='s2'?' tbl-s2':(r.svc==='soir')?' tbl-soir':'');
     if(r.repas_transat) cls+=' tbl-rt';
   }
   if(d.p) cls+=' prio';
@@ -1182,13 +1182,13 @@ function renderTransats(){
 
     const isRT = resa.repas_transat || resa.svc === 'transats';
     const bgCol = resa.svc === 's2' ? 'var(--s2bg)'
-                : (resa.svc === 'soir' || resa.svc === 'soir2') ? 'var(--sobg)'
+                : (resa.svc === 'soir' ) ? 'var(--sobg)'
                 : isRT ? 'var(--rtbg)' : 'var(--s1bg)';
     const bdCol = resa.svc === 's2' ? 'var(--s2)'
-                : (resa.svc === 'soir' || resa.svc === 'soir2') ? 'var(--so)'
+                : (resa.svc === 'soir' ) ? 'var(--so)'
                 : isRT ? 'var(--teal)' : 'var(--s1)';
     const txCol = resa.svc === 's2' ? 'var(--s2t)'
-                : (resa.svc === 'soir' || resa.svc === 'soir2') ? 'var(--sot)'
+                : (resa.svc === 'soir' ) ? 'var(--sot)'
                 : isRT ? 'var(--rtt)' : 'var(--s1t)';
 
     const totalTr = resa.tr || slotsInBlk.length;
@@ -1746,9 +1746,9 @@ if(pathD){
     if(sr){
       // Salon occupé
       const isRT = sr.repas_transat || sr.svc === 'transats';
-      const bgCol = sr.svc === 's2' ? 'var(--s2bg)' : (sr.svc === 'soir' || sr.svc === 'soir2') ? 'var(--sobg)' : isRT ? 'var(--rtbg)' : 'var(--s1bg)';
-      const bdCol = sr.svc === 's2' ? 'var(--s2)' : (sr.svc === 'soir' || sr.svc === 'soir2') ? 'var(--so)' : isRT ? 'var(--teal)' : 'var(--s1)';
-      const txCol = sr.svc === 's2' ? 'var(--s2t)' : (sr.svc === 'soir' || sr.svc === 'soir2') ? 'var(--sot)' : isRT ? 'var(--rtt)' : 'var(--s1t)';
+      const bgCol = sr.svc === 's2' ? 'var(--s2bg)' : (sr.svc === 'soir' ) ? 'var(--sobg)' : isRT ? 'var(--rtbg)' : 'var(--s1bg)';
+      const bdCol = sr.svc === 's2' ? 'var(--s2)' : (sr.svc === 'soir' ) ? 'var(--so)' : isRT ? 'var(--teal)' : 'var(--s1)';
+      const txCol = sr.svc === 's2' ? 'var(--s2t)' : (sr.svc === 'soir' ) ? 'var(--sot)' : isRT ? 'var(--rtt)' : 'var(--s1t)';
       cell.style.background = bgCol;
       cell.style.border = `1.5px solid ${bdCol}`;
       cell.innerHTML = `
@@ -1808,10 +1808,10 @@ function showDetail(id){
   const r=gr().find(x=>x.id===id); if(!r) return;
 
   // Couleurs service
-  const svcLabel=r.svc==='s1'?'S1':r.svc==='s2'?'S2':r.svc==='soir'?'Soir':r.svc==='soir2'?'Soir 2':'—';
-  const svcCol=r.svc==='s1'?'var(--s1t)':r.svc==='s2'?'var(--s2t)':(r.svc==='soir'||r.svc==='soir2')?'var(--sot)':'var(--rtt)';
-  const svcBg=r.svc==='s1'?'var(--s1bg)':r.svc==='s2'?'var(--s2bg)':(r.svc==='soir'||r.svc==='soir2')?'var(--sobg)':'var(--rtbg)';
-  const svcBd=r.svc==='s1'?'var(--s1bd)':r.svc==='s2'?'var(--s2bd)':(r.svc==='soir'||r.svc==='soir2')?'var(--sobd)':'var(--rtbd)';
+  const svcLabel=r.svc==='s1'?'S1':r.svc==='s2'?'S2':r.svc==='soir'?'Soir':'—';
+  const svcCol=r.svc==='s1'?'var(--s1t)':r.svc==='s2'?'var(--s2t)':(r.svc==='soir')?'var(--sot)':'var(--rtt)';
+  const svcBg=r.svc==='s1'?'var(--s1bg)':r.svc==='s2'?'var(--s2bg)':(r.svc==='soir')?'var(--sobg)':'var(--rtbg)';
+  const svcBd=r.svc==='s1'?'var(--s1bd)':r.svc==='s2'?'var(--s2bd)':(r.svc==='soir')?'var(--sobd)':'var(--rtbd)';
   const trCount=r.tr||0;
 
   // Statut
@@ -1917,13 +1917,13 @@ function openOverlay(buildContent){
 
 function showRecapModal(r){
   openOverlay((box, close)=>{
-    const svcLabel=r.svc==='s1'?'Service 1':r.svc==='s2'?'Service 2':r.svc==='soir'?'Soir':r.svc==='soir2'?'Soir 2':'Transats';
+    const svcLabel=r.svc==='s1'?'Service 1':r.svc==='s2'?'Service 2':r.svc==='soir'?'Soir':'Transats';
     const placedLine = r.placed
       ? (currentTab===2 ? (r.slot>=1000?'Extra':String(r.slot)) : 'Table '+r.tableId)
       : '—';
     // Cherche la sous-resa transat liée (zenchef_id + '_tr')
     const linkedTr = r.zenchef_id
-      ? [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[]),...reservations.transats]
+      ? [...reservations.s1,...reservations.s2,...reservations.soir,...reservations.transats]
           .find(x=>x.zenchef_id===r.zenchef_id+'_tr')
       : null;
     const trTotal = r.tr || (linkedTr ? linkedTr.tr : 0) || 0;

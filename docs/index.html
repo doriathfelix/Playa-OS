@@ -1087,7 +1087,6 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
           <button type="button" class="svc-btn" id="svc-s1" onclick="selectSvc('s1')">S1 Midi</button>
           <button type="button" class="svc-btn" id="svc-s2" onclick="selectSvc('s2')">S2 14h15</button>
           <button type="button" class="svc-btn" id="svc-soir" onclick="selectSvc('soir')">Soir</button>
-          <button type="button" class="svc-btn" id="svc-soir2" onclick="selectSvc('soir2')">Soir 2</button>
         </div>
         <input type="hidden" id="f-svc" value="s1">
       </div>
@@ -1225,9 +1224,9 @@ const TABLE_DATA = {
 // Compat autoplace
 const TABLES = Object.entries(TABLE_DATA).map(([id,d])=>({id:+id,...d,z:'',sz:d.hi>=4?'md':'sm',lo:d.lo,hi:d.hi}));
 const TZONES = [];
-const TAB_KEYS = ['s1','s2','transats','soir','soir2'];
-const TAB_LABELS = ['Service 1 · 12h–14h','Service 2 · 14h15–15h30','Transats','Soir · 19h30','Soir 2 · 21h'];
-const TAB_SHORT  = ['S1','S2','Transats','Soir','Soir 2'];
+const TAB_KEYS = ['s1','s2','transats','soir'];
+const TAB_LABELS = ['Service 1 · 12h–14h','Service 2 · 14h15–15h30','Transats','Soir · 19h30'];
+const TAB_SHORT  = ['S1','S2','Transats','Soir'];
 
 const TR_ROWS = [
   {id:100,lbl:'Rangée 100 — proche restaurant',sea:false},
@@ -1277,7 +1276,7 @@ let nextId = 200;
 let fuseCounter = 1;
 let trZoom = 1.0; // zoom du plan transats (0.5–2.5)
 
-let fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
+let fused = {s1:[],s2:[],transats:[],soir:[]};
 
 // Doit être ici car appelée avant le chargement de utils.js
 function loadExtra(){ try{ const d=localStorage.getItem('playa_extra'); return d?JSON.parse(d):{}; }catch(e){ return {}; } }
@@ -1299,7 +1298,7 @@ let extraTransats = loadExtra();
 //   date          : string|null (ISO, ex: '2026-04-11') — pour import multi-jours
 //   comment       : string — notes internes
 //   tags          : string[] — labels Zenchef (ex: ['VIP','Anniversaire'])
-//   svc           : 's1'|'s2'|'transats'|'soir'|'soir2'
+//   svc           : 's1'|'s2'|'transats'|'soir'|'soir'
 //   repas_transat : boolean
 //   tr            : number|null — nb transats (onglet transats)
 //   placed        : boolean
@@ -1376,7 +1375,7 @@ function importFromZenchef(zcBooking){
 //   render();
 // }
 
-let reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
+let reservations = {s1:[], s2:[], transats:[], soir:[]};
 
 
 // ══════════════════════════════════════════
@@ -1546,7 +1545,7 @@ function renderSidebar(){
       if(r.repas_transat || r.svc==='transats') cls+=' svc-rt';
       else if(r.svc==='s1') cls+=' svc-s1';
       else if(r.svc==='s2') cls+=' svc-s2';
-      else if(r.svc==='soir'||r.svc==='soir2') cls+=' svc-soir';
+      else if(r.svc==='soir') cls+=' svc-soir';
     }
     d.className=cls; d.draggable=!r.ns; d.dataset.id=r.id;
     const ptag = r.placed
@@ -1557,8 +1556,8 @@ function renderSidebar(){
           : `<div class="rc-placed-tag" style="color:${r.svc==='s1'?'var(--s1t)':r.svc==='s2'?'var(--s2t)':'var(--sot)'}">→ T${r.tableId}</div>`)
       : '';
     const isRT = r.svc==='transats' || r.repas_transat;
-    const svcLabel = r.svc==='s1'?'S1':r.svc==='s2'?'S2':r.svc==='soir'?'Soir':r.svc==='soir2'?'Soir2':isRT?'RT':'—';
-    const svcCssKey = isRT?'rt':r.svc==='s1'?'s1':r.svc==='s2'?'s2':(r.svc==='soir'||r.svc==='soir2')?'soir':'s1';
+    const svcLabel = r.svc==='s1'?'S1':r.svc==='s2'?'S2':r.svc==='soir'?'Soir':isRT?'RT':'—';
+    const svcCssKey = isRT?'rt':r.svc==='s1'?'s1':r.svc==='s2'?'s2':(r.svc==='soir')?'soir':'s1';
     const svcTag = `<span class="rc-svc-badge rc-svc-${svcCssKey}">${svcLabel}</span>`;
     // Tag transats : affiché sur toutes les resas qui ont des transats
     const trBadge = (r.tr && r.tr > 0)
@@ -1667,7 +1666,7 @@ function renderStats(){
 
   // Total transats : somme des tr sur les resas table (pas sous-resas pour éviter doublon)
   // + tr des repas transats purs
-  const trFromTables = [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[])]
+  const trFromTables = [...reservations.s1,...reservations.s2,...reservations.soir]
     .filter(x=>!x.ns && x.tr>0 && !isSubResa(x)).reduce((s,x)=>s+(x.tr||0),0);
   const trFromRT = reservations.transats
     .filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+(x.tr||x.pax||0),0);
@@ -2169,7 +2168,7 @@ function getDefaultPositions(){
 function makeSalonCell(id, h, tMap){
   const d = TABLE_DATA[id]; if(!d) return null;
   const r = tMap[id];
-  const svcCls = r?(r.svc==='s1'?' tbl-s1':r.svc==='s2'?' tbl-s2':(r.svc==='soir'||r.svc==='soir2')?' tbl-soir':''):'';
+  const svcCls = r?(r.svc==='s1'?' tbl-s1':r.svc==='s2'?' tbl-s2':(r.svc==='soir')?' tbl-soir':''):'';
   const cell = document.createElement('div');
   cell.className = 'TBL sm' + (r?' occ'+svcCls:'');
   cell.style.cssText = `width:84px;height:${h}px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px`;
@@ -2228,7 +2227,7 @@ function makeCell(id, tMap){
   else if(r){
     cls+=(r.urgent?' urg':' occ');
     // Bordure basse colorée = service de la resa
-    if(!r.urgent) cls+=(r.svc==='s1'?' tbl-s1':r.svc==='s2'?' tbl-s2':(r.svc==='soir'||r.svc==='soir2')?' tbl-soir':'');
+    if(!r.urgent) cls+=(r.svc==='s1'?' tbl-s1':r.svc==='s2'?' tbl-s2':(r.svc==='soir')?' tbl-soir':'');
     if(r.repas_transat) cls+=' tbl-rt';
   }
   if(d.p) cls+=' prio';
@@ -2658,13 +2657,13 @@ function renderTransats(){
 
     const isRT = resa.repas_transat || resa.svc === 'transats';
     const bgCol = resa.svc === 's2' ? 'var(--s2bg)'
-                : (resa.svc === 'soir' || resa.svc === 'soir2') ? 'var(--sobg)'
+                : (resa.svc === 'soir' ) ? 'var(--sobg)'
                 : isRT ? 'var(--rtbg)' : 'var(--s1bg)';
     const bdCol = resa.svc === 's2' ? 'var(--s2)'
-                : (resa.svc === 'soir' || resa.svc === 'soir2') ? 'var(--so)'
+                : (resa.svc === 'soir' ) ? 'var(--so)'
                 : isRT ? 'var(--teal)' : 'var(--s1)';
     const txCol = resa.svc === 's2' ? 'var(--s2t)'
-                : (resa.svc === 'soir' || resa.svc === 'soir2') ? 'var(--sot)'
+                : (resa.svc === 'soir' ) ? 'var(--sot)'
                 : isRT ? 'var(--rtt)' : 'var(--s1t)';
 
     const totalTr = resa.tr || slotsInBlk.length;
@@ -3222,9 +3221,9 @@ if(pathD){
     if(sr){
       // Salon occupé
       const isRT = sr.repas_transat || sr.svc === 'transats';
-      const bgCol = sr.svc === 's2' ? 'var(--s2bg)' : (sr.svc === 'soir' || sr.svc === 'soir2') ? 'var(--sobg)' : isRT ? 'var(--rtbg)' : 'var(--s1bg)';
-      const bdCol = sr.svc === 's2' ? 'var(--s2)' : (sr.svc === 'soir' || sr.svc === 'soir2') ? 'var(--so)' : isRT ? 'var(--teal)' : 'var(--s1)';
-      const txCol = sr.svc === 's2' ? 'var(--s2t)' : (sr.svc === 'soir' || sr.svc === 'soir2') ? 'var(--sot)' : isRT ? 'var(--rtt)' : 'var(--s1t)';
+      const bgCol = sr.svc === 's2' ? 'var(--s2bg)' : (sr.svc === 'soir' ) ? 'var(--sobg)' : isRT ? 'var(--rtbg)' : 'var(--s1bg)';
+      const bdCol = sr.svc === 's2' ? 'var(--s2)' : (sr.svc === 'soir' ) ? 'var(--so)' : isRT ? 'var(--teal)' : 'var(--s1)';
+      const txCol = sr.svc === 's2' ? 'var(--s2t)' : (sr.svc === 'soir' ) ? 'var(--sot)' : isRT ? 'var(--rtt)' : 'var(--s1t)';
       cell.style.background = bgCol;
       cell.style.border = `1.5px solid ${bdCol}`;
       cell.innerHTML = `
@@ -3284,10 +3283,10 @@ function showDetail(id){
   const r=gr().find(x=>x.id===id); if(!r) return;
 
   // Couleurs service
-  const svcLabel=r.svc==='s1'?'S1':r.svc==='s2'?'S2':r.svc==='soir'?'Soir':r.svc==='soir2'?'Soir 2':'—';
-  const svcCol=r.svc==='s1'?'var(--s1t)':r.svc==='s2'?'var(--s2t)':(r.svc==='soir'||r.svc==='soir2')?'var(--sot)':'var(--rtt)';
-  const svcBg=r.svc==='s1'?'var(--s1bg)':r.svc==='s2'?'var(--s2bg)':(r.svc==='soir'||r.svc==='soir2')?'var(--sobg)':'var(--rtbg)';
-  const svcBd=r.svc==='s1'?'var(--s1bd)':r.svc==='s2'?'var(--s2bd)':(r.svc==='soir'||r.svc==='soir2')?'var(--sobd)':'var(--rtbd)';
+  const svcLabel=r.svc==='s1'?'S1':r.svc==='s2'?'S2':r.svc==='soir'?'Soir':'—';
+  const svcCol=r.svc==='s1'?'var(--s1t)':r.svc==='s2'?'var(--s2t)':(r.svc==='soir')?'var(--sot)':'var(--rtt)';
+  const svcBg=r.svc==='s1'?'var(--s1bg)':r.svc==='s2'?'var(--s2bg)':(r.svc==='soir')?'var(--sobg)':'var(--rtbg)';
+  const svcBd=r.svc==='s1'?'var(--s1bd)':r.svc==='s2'?'var(--s2bd)':(r.svc==='soir')?'var(--sobd)':'var(--rtbd)';
   const trCount=r.tr||0;
 
   // Statut
@@ -3393,13 +3392,13 @@ function openOverlay(buildContent){
 
 function showRecapModal(r){
   openOverlay((box, close)=>{
-    const svcLabel=r.svc==='s1'?'Service 1':r.svc==='s2'?'Service 2':r.svc==='soir'?'Soir':r.svc==='soir2'?'Soir 2':'Transats';
+    const svcLabel=r.svc==='s1'?'Service 1':r.svc==='s2'?'Service 2':r.svc==='soir'?'Soir':'Transats';
     const placedLine = r.placed
       ? (currentTab===2 ? (r.slot>=1000?'Extra':String(r.slot)) : 'Table '+r.tableId)
       : '—';
     // Cherche la sous-resa transat liée (zenchef_id + '_tr')
     const linkedTr = r.zenchef_id
-      ? [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[]),...reservations.transats]
+      ? [...reservations.s1,...reservations.s2,...reservations.soir,...reservations.transats]
           .find(x=>x.zenchef_id===r.zenchef_id+'_tr')
       : null;
     const trTotal = r.tr || (linkedTr ? linkedTr.tr : 0) || 0;
@@ -4753,13 +4752,13 @@ function selectType(type){
 function selectSvc(svc){
   modalSvc = svc;
   document.getElementById('f-svc').value = svc;
-  ['s1','s2','soir','soir2'].forEach(s=>{
+  ['s1','s2','soir'].forEach(s=>{
     const b=document.getElementById('svc-'+s);
     const onCls = s==='s1'?'on-s1':s==='s2'?'on-s2':'on-soir';
     if(b) b.className='svc-btn'+(svc===s?' '+onCls:'');
   });
   // Heure par défaut selon service
-  const t={'s1':'12h00','s2':'14h15','soir':'19h30','soir2':'21h00'};
+  const t={'s1':'12h00','s2':'14h15','soir':'19h30'};
   document.getElementById('f-time').value = t[svc]||'12h00';
 }
 
@@ -4771,7 +4770,7 @@ function openModal(){
     selectSvc('s1');
   } else {
     selectType('salle');
-    const svcMap={0:'s1',1:'s2',3:'soir',4:'soir2'};
+    const svcMap={0:'s1',1:'s2',3:'soir'};
     selectSvc(svcMap[currentTab]||'s1');
   }
   document.getElementById('modal-overlay').classList.add('open');
@@ -4837,7 +4836,7 @@ function submitModal(){
     const resa=mkResa({id,name,pax,time,comment,phone,source:'manual',
       svc,repas_transat:false,tr:tr>0?tr:null,
     });
-    const tab=svc==='s2'?'s2':svc==='soir2'?'soir2':svc==='soir'?'soir':'s1';
+    const tab=svc==='s2'?'s2':svc==='soir'?'soir':'s1';
     reservations[tab].push({...resa,tableId:null});
     if(tr>0){
       const trResa=mkResa({id:nextId++,name,pax,time,comment:'',phone:null,
@@ -4887,7 +4886,7 @@ function printFloorPlan(){
   const dateStr = fmtDateLong(currentDate);
   const now = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 
-  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[])];
+  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir];
   const placed   = allResas.filter(r => r.placed && !r.ns);
   const unplaced = allResas.filter(r => !r.placed && !r.ns);
   const totalPax = placed.reduce((s,r) => s + r.pax, 0);
@@ -5454,8 +5453,8 @@ function printSoirSheet() {
   ];
 
   const mapSoir = {};
-  [...reservations.soir,...(reservations.soir2||[])].filter(r => r.placed && !r.ns).forEach(r => { if (r.tableId) mapSoir[r.tableId] = r; });
-  (reservations.transats||[]).filter(r => r.placed && !r.ns && (r.svc==='soir'||r.svc==='soir2') && r.slot>=1001 && r.slot<=1004)
+  [...reservations.soir].filter(r => r.placed && !r.ns).forEach(r => { if (r.tableId) mapSoir[r.tableId] = r; });
+  (reservations.transats||[]).filter(r => r.placed && !r.ns && r.svc==='soir' && r.slot>=1001 && r.slot<=1004)
     .forEach(r => { mapSoir[r.slot] = r; });
 
   function dataRow(lbl, r) {
@@ -5469,7 +5468,7 @@ function printSoirSheet() {
   TABLE_ORDER_SOIR.forEach(entry => {
     const id = entry.id;
     if (done.has(id)) return;
-    const fg = !entry.tranat && [...(fused.soir||[]),...(fused.soir2||[])].find(f => f.tids.includes(id));
+    const fg = !entry.tranat && [...(fused.soir||[])].find(f => f.tids.includes(id));
     if (fg && !done.has(fg.tids[0])) {
       const r = fg.tids.map(t => mapSoir[t]).find(x => x) || null;
       rows += dataRow(fg.tids.join('+'), r);
@@ -5673,8 +5672,8 @@ async function setDate(dateStr){
   // ── Chemin ultra-rapide : pool mémoire frais → aucun accès réseau/localStorage
   const fromPool = memoryPoolGet(dateStr);
   if(fromPool !== undefined){
-    reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
-    fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
+    reservations = {s1:[], s2:[], transats:[], soir:[]};
+    fused = {s1:[],s2:[],transats:[],soir:[]};
     selectedId = null;
     saveUndo();
     applyBookings(fromPool, dateStr);
@@ -5685,8 +5684,8 @@ async function setDate(dateStr){
   }
 
   // ── Chemin normal : pas de pool → vider + charger (réseau ou localStorage)
-  reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
-  fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
+  reservations = {s1:[], s2:[], transats:[], soir:[]};
+  fused = {s1:[],s2:[],transats:[],soir:[]};
   selectedId = null;
   lastSyncAt = null;
   updateSyncAge();
@@ -6288,7 +6287,7 @@ function applyBookings(bookings, date){
     if(conv._cancelled){ cancelled++; return; }
     if(isDupe(String(b.id))){ dupes++; return; }
     const svc = conv._svc;
-    const tab = svc === 's2' ? 's2' : svc === 'soir2' ? 'soir2' : svc === 'soir' ? 'soir' : 's1';
+    const tab = svc === 's2' ? 's2' : svc === 'soir' ? 'soir' : 's1';
     if(conv.resa.repas_transat){
       reservations.transats.push({...conv.resa, slot: null});
     } else {
@@ -6433,8 +6432,8 @@ async function syncZenchef(date){
   // ── ÉTAPE 1 : cache (IndexedDB/localStorage) valide → retour immédiat
   const cached = await zcCacheGet(date);
   if(cached){
-    reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
-    fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
+    reservations = {s1:[], s2:[], transats:[], soir:[]};
+    fused = {s1:[],s2:[],transats:[],soir:[]};
     selectedId = null;
     saveUndo();
     applyBookings(cached, date);
@@ -6451,8 +6450,8 @@ async function syncZenchef(date){
         null, date
       ).then(byDate=>{
         const bkgs = byDate[date] || [];
-        reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
-        fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
+        reservations = {s1:[], s2:[], transats:[], soir:[]};
+        fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
         applyBookings(bkgs, date);
         lastSyncAt = new Date();
@@ -6470,8 +6469,8 @@ async function syncZenchef(date){
   zcSetSpinner(true);
   zcSetProgress(10);
   zcSetLabel('connexion Zenchef…');
-  reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
-  fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
+  reservations = {s1:[], s2:[], transats:[], soir:[]};
+  fused = {s1:[],s2:[],transats:[],soir:[]};
   selectedId = null;
   render();
 
@@ -6541,8 +6540,8 @@ async function syncZenchef(date){
         (d, bkgs) => {
           if(firstDataShown) return;
           firstDataShown = true;
-          reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
-          fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
+          reservations = {s1:[], s2:[], transats:[], soir:[]};
+          fused = {s1:[],s2:[],transats:[],soir:[]};
           selectedId = null;
           applyBookings(bkgs, date);
           lastSyncAt = new Date();
@@ -6599,8 +6598,8 @@ function startAutoSync(){
     if(currentDate >= today){
       fetchAllPagesAndCacheAll().then(byDate => {
         const bookings = byDate[currentDate] || [];
-        reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
-        fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
+        reservations = {s1:[], s2:[], transats:[], soir:[]};
+        fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
         applyBookings(bookings, currentDate);
         lastSyncAt = new Date();
@@ -6735,10 +6734,10 @@ function makeDashCard(title){
 
 // ── DASHBOARD — cartes avec traits colorés
 function renderDash(c){
-  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[]),...reservations.transats];
+  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir,...reservations.transats];
   const paxS1 = allResas.filter(x=>x.svc==='s1'&&!x.ns&&!x.repas_transat).reduce((s,x)=>s+x.pax,0);
   const paxS2 = allResas.filter(x=>x.svc==='s2'&&!x.ns&&!x.repas_transat).reduce((s,x)=>s+x.pax,0);
-  const paxSoir = allResas.filter(x=>(x.svc==='soir'||x.svc==='soir2')&&!x.ns&&!x.repas_transat).reduce((s,x)=>s+x.pax,0);
+  const paxSoir = allResas.filter(x=>x.svc==='soir'&&!x.ns&&!x.repas_transat).reduce((s,x)=>s+x.pax,0);
   const trTotal = allResas.filter(x=>!x.ns).reduce((s,x)=>s+(x.tr||0),0);
   const nonPlaces = allResas.filter(x=>!x.placed&&!x.ns&&!x.waiting).length;
 
@@ -9987,12 +9986,12 @@ function renderResasModule(c){
   const timelineBody = document.createElement('div');
   timelineBody.style.cssText = 'position:relative;display:flex;flex-direction:column;gap:14px';
 
-  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[]),...reservations.transats]
+  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir,...reservations.transats]
     .filter(r=>!r.ns)
     .sort((a,b) => (a.time||'').localeCompare(b.time||''));
 
-  const colByService = {s1:'#1A7A3E', s2:'#D97706', soir:'#7C3AED', soir2:'#7C3AED', transats:'#0284C7'};
-  const bgByService = {s1:'#EDF7F1', s2:'#FEF6E8', soir:'#F0EDF9', soir2:'#F0EDF9', transats:'#E8F4FD'};
+  const colByService = {s1:'#1A7A3E', s2:'#D97706', soir:'#7C3AED', transats:'#0284C7'};
+  const bgByService = {s1:'#EDF7F1', s2:'#FEF6E8', soir:'#F0EDF9', transats:'#E8F4FD'};
 
   if(allResas.length === 0){
     timelineBody.innerHTML = '<div style="text-align:center;padding:40px;color:var(--t3);font-size:12px">Aucune réservation synchronisée pour cette date</div>';
