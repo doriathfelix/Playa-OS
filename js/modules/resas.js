@@ -58,12 +58,12 @@ function renderResasModule(c){
   const timelineBody = document.createElement('div');
   timelineBody.style.cssText = 'position:relative;display:flex;flex-direction:column;gap:14px';
 
-  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[]),...reservations.transats]
+  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir,...reservations.transats]
     .filter(r=>!r.ns)
     .sort((a,b) => (a.time||'').localeCompare(b.time||''));
 
-  const colByService = {s1:'#1A7A3E', s2:'#D97706', soir:'#7C3AED', soir2:'#7C3AED', transats:'#0284C7'};
-  const bgByService = {s1:'#EDF7F1', s2:'#FEF6E8', soir:'#F0EDF9', soir2:'#F0EDF9', transats:'#E8F4FD'};
+  const colByService = {s1:'#1A7A3E', s2:'#D97706', soir:'#7C3AED', transats:'#0284C7'};
+  const bgByService = {s1:'#EDF7F1', s2:'#FEF6E8', soir:'#F0EDF9', transats:'#E8F4FD'};
 
   if(allResas.length === 0){
     timelineBody.innerHTML = '<div style="text-align:center;padding:40px;color:var(--t3);font-size:12px">Aucune réservation synchronisée pour cette date</div>';

@@ -50,9 +50,9 @@ const TABLE_DATA = {
 // Compat autoplace
 const TABLES = Object.entries(TABLE_DATA).map(([id,d])=>({id:+id,...d,z:'',sz:d.hi>=4?'md':'sm',lo:d.lo,hi:d.hi}));
 const TZONES = [];
-const TAB_KEYS = ['s1','s2','transats','soir','soir2'];
-const TAB_LABELS = ['Service 1 · 12h–14h','Service 2 · 14h15–15h30','Transats','Soir · 19h30','Soir 2 · 21h'];
-const TAB_SHORT  = ['S1','S2','Transats','Soir','Soir 2'];
+const TAB_KEYS = ['s1','s2','transats','soir'];
+const TAB_LABELS = ['Service 1 · 12h–14h','Service 2 · 14h15–15h30','Transats','Soir · 19h30'];
+const TAB_SHORT  = ['S1','S2','Transats','Soir'];
 
 const TR_ROWS = [
   {id:100,lbl:'Rangée 100 — proche restaurant',sea:false},

@@ -151,7 +151,7 @@ function autoPlaceFor(svcKey){
 function autoPlace(){
   saveUndo();
   reAnalyzeAllResas();
-  const svcKey = tk(); // 's1' | 's2' | 'transats' | 'soir' | 'soir2'
+  const svcKey = tk(); // 's1' | 's2' | 'transats' | 'soir'
   const all = gr();
 
   // Filtre strict : on ne place QUE les resas appartenant au service actif.

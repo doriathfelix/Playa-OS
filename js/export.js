@@ -26,7 +26,7 @@ function printFloorPlan(){
   const dateStr = fmtDateLong(currentDate);
   const now = new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
 
-  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir,...(reservations.soir2||[])];
+  const allResas = [...reservations.s1,...reservations.s2,...reservations.soir];
   const placed   = allResas.filter(r => r.placed && !r.ns);
   const unplaced = allResas.filter(r => !r.placed && !r.ns);
   const totalPax = placed.reduce((s,r) => s + r.pax, 0);
@@ -35,8 +35,7 @@ function printFloorPlan(){
   const tMap = {};
   placed.forEach(r => { if(r.tableId) tMap[r.tableId] = r; });
 
-  // Toutes les fusions (S1 + S2 + Soir + Soir2)
-  const allFused = [...(fused.s1||[]),...(fused.s2||[]),...(fused.soir||[]),...(fused.soir2||[])];
+  const allFused = [...(fused.s1||[]),...(fused.s2||[]),...(fused.soir||[])];
 
   // ── Construire la liste ordonnée : T1 à T30 (en résolvant les fusions), puis Salons
   const sortedIds = Object.keys(TABLE_DATA).map(Number).sort((a,b)=>a-b);
@@ -262,7 +261,7 @@ function printTransats(){
   const nbRT   = allTr.filter(r=>r.repas_transat).length;
   const nbS1   = placed.filter(r=>r.svc==='s1'  &&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
   const nbS2   = placed.filter(r=>r.svc==='s2'  &&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
-  const nbSoir = placed.filter(r=>(r.svc==='soir'||r.svc==='soir2')&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const nbSoir = placed.filter(r=>r.svc==='soir'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
 
   function emptySlot(slot, gridRow){
     const isBed=BED_SLOTS.includes(slot);
@@ -594,8 +593,8 @@ function printSoirSheet() {
   ];
 
   const mapSoir = {};
-  [...reservations.soir,...(reservations.soir2||[])].filter(r => r.placed && !r.ns).forEach(r => { if (r.tableId) mapSoir[r.tableId] = r; });
-  (reservations.transats||[]).filter(r => r.placed && !r.ns && (r.svc==='soir'||r.svc==='soir2') && r.slot>=1001 && r.slot<=1004)
+  reservations.soir.filter(r => r.placed && !r.ns).forEach(r => { if (r.tableId) mapSoir[r.tableId] = r; });
+  (reservations.transats||[]).filter(r => r.placed && !r.ns && r.svc==='soir' && r.slot>=1001 && r.slot<=1004)
     .forEach(r => { mapSoir[r.slot] = r; });
 
   function dataRow(lbl, r) {
@@ -609,7 +608,7 @@ function printSoirSheet() {
   TABLE_ORDER_SOIR.forEach(entry => {
     const id = entry.id;
     if (done.has(id)) return;
-    const fg = !entry.tranat && [...(fused.soir||[]),...(fused.soir2||[])].find(f => f.tids.includes(id));
+    const fg = !entry.tranat && (fused.soir||[]).find(f => f.tids.includes(id));
     if (fg && !done.has(fg.tids[0])) {
       const r = fg.tids.map(t => mapSoir[t]).find(x => x) || null;
       rows += dataRow(fg.tids.join('+'), r);

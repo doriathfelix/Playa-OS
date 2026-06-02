@@ -14,7 +14,7 @@ let nextId = 200;
 let fuseCounter = 1;
 let trZoom = 1.0; // zoom du plan transats (0.5–2.5)
 
-let fused = {s1:[],s2:[],transats:[],soir:[],soir2:[]};
+let fused = {s1:[],s2:[],transats:[],soir:[]};
 
 // Doit être ici car appelée avant le chargement de utils.js
 function loadExtra(){ try{ const d=localStorage.getItem('playa_extra'); return d?JSON.parse(d):{}; }catch(e){ return {}; } }
@@ -36,7 +36,7 @@ let extraTransats = loadExtra();
 //   date          : string|null (ISO, ex: '2026-04-11') — pour import multi-jours
 //   comment       : string — notes internes
 //   tags          : string[] — labels Zenchef (ex: ['VIP','Anniversaire'])
-//   svc           : 's1'|'s2'|'transats'|'soir'|'soir2'
+//   svc           : 's1'|'s2'|'transats'|'soir'
 //   repas_transat : boolean
 //   tr            : number|null — nb transats (onglet transats)
 //   placed        : boolean
@@ -113,5 +113,5 @@ function importFromZenchef(zcBooking){
 //   render();
 // }
 
-let reservations = {s1:[], s2:[], transats:[], soir:[], soir2:[]};
+let reservations = {s1:[], s2:[], transats:[], soir:[]};
 
