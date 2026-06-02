@@ -8136,125 +8136,169 @@ function renderCaisse(c){
 // ══════════════════════════════════════════
 function renderPrestataires(c){
   let currentTab = 'all';
-  const body = makePageShell(c, 'Prestataires & Fournisseurs', 
-    '32 contacts · Livraisons, artisans, maintenance, services', 
-    [{label:'📞 Appel urgent', onclick:"toast('Contact rapide')"},{label:'+ Nouveau contact', onclick:"toast('Formulaire contact')", primary:true}]);
 
   const prestas = [
-    // FOURNISSEURS ALIMENTAIRES
-    {id:1, cat:'food', name:'Metro Cash & Carry Nîmes', contact:'Responsable : M. Dupuis', phone:'04 66 XX XX XX', email:'commande.nimes@metro.fr', address:'Zone Grézan, 30000 Nîmes', delivery:'Mar, Jeu · 7h-10h', minOrder:'150€', conditions:'Paiement à 30j · Remise 5% sur alcools', rating:4.5, lastOrder:'Il y a 3j · 842€', tags:['Épicerie','Alcools','Frais']},
-    {id:2, cat:'food', name:'Aubanel Boucherie Arles', contact:'M. Aubanel (patron)', phone:'04 90 93 XX XX', email:'aubanel.boucherie@gmail.com', address:'12 rue des Arènes, 13200 Arles', delivery:'Lun, Mer, Ven · 6h-7h', minOrder:'80€', conditions:'Paiement à réception · Taureau AOP garanti', rating:5, lastOrder:'Il y a 2j · 385€', tags:['Viandes','AOP Camargue']},
-    {id:3, cat:'food', name:'Poissonnerie Sanary (direct pêche)', contact:'Sébastien', phone:'06 12 XX XX XX', email:'seb.sanary@gmail.com', address:'Port de Sanary', delivery:'Mar, Ven · 5h du matin', minOrder:'Aucun', conditions:'Facture à la semaine · Poisson de ligne', rating:5, lastOrder:'Hier · 268€', tags:['Poissons','Fruits de mer']},
-    {id:4, cat:'food', name:'Tellines du Grau (pêcheur local)', contact:'Antoine Roux', phone:'06 87 XX XX XX', email:'', address:'Grau-du-Roi', delivery:'Selon pêche · SMS', minOrder:'2kg', conditions:'Espèces · selon arrivage', rating:4.8, lastOrder:'Il y a 4j · 95€', tags:['Tellines','Direct producteur']},
-    {id:5, cat:'food', name:'Marché d\'Arles (producteurs)', contact:'Plusieurs vendeurs', phone:'—', email:'', address:'Place du Marché, Arles', delivery:'Tous les mercredis matin', minOrder:'Aucun', conditions:'Espèces uniquement', rating:4.5, lastOrder:'Mercredi · 212€', tags:['Légumes','Fruits','Herbes']},
-    {id:6, cat:'food', name:'Biscuits des Beaux', contact:'Martine', phone:'04 90 54 XX XX', email:'contact@biscuits-baux.fr', address:'Les Baux-de-Provence', delivery:'Livraison semaine sur commande', minOrder:'100€', conditions:'Paiement à 15j', rating:4.7, lastOrder:'Il y a 8j · 145€', tags:['Pâtisserie','Artisan']},
-    // VINS
-    {id:7, cat:'wine', name:'Caviste Les Halles Saintes-Maries', contact:'Caviste Julien', phone:'04 90 97 XX XX', email:'leshalles.saintes@gmail.com', address:'Place des Gitans, Saintes-Maries', delivery:'Jeu sur commande', minOrder:'200€', conditions:'Paiement à 30j · Consignes retournées', rating:4.8, lastOrder:'Il y a 5j · 612€', tags:['Vins','Spiritueux']},
-    {id:8, cat:'wine', name:'Domaine Royal de Jarras', contact:'Catherine Dubois', phone:'04 66 51 XX XX', email:'contact@listel.fr', address:'Aigues-Mortes', delivery:'Livraison mensuelle', minOrder:'300€', conditions:'Remise 8% au-delà 500€ · Vin IGP Camargue', rating:5, lastOrder:'Il y a 12j · 820€', tags:['Vin rosé','IGP Sables de Camargue']},
-    // MAINTENANCE
-    {id:9, cat:'maintenance', name:'Frigoriste Sud-Est Froid', contact:'M. Pélissier', phone:'06 45 XX XX XX', email:'sud.est.froid@orange.fr', address:'Montpellier', delivery:'Intervention 24h en urgence', minOrder:'—', conditions:'150€/h · Contrat maintenance 1800€/an', rating:4.5, lastOrder:'Il y a 45j · 320€', tags:['Frigo','Chambre froide']},
-    {id:10, cat:'maintenance', name:'Plombier Sanitech Camargue', contact:'Julien Manzi', phone:'06 22 XX XX XX', email:'sanitech.camargue@gmail.com', address:'Aigues-Mortes', delivery:'Urgence 2-4h', minOrder:'—', conditions:'85€/h · Déplacement inclus', rating:4.3, lastOrder:'Il y a 90j · 210€', tags:['Plomberie','Urgence']},
-    {id:11, cat:'maintenance', name:'Hotte & Extraction Provence', contact:'M. Girard', phone:'04 90 XX XX XX', email:'', address:'Nîmes', delivery:'Entretien annuel obligatoire', minOrder:'—', conditions:'Contrat 650€/an · Intervention incluse', rating:4.6, lastOrder:'Il y a 6 mois · 650€', tags:['Hotte','Sécurité incendie']},
-    {id:12, cat:'maintenance', name:'Électricien Camargue Élec', contact:'Fabien Marc', phone:'06 33 XX XX XX', email:'camargue.elec@free.fr', address:'Saintes-Maries', delivery:'Urgence 4h', minOrder:'—', conditions:'75€/h · Tarif week-end +50%', rating:4.7, lastOrder:'Il y a 30j · 180€', tags:['Électricité','Urgence']},
-    // SERVICES
-    {id:13, cat:'service', name:'Elis (linge pro)', contact:'Contact commercial', phone:'04 91 XX XX XX', email:'marseille@elis.com', address:'Marseille', delivery:'Tous les jeudis', minOrder:'Forfait mensuel', conditions:'820€/mois · nappes, torchons, tabliers', rating:4.4, lastOrder:'Hier', tags:['Linge','Blanchisserie']},
-    {id:14, cat:'service', name:'DEC (déchets huiles)', contact:'Accueil', phone:'04 66 XX XX XX', email:'contact@dec-recyclage.fr', address:'Nîmes', delivery:'Mensuel · 1er jeudi', minOrder:'50L min.', conditions:'Gratuit si >50L · Certificat obligatoire', rating:4.8, lastOrder:'Il y a 15j', tags:['Déchets','Recyclage','Obligatoire']},
-    {id:15, cat:'service', name:'Dératisation ABC Hygiène', contact:'Pascal', phone:'06 76 XX XX XX', email:'abc.hygiene@sfr.fr', address:'Arles', delivery:'Passage mensuel', minOrder:'—', conditions:'95€/mois · certificat HACCP', rating:4.6, lastOrder:'Il y a 22j', tags:['Hygiène','HACCP','Obligatoire']}
+    // ── FRUITS & LÉGUMES ──────────────────────────────────────────────
+    {id:1, cat:'fruits', name:'Salade de Fruits', phones:[{label:'Jeremy', num:'0658789642'}],
+     delivery:'Tous les jours', tags:['Fruits','Légumes','Viandes']},
+    {id:2, cat:'fruits', name:'Aux Compères', phones:[{label:'Petit Jo', num:'0490433274'}],
+     delivery:'Tous les jours sauf jeudi', tags:['Fruits','Légumes']},
+    {id:3, cat:'fruits', name:'Terre Azur', phones:[{label:'Virginie', num:'0618036701'}],
+     delivery:'Mar · Jeu · Sam', tags:['Fruits','Légumes','Poissons']},
+    {id:4, cat:'fruits', name:'Metro Légumes', phones:[{label:'Pascal / Commercial', num:'0466386609'}],
+     delivery:'Lun–Sam (retrait, pas de livraison)', tags:['Légumes','Metro']},
+
+    // ── ÉPICERIE & CRÈMERIE ───────────────────────────────────────────
+    {id:5, cat:'epicerie', name:'Epi Saveurs', phones:[{label:'Nadia', num:'0784460549'}],
+     delivery:'Mercredi', tags:['Épicerie']},
+    {id:6, cat:'epicerie', name:'Passion Froid', phones:[{label:'Mathis', num:'0613242835'}],
+     delivery:'3×/sem (à confirmer)', tags:['Épicerie']},
+    {id:7, cat:'epicerie', name:'Metro', phones:[{label:'Épicerie', num:'0466386620'},{label:'Crèmerie', num:'0466386611'}],
+     delivery:'Sur commande', tags:['Épicerie','Crèmerie','Metro']},
+    {id:8, cat:'epicerie', name:'Sysco', phones:[{label:'Jessica', num:'0617164961'},{label:'Cathy', num:'0442775574'}],
+     delivery:'Mar · Jeu · Sam (juil–août)', tags:['Épicerie','Crèmerie']},
+    {id:9, cat:'epicerie', name:'SAF', phones:[{label:'Marc', num:'0609527700'}],
+     delivery:'Tous les jours', tags:['Épicerie','Crèmerie']},
+
+    // ── POISSONS ──────────────────────────────────────────────────────
+    {id:10, cat:'poissons', name:'Metro Marée', phones:[{label:'Accueil', num:'0466386624'}],
+     delivery:'Sur commande', tags:['Poissons','Metro']},
+    {id:11, cat:'poissons', name:'Terre Azur', phones:[{label:'Virginie', num:'0618036701'},{label:'Commandes', num:'0442109584'}],
+     delivery:'Mar · Jeu · Sam', tags:['Poissons']},
+    {id:12, cat:'poissons', name:'Sud Pêcherie', phones:[{label:'David', num:'0766033428'},{label:'Armand', num:'0609912400'}],
+     delivery:'À confirmer', tags:['Poissons']},
+    {id:13, cat:'poissons', name:'Beuron', phones:[{label:'Vincent / Amandine', num:'0764240560'}],
+     delivery:'À confirmer', tags:['Poissons']},
+    {id:14, cat:'poissons', name:'Meric', phones:[{label:'Serge', num:'0607560690'}],
+     delivery:'À confirmer', tags:['Poissons']},
+    {id:15, cat:'poissons', name:'Le Jean Folco 2', phones:[{label:'Andre', num:'0664529208'}],
+     delivery:'Sur arrivage', tags:['Poissons','Thon Rouge'], note:'Thon rouge uniquement'},
+
+    // ── VIANDES ───────────────────────────────────────────────────────
+    {id:16, cat:'viandes', name:'Salade de Fruits', phones:[{label:'Jeremy', num:'0667123513'},{label:'Stephane', num:'0616392509'}],
+     delivery:'Tous les jours', tags:['Viandes']},
+    {id:17, cat:'viandes', name:'Alazard et Roux', phones:[{label:'Delphine', num:'0490915509'},{label:'Mobile', num:'0687093362'}],
+     delivery:'À confirmer', tags:['Viandes']},
+    {id:18, cat:'viandes', name:'Espace Jabugo', phones:[{label:'Jeremy', num:'0658789642'}],
+     delivery:'À confirmer', tags:['Viandes','Charcuterie']},
+
+    // ── DESSERTS, GLACES & PAINS ──────────────────────────────────────
+    {id:19, cat:'desserts', name:'Pom Frites', phones:[{label:'Christian', num:'0785570408'}],
+     delivery:'À confirmer', tags:['Frites','PDT']},
+    {id:20, cat:'desserts', name:'Compagnie des Desserts', phones:[{label:'Thomas', num:'0615709377'}],
+     delivery:'À confirmer', tags:['Desserts','Glaces','Pains']},
+    {id:21, cat:'desserts', name:'Miko', phones:[{label:'Stephane', num:'0616732531'}],
+     delivery:'À confirmer', tags:['Glaces','Bâtonnets']},
+
+    // ── DÉPANNAGE ─────────────────────────────────────────────────────
+    {id:22, cat:'depannage', name:'Sur les Saintes', phones:[{label:'Momo', num:'0616570593'}],
+     delivery:'', tags:['Dépannage']},
+    {id:23, cat:'depannage', name:'Speed Froid', phones:[{label:'Fabrice Manzano', num:'0650242154'}],
+     delivery:'', tags:['Froid','Dépannage']},
+    {id:24, cat:'depannage', name:'Rage · Unox / Piano / Friteuses', phones:[{label:'Jean-Régis Bonnafoux', num:'0467500180'},{label:'Mika', num:'0686468905'}],
+     delivery:'', tags:['Matériel','Dépannage']},
+    {id:25, cat:'depannage', name:'Metro CHR', phones:[{label:'CHR', num:'0466386612'}],
+     delivery:'', tags:['CHR','Metro','Dépannage']},
+    {id:26, cat:'depannage', name:'Lambertin-Tourelle', phones:[{label:'Christophe', num:'0689930949'},{label:'Seb', num:'0622752572'}],
+     delivery:'', tags:['Matériel','Dépannage']}
   ];
 
-  body.innerHTML = '';
+  const catMeta = {
+    fruits:   {label:'🍅 Fruits & Légumes', col:'#16A34A', icon:'🍅'},
+    epicerie: {label:'🧂 Épicerie & Crèmerie', col:'#D97706', icon:'🧂'},
+    poissons: {label:'🐟 Poissons', col:'#0284C7', icon:'🐟'},
+    viandes:  {label:'🥩 Viandes', col:'#DC2626', icon:'🥩'},
+    desserts: {label:'🍦 Desserts & Glaces', col:'#DB2777', icon:'🍦'},
+    depannage:{label:'🔧 Dépannage', col:'#7C3AED', icon:'🔧'}
+  };
 
-  // KPIs
-  body.appendChild(makeKPIRow([
-    {l:'Contacts actifs', v:prestas.length, s:'Fournisseurs, services, artisans', col:'#2563EB'},
-    {l:'Livraisons cette semaine', v:'12', s:'Mar, Jeu, Ven principalement', col:'#16A34A'},
-    {l:'À commander', v:'3 urgent', s:'Citrons, huile, taureau AOP', col:'#DC2626'},
-    {l:'Dépense mois', v:'8 420€', s:'↓ -4% vs mars', col:'#7C3AED', mono:true}
-  ]));
+  const body = makePageShell(c, 'Fournisseurs & Contacts',
+    prestas.length + ' contacts · Livraisons & dépannage',
+    [{label:'📞 Appel urgent', onclick:"toast('Utilise les fiches ci-dessous')"}]);
 
-  // Sub-nav
-  const tabs = [
-    {k:'all', label:'Tous', count:prestas.length},
-    {k:'food', label:'🍅 Alimentaire', count:prestas.filter(p=>p.cat==='food').length},
-    {k:'wine', label:'🍷 Vins & Alcools', count:prestas.filter(p=>p.cat==='wine').length},
-    {k:'maintenance', label:'🔧 Maintenance', count:prestas.filter(p=>p.cat==='maintenance').length},
-    {k:'service', label:'📋 Services', count:prestas.filter(p=>p.cat==='service').length}
-  ];
-
-  function rebuild(){
-    body.innerHTML = '';
-    body.appendChild(makeKPIRow([
-      {l:'Contacts actifs', v:prestas.length, s:'Fournisseurs, services, artisans', col:'#2563EB'},
-      {l:'Livraisons cette semaine', v:'12', s:'Mar, Jeu, Ven principalement', col:'#16A34A'},
-      {l:'À commander', v:'3 urgent', s:'Citrons, huile, taureau AOP', col:'#DC2626'},
-      {l:'Dépense mois', v:'8 420€', s:'↓ -4% vs mars', col:'#7C3AED', mono:true}
-    ]));
-    body.appendChild(makeSubNav(tabs, currentTab, k => { currentTab = k; rebuild(); }));
-    const contentEl = document.createElement('div');
-    contentEl.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px';
-    const list = currentTab === 'all' ? prestas : prestas.filter(p => p.cat === currentTab);
-    list.forEach(p => contentEl.appendChild(makePrestaCard(p)));
-    body.appendChild(contentEl);
+  function fmtPhone(raw){
+    const d = raw.replace(/\D/g,'');
+    if(d.length === 10) return d.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/,'$1 $2 $3 $4 $5');
+    return raw;
   }
 
   function makePrestaCard(p){
+    const m = catMeta[p.cat];
     const card = document.createElement('div');
-    card.style.cssText = 'background:var(--card);border:1px solid var(--sep);border-radius:14px;overflow:hidden;transition:all .18s';
-    card.onmouseenter = () => { card.style.borderColor = 'var(--t3)'; card.style.boxShadow = '0 4px 16px rgba(24,20,10,.06)'; };
+    card.style.cssText = 'background:var(--card);border:1px solid var(--sep);border-radius:14px;overflow:hidden;transition:border-color .18s,box-shadow .18s';
+    card.onmouseenter = () => { card.style.borderColor = m.col+'88'; card.style.boxShadow = '0 4px 16px rgba(24,20,10,.07)'; };
     card.onmouseleave = () => { card.style.borderColor = 'var(--sep)'; card.style.boxShadow = ''; };
 
-    const catIcons = {food:'🍅', wine:'🍷', maintenance:'🔧', service:'📋'};
-    const catCols = {food:'#16A34A', wine:'#7C2D12', maintenance:'#0284C7', service:'#7C3AED'};
-    const stars = '★'.repeat(Math.floor(p.rating)) + (p.rating % 1 ? '✬' : '') + '☆'.repeat(5 - Math.ceil(p.rating));
+    const phonesHtml = p.phones.map(ph => `
+      <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+        <span style="font-size:11px;color:var(--t4);min-width:90px;flex-shrink:0">${ph.label}</span>
+        <a href="tel:${ph.num}" style="font-family:'DM Mono',monospace;font-size:12px;font-weight:700;color:${m.col};text-decoration:none;letter-spacing:.3px">${fmtPhone(ph.num)}</a>
+        <a href="tel:${ph.num}" style="margin-left:auto;padding:3px 10px;border:1px solid ${m.col}40;border-radius:6px;background:${m.col}10;color:${m.col};font-size:10px;font-weight:700;text-decoration:none;white-space:nowrap">📞 Appeler</a>
+      </div>`).join('');
+
+    const delivHtml = p.delivery ? `
+      <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:.5px solid var(--bg);margin-top:2px">
+        <span style="font-size:12px">🚚</span>
+        <span style="font-size:11.5px;color:var(--t2)">${p.delivery}</span>
+      </div>` : '';
+
+    const noteHtml = p.note ? `
+      <div style="font-size:10.5px;color:var(--t3);padding:4px 8px;background:var(--bg2);border-radius:6px;margin-top:4px">${p.note}</div>` : '';
+
+    const tagsHtml = p.tags.map(t =>
+      `<span style="padding:2px 8px;border-radius:10px;background:${m.col}12;color:${m.col};font-size:10px;font-weight:600">${t}</span>`
+    ).join('');
 
     card.innerHTML = `
-      <div style="padding:14px 16px;border-bottom:0.5px solid var(--bg);display:flex;align-items:flex-start;gap:12px">
-        <div style="width:42px;height:42px;border-radius:11px;background:${catCols[p.cat]}15;color:${catCols[p.cat]};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${catIcons[p.cat]}</div>
+      <div style="padding:12px 14px 10px;border-bottom:.5px solid var(--bg);display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;border-radius:10px;background:${m.col}15;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0">${m.icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;color:var(--t1);line-height:1.25;margin-bottom:2px">${p.name}</div>
-          <div style="font-size:11px;color:var(--t3)">${p.contact}</div>
-          <div style="font-size:10.5px;color:#D97706;margin-top:3px;letter-spacing:1px">${stars} ${p.rating}</div>
+          <div style="font-size:13px;font-weight:800;color:var(--t1);line-height:1.2">${p.name}</div>
+          <div style="font-size:10px;color:var(--t4);margin-top:1px">${m.label.replace(/^[^ ]+ /,'')}</div>
         </div>
       </div>
-      <div style="padding:10px 16px;font-size:11.5px;color:var(--t2);line-height:1.6">
-        <div style="display:flex;gap:8px;align-items:center;padding:3px 0">
-          <span style="width:14px;color:var(--t4)">📱</span>
-          <a href="tel:${p.phone}" style="color:var(--t1);font-weight:600;text-decoration:none;font-family:'DM Mono',monospace">${p.phone}</a>
-        </div>
-        ${p.email?`<div style="display:flex;gap:8px;align-items:center;padding:3px 0">
-          <span style="width:14px;color:var(--t4)">✉</span>
-          <span style="color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.email}</span>
-        </div>`:''}
-        <div style="display:flex;gap:8px;align-items:center;padding:3px 0">
-          <span style="width:14px;color:var(--t4)">📍</span>
-          <span style="color:var(--t2)">${p.address}</span>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;padding:3px 0">
-          <span style="width:14px;color:var(--t4)">🚚</span>
-          <span style="color:var(--t2)"><b>${p.delivery}</b></span>
-        </div>
+      <div style="padding:10px 14px">
+        ${phonesHtml}
+        ${delivHtml}
+        ${noteHtml}
       </div>
-      <div style="padding:10px 16px;background:var(--bg);font-size:11px;color:var(--t3);border-top:0.5px solid var(--bg)">
-        <div style="display:flex;justify-content:space-between;margin-bottom:3px"><span>Min. commande :</span><span style="color:var(--t2);font-weight:600">${p.minOrder}</span></div>
-        <div style="line-height:1.4"><span>Conditions :</span> <span style="color:var(--t2)">${p.conditions}</span></div>
-      </div>
-      <div style="padding:10px 16px;display:flex;gap:6px;border-top:0.5px solid var(--bg)">
-        <button onclick="window.open('tel:${p.phone.replace(/\s/g,'')}')" style="flex:1;padding:8px;border:1px solid var(--sep);border-radius:8px;background:var(--card);font-size:11px;font-weight:600;cursor:pointer;color:var(--t1)">📞 Appeler</button>
-        ${p.email?`<button onclick="window.open('mailto:${p.email}')" style="flex:1;padding:8px;border:1px solid var(--sep);border-radius:8px;background:var(--card);font-size:11px;font-weight:600;cursor:pointer;color:var(--t1)">✉ Email</button>`:''}
-        <button onclick="toast('Nouvelle commande ${p.name}')" style="flex:1;padding:8px;border:none;border-radius:8px;background:var(--t1);color:#fff;font-size:11px;font-weight:600;cursor:pointer">+ Commander</button>
-      </div>
-      <div style="padding:8px 16px;font-size:10px;color:var(--t4);border-top:0.5px solid var(--bg);display:flex;justify-content:space-between">
-        <span>Dernière commande : <b style="color:var(--t3)">${p.lastOrder}</b></span>
-        <span>${p.tags.map(t=>'<span style="padding:1px 7px;border-radius:10px;background:var(--bg2);margin-left:3px;font-size:9.5px">'+t+'</span>').join('')}</span>
+      <div style="padding:8px 14px;border-top:.5px solid var(--bg);display:flex;flex-wrap:wrap;gap:4px">
+        ${tagsHtml}
       </div>
     `;
     return card;
   }
 
+  function rebuild(){
+    body.innerHTML = '';
+    body.appendChild(makeKPIRow([
+      {l:'Contacts', v:prestas.length, s:'Fournisseurs actifs', col:'#2563EB'},
+      {l:'Fruits & Légumes', v:prestas.filter(p=>p.cat==='fruits').length, s:'dont Metro', col:'#16A34A'},
+      {l:'Poissons', v:prestas.filter(p=>p.cat==='poissons').length, s:'dont Thon Rouge', col:'#0284C7'},
+      {l:'Dépannage', v:prestas.filter(p=>p.cat==='depannage').length, s:'urgence & matériel', col:'#7C3AED'}
+    ]));
+
+    const tabs = [
+      {k:'all',      label:'Tous',              count:prestas.length},
+      {k:'fruits',   label:'🍅 Fruits & Légumes', count:prestas.filter(p=>p.cat==='fruits').length},
+      {k:'epicerie', label:'🧂 Épicerie',          count:prestas.filter(p=>p.cat==='epicerie').length},
+      {k:'poissons', label:'🐟 Poissons',           count:prestas.filter(p=>p.cat==='poissons').length},
+      {k:'viandes',  label:'🥩 Viandes',            count:prestas.filter(p=>p.cat==='viandes').length},
+      {k:'desserts', label:'🍦 Desserts & Glaces',  count:prestas.filter(p=>p.cat==='desserts').length},
+      {k:'depannage',label:'🔧 Dépannage',          count:prestas.filter(p=>p.cat==='depannage').length}
+    ];
+
+    body.appendChild(makeSubNav(tabs, currentTab, k => { currentTab = k; rebuild(); }));
+
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px';
+    const list = currentTab === 'all' ? prestas : prestas.filter(p => p.cat === currentTab);
+    list.forEach(p => grid.appendChild(makePrestaCard(p)));
+    body.appendChild(grid);
+  }
+
   rebuild();
 }
-
-
 
 // ══════════════════════════════════════════
 // CUISINE — Fiches, recettes, process
