@@ -432,9 +432,6 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .TR.TR-bed{background:var(--gdbg);border-color:var(--gdb);border-width:1.5px;color:var(--gdt)}
 .TR.TR-bed .tr-num{color:var(--gdt)}
 .TR.TR-bed:hover:not(.TR-occ){border-color:var(--gold);background:#FEF3C7}
-.TR.TR-sea{background:#FFF0F0;border-color:#FFAAAA}
-.TR.TR-sea .tr-num{color:#CC0000;font-weight:700}
-.TR.TR-sea:hover:not(.TR-occ){border-color:#FF5555;background:#FFEAEA}
 .tr-num{font-size:9px;font-weight:600;color:var(--t4)}
 .tr-name{font-size:9px;font-weight:700;text-align:center;width:100%;padding:0 3px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.2}
 .tr-sub{font-size:8px;font-weight:600;margin-top:1px;line-height:1}

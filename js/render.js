@@ -1132,10 +1132,9 @@ function renderTransats(){
 
       const col = slotToCol(slot);
       const isBed = BED_SLOTS.includes(slot);
-      const isSea = rowBase === 500;
       const cell = document.createElement('div');
       const isFuseSel = fuseMode && fuseTrTargets.includes(slot);
-      cell.className = 'TR' + (isBed ? ' TR-bed' : '') + (isSea ? ' TR-sea' : '') + (isFuseSel ? ' TR-fuse-sel' : '');
+      cell.className = 'TR' + (isBed ? ' TR-bed' : '') + (isFuseSel ? ' TR-fuse-sel' : '');
       cell.style.cssText = `grid-column:${col}; grid-row:${ri+1};`;
       cell.dataset.slot = slot;
       cell.innerHTML = isBed
@@ -1182,17 +1181,13 @@ function renderTransats(){
     const { resa, slotsInBlk, byRow, rowBases, isMultiRow, repartition } = block;
 
     const isRT = resa.repas_transat || resa.svc === 'transats';
-    const isSea500 = slotsInBlk.length > 0 && slotsInBlk[0] >= 501 && slotsInBlk[0] <= 521;
-    const bgCol = isSea500 ? '#FFEAEA'
-                : resa.svc === 's2' ? 'var(--s2bg)'
+    const bgCol = resa.svc === 's2' ? 'var(--s2bg)'
                 : (resa.svc === 'soir' ) ? 'var(--sobg)'
                 : isRT ? 'var(--rtbg)' : 'var(--s1bg)';
-    const bdCol = isSea500 ? '#FF5555'
-                : resa.svc === 's2' ? 'var(--s2)'
+    const bdCol = resa.svc === 's2' ? 'var(--s2)'
                 : (resa.svc === 'soir' ) ? 'var(--so)'
                 : isRT ? 'var(--teal)' : 'var(--s1)';
-    const txCol = isSea500 ? '#CC0000'
-                : resa.svc === 's2' ? 'var(--s2t)'
+    const txCol = resa.svc === 's2' ? 'var(--s2t)'
                 : (resa.svc === 'soir' ) ? 'var(--sot)'
                 : isRT ? 'var(--rtt)' : 'var(--s1t)';
 
