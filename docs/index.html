@@ -3957,44 +3957,39 @@ const TABLE_ZONES = {
   salonSalle:  [1001,1002,1003,1004],
 };
 
-// Combinaisons de fusion autorisées avec capacité RÉELLE (incluant chaises supplémentaires
-// qu'on peut ajouter en bout de table selon l'espace disponible).
-// ⚠ Jamais : 7+8 (pas fusionnables), 12/13/14 (terrasse 2 séparée)
-// Ordre : de la plus petite à la plus grande → algo prend la première qui couvre le PAX
+// Combinaisons de fusion autorisées.
+// La capacité est calculée dynamiquement : somme des hi de chaque table + (n-1) chaises bonus.
+// Règle : chaque fusion de 2 tables gagne +1 chaise → n tables fusionnées = +(n-1) au total.
+// ⚠ Jamais : 7+8 (pas fusionnables physiquement)
 const FUSION_COMBOS = [
+  // ── Terrasse (paires côte-à-côte) ──
+  {tids:[19,20]}, {tids:[21,22]}, {tids:[23,24]},
   // ── Salle intérieure ──
-  // T1(3) + T2(2) + 1 chaise bout T2 (espace libre côté T3) = 6
-  {tids:[1,2],       hi:6},
-  // T5(6) + T6(2) = 8 — T6 fait office d'extension
-  {tids:[5,6],       hi:8},
-  // T9(3) + T10(5) = 8
-  {tids:[9,10],      hi:8},
-  // T10(5) + T11(5) = 10
-  {tids:[10,11],     hi:10},
-  // T1+T2+T3 = 3+2+3 + 1 chaise bout = 9
-  {tids:[1,2,3],     hi:9},
-  // T9+T10+T11 = 3+5+5 = 13
-  {tids:[9,10,11],   hi:13},
-  // T1+T2+T3+T4 = 3+2+3+5 + 2 chaises = 15 (grand groupe salle)
-  {tids:[1,2,3,4],   hi:15},
-  // ── Tables hautes extérieur ──
-  // T27(3)+T28(2) = 5
-  {tids:[27,28],     hi:5},
-  // T28(2)+T29(2) = 4
-  {tids:[28,29],     hi:4},
-  // T29(2)+T30(3) = 5
-  {tids:[29,30],     hi:5},
-  // T27+T28+T29+T30 = 10
-  {tids:[27,28,29,30], hi:10},
+  {tids:[1,2]},  {tids:[2,3]},  {tids:[11,12]},
+  {tids:[3,4]},  {tids:[5,6]},  {tids:[10,11]}, {tids:[9,10]},
+  // ── Tables hautes ──
+  {tids:[27,28]}, {tids:[28,29]}, {tids:[29,30]},
+  // ── 3 tables ──
+  {tids:[1,2,3]}, {tids:[9,10,11]},
+  {tids:[27,28,29]}, {tids:[28,29,30]},
+  // ── 4 tables ──
+  {tids:[27,28,29,30]}, {tids:[1,2,3,4]},
 ];
+
+// Capacité d'une fusion = somme des hi individuels + (n_tables - 1) chaises bonus
+function fusionHi(tids){
+  return tids.reduce((s,tid)=>s+(TABLE_DATA[tid]?.hi||0),0) + tids.length - 1;
+}
 
 // Trouve la meilleure fusion : la plus petite combo libre qui couvre le PAX
 function findBestFusion(pax, used){
-  for(const combo of FUSION_COMBOS){
-    if(combo.tids.some(tid => used.has(tid))) continue;
-    if(combo.hi >= pax) return combo;
-  }
-  return null;
+  const available = FUSION_COMBOS
+    .filter(c => !c.tids.some(tid => used.has(tid)))
+    .map(c => ({...c, hi: fusionHi(c.tids)}))
+    .filter(c => c.hi >= pax);
+  if(!available.length) return null;
+  available.sort((a,b) => a.tids.length - b.tids.length || a.hi - b.hi);
+  return available[0];
 }
 
 function parseTableRequest(text){
@@ -4030,7 +4025,7 @@ function autoTables(resas, skipped=0){
   // On calcule leur capacité totale et si elles sont déjà occupées
   const existingFusions = (fused[tk()]||[]).map(g => {
     const occupied = gr().some(r => r.placed && g.tids.includes(r.tableId));
-    const totalHi  = g.tids.reduce((s, tid) => s + (TABLE_DATA[tid]?.hi || 0), 0);
+    const totalHi  = g.tids.reduce((s, tid) => s + (TABLE_DATA[tid]?.hi || 0), 0) + g.tids.length - 1;
     g.tids.forEach(tid => used.add(tid)); // marquer toutes leurs tables comme prises
     return { ...g, occupied, totalHi };
   });
