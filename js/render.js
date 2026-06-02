@@ -240,7 +240,7 @@ function renderStats(){
     <span class="stat-pill pill-blue" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Total transats journée (beds = 2 transats chacun)">
       <span class="transat-ico"></span> ${trGrandTotal}
     </span>
-    ${trMer>0?`<span class="stat-pill pill-red" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Transats 1ère ligne mer">🌊 ${trMer}</span>`:''}
+    ${trMer>0?`<span class="stat-pill pill-red" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Transats 1ère ligne mer"><span class="transat-ico" style="color:#CC0000"></span> ${trMer}</span>`:''}
     ${trBeds>0?`<span class="stat-pill" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer;background:var(--gdbg);border-color:var(--gdb);color:var(--gdt)" title="${trBeds} lit${trBeds>1?'s':''} double${trBeds>1?'s':''}">🛏 ${trBeds}</span>`:''}
   `;
 }
