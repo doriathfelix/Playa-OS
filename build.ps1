@@ -40,6 +40,8 @@ $jsOrder = @(
     "js/modules/urgences.js",
     "js/modules/resas.js",
     "js/modules/settings.js",
+    "js/modules/clients.js",
+    "js/modules/groupes.js",
     "js/init.js"
 )
 $js = ($jsOrder | ForEach-Object {
