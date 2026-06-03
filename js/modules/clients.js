@@ -111,156 +111,170 @@ const CRM_SEED_DATA = {
   "arnaud elsa":{name:"Arnaud Elsa",normKey:"arnaud elsa",phone:"0625714199",email:"",visits:[{date:"2025-08-23",pax:1,comment:"fiançailles !!"}]},
 };
 
-// ── Loyalty ────────────────────────────────────────────────────────────────
+// ── Loyalty tiers ──────────────────────────────────────────────────────────
 function clientLoyalty(n) {
-  if (n >= 10) return {label:'VIP ⭐',      level:'vip',      col:'#D97706', bg:'#FFFBEB'};
-  if (n >= 7)  return {label:'Habitué ★',  level:'habitue',  col:'#7C3AED', bg:'#F5F3FF'};
-  if (n >= 4)  return {label:'Fidèle',     level:'fidele',   col:'#16A34A', bg:'#EDF7F1'};
-  if (n >= 2)  return {label:'Régulier',   level:'regulier', col:'#2563EB', bg:'#EFF6FF'};
-  return              {label:'Nouveau',    level:'nouveau',  col:'#6B7280', bg:'#F9FAFB'};
+  if (n >= 12) return {label:'Légende ⭐⭐', level:'legende', col:'#B45309', bg:'#FEF3C7'};
+  if (n >= 8)  return {label:'VIP ⭐',       level:'vip',     col:'#7C3AED', bg:'#EDE9FE'};
+  if (n >= 5)  return {label:'Habitué',     level:'habitue', col:'#0284C7', bg:'#E0F2FE'};
+  if (n >= 3)  return {label:'Fidèle',      level:'fidele',  col:'#16A34A', bg:'#DCFCE7'};
+  if (n >= 2)  return {label:'Régulier',    level:'regulier',col:'#64748B', bg:'#F1F5F9'};
+  return              {label:'Nouveau',     level:'nouveau', col:'#94A3B8', bg:'#F8FAFC'};
 }
 
-function clientDetectPrefs(text) {
-  const t = (text || '').toLowerCase();
-  const prefs = [];
-  const add = (cat, label, col) => { if (!prefs.find(p => p.label === label)) prefs.push({cat, label, col}); };
-  if (/terrasse|playa|ext[eé]rieur|dehors|outside/.test(t))    add('place','Terrasse','#16A34A');
-  if (/int[eé]rieur|inside/.test(t))                            add('place','Intérieur','#2563EB');
-  if (/\bombre\b/.test(t))                                      add('place','Ombre','#7C3AED');
-  if (/\bsoleil\b/.test(t))                                     add('place','Soleil','#D97706');
-  if (/vue\s*mer|vue\s*plage|bord\s*de\s*mer/.test(t))         add('place','Vue mer','#0284C7');
-  if (/coin|calme|tranquille|discr[eè]t/.test(t))               add('place','Coin calme','#6B7280');
-  const tm = t.match(/\btable[s]?\s*n?[°º]?\s*(\d+)/);
-  if (tm) add('place','Table '+tm[1],'#EA580C');
-  if (/transat|sunbed|bain\s*de\s*soleil/.test(t))              add('transat','Transats','#0891B2');
-  if (/premi[eè]re?\s*ligne|1[eè]re?\s*ligne|front\s*row/.test(t)) add('transat','1ère ligne','#0284C7');
-  if (/bed\s*double|lit\s*double|double\s*bed|cabane/.test(t))  add('transat','Bed double','#0891B2');
-  if (/extr[eé]mit[eé]|bout|coin\s*de\s*rang|end/.test(t))     add('transat','Bout de rang','#0284C7');
-  if (/v[eé]g[eé]tari/.test(t))                                 add('diet','Végétarien','#16A34A');
-  if (/\bvegan\b|v[eé]gane/.test(t))                            add('diet','Vegan','#16A34A');
-  if (/sans\s*gluten|gluten.free|c[oé]liaque/.test(t))          add('diet','Sans gluten','#D97706');
-  if (/allergi/.test(t))                                         add('diet','Allergie ⚠','#DC2626');
-  if (/halal/.test(t))                                           add('diet','Halal','#16A34A');
-  if (/lactose/.test(t))                                         add('diet','Sans lactose','#D97706');
-  if (/chaise\s*haute|high.chair|b[eé]b[eé]|\bbb\b/.test(t))   add('habit','Chaise haute','#16A34A');
-  if (/anniversaire|birthday/.test(t))                           add('event','Anniversaire 🎂','#DB2777');
-  if (/\bmariage\b|wedding/.test(t))                             add('event','Mariage 💍','#EC4899');
-  if (/lune\s*de\s*miel|honeymoon/.test(t))                     add('event','Lune de miel','#EC4899');
-  if (/fian[cç]/.test(t))                                        add('event','Fiançailles','#EC4899');
-  if (/business|professionnel|r[eé]union\s*d/.test(t))           add('event','Repas pro','#64748B');
-  if (/valentine|st.?valentin/.test(t))                          add('event','St-Valentin','#EC4899');
-  if (/\bpmr\b|fauteuil\s*roulant|handicap|wheelchair/.test(t)) add('habit','PMR ♿','#7C3AED');
-  if (/\bchien\b|animaux\s*accept/.test(t))                      add('habit','Avec chien 🐕','#78350F');
-  if (/repas\s*transat|manger\s*(sur|aux)\s*transat/.test(t))    add('habit','Repas-transat','#0891B2');
-  return prefs;
+// ── Preference tags — scanned on ALL visit comments ────────────────────────
+const PREF_TAGS = [
+  {key:'terrasse', re:/terrasse|playa terrasse|ext[eé]rieur|dehors|outside/i,           label:'Terrasse',       icon:'🌅', col:'#0EA5E9'},
+  {key:'transats', re:/transat/i,                                                        label:'Transats',       icon:'🏖️', col:'#F59E0B'},
+  {key:'vuemer',   re:/vue mer|c[oô]t[eé] mer|1[eè]re ligne|premi[eè]re ligne|vue mer imp/i, label:'Vue mer',  icon:'🌊', col:'#06B6D4'},
+  {key:'table',    re:/table \d|table hab|la m[eê]me table|table du fond|table attit/i, label:'Table attitrée', icon:'📍', col:'#8B5CF6'},
+  {key:'calme',    re:/ombre|coin calme|calme|loin de la piscine/i,                     label:'Coin calme',     icon:'🌿', col:'#94A3B8'},
+  {key:'bedtrans', re:/bed double|repas transat/i,                                       label:'Bed & transats', icon:'🛏️', col:'#F59E0B'},
+  {key:'chien',    re:/\bchien\b/i,                                                      label:'Avec chien',     icon:'🐕', col:'#92400E'},
+  {key:'allergie', re:/allergi/i,                                                        label:'Allergie',       icon:'⚠️', col:'#EF4444'},
+  {key:'vegan',    re:/\bvegan\b|v[eé]gane/i,                                           label:'Vegan',          icon:'🌱', col:'#16A34A'},
+  {key:'vegeta',   re:/v[eé]g[eé]tari/i,                                                label:'Végétarien·ne',  icon:'🥗', col:'#22C55E'},
+  {key:'sansglut', re:/sans gluten|gluten.free/i,                                        label:'Sans gluten',    icon:'🌾', col:'#F97316'},
+  {key:'sanslact', re:/sans lactose/i,                                                   label:'Sans lactose',   icon:'🥛', col:'#FB923C'},
+  {key:'enfants',  re:/chaise haute|b[eé]b[eé]/i,                                       label:'Chaise haute',   icon:'👶', col:'#EC4899'},
+  {key:'pmr',      re:/\bPMR\b|fauteuil roulant/i,                                      label:'PMR',            icon:'♿', col:'#6366F1'},
+  {key:'anniv',    re:/anniversaire|anniv/i,                                             label:'Anniversaire',   icon:'🎂', col:'#EAB308'},
+  {key:'romant',   re:/lune de miel|mariage|fian[cç]|notre anniversaire de rencontre/i, label:'Occasion spéciale',icon:'💍',col:'#F472B6'},
+  {key:'repaspro', re:/repas d.[eé]quipe|repas pro/i,                                   label:'Repas pro',      icon:'👔', col:'#64748B'},
+  {key:'surprise', re:/surprise/i,                                                       label:'Surprise',       icon:'🎁', col:'#A855F7'},
+];
+
+function _extractPrefs(visits) {
+  const counts = {};
+  (visits||[]).forEach(v => {
+    const c = (v.comment||'').toLowerCase();
+    PREF_TAGS.forEach(t => { if(t.re.test(c)) counts[t.key]=(counts[t.key]||0)+1; });
+  });
+  return PREF_TAGS.filter(t=>counts[t.key]).sort((a,b)=>(counts[b.key]||0)-(counts[a.key]||0));
 }
 
-function clientMemoAuto(client) {
-  const lines = [];
-  const L = client.loyalty;
-  if (L.level === 'vip' || L.level === 'habitue') lines.push(L.label + ' — ' + client.visitCount + ' visites');
-  const placement = client.prefs.filter(p => p.cat === 'place').map(p => p.label);
-  if (placement.length) lines.push('Préfère : ' + placement.join(', '));
-  const diet = client.prefs.filter(p => p.cat === 'diet');
-  if (diet.length) lines.push('⚠ ' + diet.map(p => p.label).join(' · '));
-  const events = client.prefs.filter(p => p.cat === 'event');
-  if (events.length) lines.push(events.map(p => p.label).join(', '));
-  const habits = client.prefs.filter(p => p.cat === 'habit');
-  if (habits.length) lines.push(habits.map(p => p.label).join(' · '));
-  if (client.avgPax >= 2) lines.push('Groupe moyen : ' + Math.round(client.avgPax) + ' pers.');
-  return lines.join('\n');
+function _seasonOf(visits) {
+  const months=(visits||[]).map(v=>parseInt((v.date||'').split('-')[1])||0).filter(Boolean);
+  if(!months.length) return {label:'?',col:'#94A3B8'};
+  const tot=months.length,
+        summer=months.filter(m=>m>=6&&m<=8).length,
+        spring=months.filter(m=>m>=4&&m<=5).length,
+        fall  =months.filter(m=>m>=9&&m<=10).length;
+  if(summer/tot>=0.55) return {label:'Client été',    col:'#F59E0B'};
+  if(spring/tot>=0.5)  return {label:'Client printemps',col:'#22C55E'};
+  if(fall/tot>=0.4)    return {label:'Client automne',col:'#F97316'};
+  return                      {label:'Toute saison',  col:'#0EA5E9'};
 }
+
+function _buildAutoMemo(visits, prefs, avgPax, visitCount) {
+  if(!visits||!visits.length) return '';
+  const parts=[];
+  const years=[...new Set((visits||[]).map(v=>(v.date||'').substring(0,4)).filter(Boolean))].sort();
+  const firstY=years[0], lastY=years[years.length-1];
+  const span=firstY&&lastY&&firstY!==lastY?firstY+'→'+lastY:(firstY||'');
+  if(visitCount>=12) parts.push('Client légendaire de La Playa'+(span?' ('+span+')':''));
+  else if(visitCount>=8) parts.push('Grand fidèle'+(firstY?' depuis '+firstY:''));
+  else if(visitCount>=5) parts.push('Habitué'+(firstY?' depuis '+firstY:''));
+  const pax=Math.round(avgPax*10)/10;
+  if(pax<=1.3) parts.push('Vient seul(e)');
+  else if(pax<=2.3) parts.push('Généralement en couple');
+  else if(pax<=3.8) parts.push('Table de 3 personnes');
+  else if(pax<=5.5) parts.push('En groupe ('+Math.round(pax)+' pers.)');
+  else parts.push('Grands groupes (~'+Math.round(pax)+' pers.)');
+  const spots=prefs.filter(p=>['terrasse','vuemer','calme','table','transats','bedtrans'].includes(p.key));
+  if(spots.length) parts.push(spots.map(p=>p.icon+' '+p.label).join(' · '));
+  const diets=prefs.filter(p=>['allergie','vegan','vegeta','sansglut','sanslact'].includes(p.key));
+  if(diets.length) parts.push('⚠️ '+diets.map(p=>p.label).join(' + '));
+  const occs=prefs.filter(p=>['anniv','romant','surprise','repaspro'].includes(p.key));
+  if(occs.length) parts.push(occs.map(p=>p.icon+' '+p.label).join(' · '));
+  if(prefs.find(p=>p.key==='chien')) parts.push('🐕 Vient avec son chien');
+  if(prefs.find(p=>p.key==='enfants')) parts.push('👶 Chaise haute à prévoir');
+  if(prefs.find(p=>p.key==='pmr')) parts.push('♿ Accès PMR — place accessible');
+  return parts.join('\n');
+}
+
+// Legacy compat wrappers
+function clientDetectPrefs(text) { return _extractPrefs([{comment:text}]); }
+function clientMemoAuto(client)  { return client.memoAuto||''; }
 
 // ── CRM helpers ────────────────────────────────────────────────────────────
-function _crmCapWord(w) { return w ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : ''; }
+function _crmCapWord(w){ return w?w.charAt(0).toUpperCase()+w.slice(1).toLowerCase():''; }
 
-function _crmExtractComment(b) {
-  const cf = b.custom_field || {};
+function _crmExtractComment(b){
+  const cf=b.custom_field||{};
   return [
-    b.comment, b.note, b.internal_note, b.customer_comment, b.extra_comment,
-    b.preparation, b.occasion, b.special_request, b.wishes, b.message,
-    b.remarks, b.allergy, b.dietary, b.restaurant_comment, b.private_comment,
-    b.customer && b.customer.comment, b.customer && b.customer.wishes,
-    b.customer && b.customer.preferences, b.customer && b.customer.allergy,
-    b.customer && b.customer.dietary, b.customer && b.customer.profile_comment,
-    ...Object.entries(cf).filter(([,v]) => typeof v==='string' && v.trim().length>2 && !/^\d+$/.test(v.trim())).map(([,v])=>v)
-  ].filter(Boolean).map(s => String(s).trim()).filter(s => s.length > 1)
-   .filter((v,i,a) => a.findIndex(x => x.toLowerCase()===v.toLowerCase())===i).join(' · ');
+    b.comment,b.note,b.internal_note,b.customer_comment,b.extra_comment,
+    b.preparation,b.occasion,b.special_request,b.wishes,b.message,
+    b.remarks,b.allergy,b.dietary,b.restaurant_comment,b.private_comment,
+    b.customer&&b.customer.comment,b.customer&&b.customer.wishes,
+    b.customer&&b.customer.preferences,b.customer&&b.customer.allergy,
+    b.customer&&b.customer.dietary,b.customer&&b.customer.profile_comment,
+    ...Object.entries(cf).filter(([,v])=>typeof v==='string'&&v.trim().length>2&&!/^\d+$/.test(v.trim())).map(([,v])=>v)
+  ].filter(Boolean).map(s=>String(s).trim()).filter(s=>s.length>1)
+   .filter((v,i,a)=>a.findIndex(x=>x.toLowerCase()===v.toLowerCase())===i).join(' · ');
 }
 
-function _crmLoadMap() {
-  try { const r=localStorage.getItem(CRM_HISTORY_KEY); return r ? JSON.parse(r) : null; } catch(e){ return null; }
-}
+function _crmLoadMap(){ try{const r=localStorage.getItem(CRM_HISTORY_KEY);return r?JSON.parse(r):null;}catch(e){return null;} }
 
-function _crmSaveMap(map) {
-  const trySave = (data) => localStorage.setItem(CRM_HISTORY_KEY, JSON.stringify(data));
-  try { trySave(map); }
-  catch(e) {
-    try {
+function _crmSaveMap(map){
+  const trySave=(data)=>localStorage.setItem(CRM_HISTORY_KEY,JSON.stringify(data));
+  try{trySave(map);}
+  catch(e){
+    try{
       const slim={};
       Object.entries(map).forEach(([k,v])=>{slim[k]={...v,visits:v.visits.map(vi=>({date:vi.date,pax:vi.pax,comment:(vi.comment||'').substring(0,150)}))};});
       trySave(slim);
-    } catch(e2){ console.warn('CRM: quota localStorage'); }
+    }catch(e2){console.warn('CRM: quota localStorage');}
   }
 }
 
-// ── Initialize from seed (instant, synchronous) ───────────────────────────
-function crmInitFromSeed() {
-  if (localStorage.getItem(CRM_HISTORY_KEY)) return; // already initialized
-  // Deep-copy seed so we don't mutate the constant
-  const map = {};
-  Object.entries(CRM_SEED_DATA).forEach(([k, c]) => {
-    map[k] = { name:c.name, normKey:c.normKey, phone:c.phone, email:c.email,
-               visits: c.visits.map(v => ({...v})) };
+function crmInitFromSeed(){
+  if(localStorage.getItem(CRM_HISTORY_KEY)) return;
+  const map={};
+  Object.entries(CRM_SEED_DATA).forEach(([k,c])=>{
+    map[k]={name:c.name,normKey:c.normKey,phone:c.phone,email:c.email,visits:c.visits.map(v=>({...v}))};
   });
   _crmSaveMap(map);
-  // Don't set CRM_HISTORY_TS_KEY — so crmEnsureHistory will still fetch real data
 }
 
-// ── Incremental merge — called automatically each time a day loads ─────────
-function crmMergeDay(date, rawBookings) {
-  if (!date || !rawBookings || rawBookings.length === 0) return false;
-  const raw = _crmLoadMap();
-  const map = raw || {};
-  let changed = false;
-  rawBookings.forEach(b => {
-    if (!b) return;
-    if (['cancelled','rejected','deleted','no_show_cancelled'].includes(b.status)) return;
-    const f=(b.firstname||'').trim(), l=(b.lastname||'').trim();
+function crmMergeDay(date,rawBookings){
+  if(!date||!rawBookings||rawBookings.length===0) return false;
+  const map=_crmLoadMap()||{};
+  let changed=false;
+  rawBookings.forEach(b=>{
+    if(!b) return;
+    if(['cancelled','rejected','deleted','no_show_cancelled'].includes(b.status)) return;
+    const f=(b.firstname||'').trim(),l=(b.lastname||'').trim();
     const name=[_crmCapWord(l),_crmCapWord(f)].filter(Boolean).join(' ');
-    if (!name||name.length<2) return;
+    if(!name||name.length<2) return;
     const key=name.toLowerCase().trim();
     const pax=b.nb_guests||b.num_pers||2;
     const phone=(b.phone_number||b.phone||'').trim();
     const email=(b.email||'').trim();
     const comment=_crmExtractComment(b);
-    if (!map[key]) { map[key]={name,normKey:key,phone:'',email:'',visits:[]}; changed=true; }
-    if (phone&&!map[key].phone) { map[key].phone=phone; changed=true; }
-    if (email&&!map[key].email) { map[key].email=email; changed=true; }
+    if(!map[key]){map[key]={name,normKey:key,phone:'',email:'',visits:[]};changed=true;}
+    if(phone&&!map[key].phone){map[key].phone=phone;changed=true;}
+    if(email&&!map[key].email){map[key].email=email;changed=true;}
     const ex=map[key].visits.find(v=>v.date===date&&v.pax===pax);
-    if (!ex) { map[key].visits.push({date,pax,comment}); changed=true; }
-    else if (comment&&!ex.comment) { ex.comment=comment; changed=true; }
+    if(!ex){map[key].visits.push({date,pax,comment});changed=true;}
+    else if(comment&&!ex.comment){ex.comment=comment;changed=true;}
   });
-  if (changed) { _crmSaveMap(map); _clientPrefsCache=null; }
+  if(changed){_crmSaveMap(map);_clientPrefsCache=null;}
   return changed;
 }
 
-// ── Full history fetch ────────────────────────────────────────────────────
-async function _crmFetchPage(page, dateMin, dateMax) {
+async function _crmFetchPage(page,dateMin,dateMax){
   let url=ZC_API+'/bookings?limit=250';
-  if (dateMin) url+='&date_min='+dateMin+'&date_max='+(dateMax||dateMin);
-  if (page>1) url+='&page='+page;
+  if(dateMin) url+='&date_min='+dateMin+'&date_max='+(dateMax||dateMin);
+  if(page>1) url+='&page='+page;
   const res=await fetch(url,{headers:{'auth-token':ZC_TOKEN,'restaurantId':ZC_RESTAURANT_ID,'Content-Type':'application/json'}});
-  if (!res.ok) throw new Error('HTTP '+res.status);
+  if(!res.ok) throw new Error('HTTP '+res.status);
   return await res.json();
 }
-
 let _crmImporting=false;
-
-async function crmImportHistory(onProgress, onDone) {
-  if (_crmImporting) return;
+async function crmImportHistory(onProgress,onDone){
+  if(_crmImporting) return;
   _crmImporting=true;
-  try {
+  try{
     const today=new Date().toISOString().split('T')[0];
     const yearMin=(new Date().getFullYear()-5)+'-01-01';
     const p1=await _crmFetchPage(1,yearMin,today);
@@ -300,26 +314,22 @@ async function crmImportHistory(onProgress, onDone) {
     if(changed) _crmSaveMap(map);
     localStorage.setItem(CRM_HISTORY_TS_KEY,String(Date.now()));
     _clientPrefsCache=null;
-    const cc=Object.keys(map).length;
-    const bc=Object.values(map).reduce((s,c)=>s+c.visits.length,0);
+    const cc=Object.keys(map).length,bc=Object.values(map).reduce((s,c)=>s+c.visits.length,0);
     if(onDone) onDone(cc,bc);
     return map;
-  } finally { _crmImporting=false; }
+  }finally{_crmImporting=false;}
 }
 
-async function crmEnsureHistory() {
-  // Seed is loaded synchronously at startup; this fetches REAL data to enrich it
+async function crmEnsureHistory(){
   const ts=parseInt(localStorage.getItem(CRM_HISTORY_TS_KEY)||'0');
   const age=Date.now()-ts;
-  const WEEK=7*24*3600*1000;
-  if(!ts||age>WEEK){
-    try{ await crmImportHistory(null,null); }
-    catch(e){ console.warn('CRM sync:',e.message); }
+  if(!ts||age>7*24*3600*1000){
+    try{await crmImportHistory(null,null);}catch(e){console.warn('CRM sync:',e.message);}
   }
 }
 
 // ── Data collection ────────────────────────────────────────────────────────
-function clientsCollect() {
+function clientsCollect(){
   const map={};
   function upsert(name,phone,email,date,pax,comment){
     const key=name.toLowerCase().trim();
@@ -329,12 +339,10 @@ function clientsCollect() {
     if(date&&!map[key].visits.find(v=>v.date===date&&v.pax===pax))
       map[key].visits.push({date,pax:pax||2,comment:comment||''});
   }
-  // 1 — CRM store (seed + real Zenchef data merged)
-  try {
+  try{
     const raw=_crmLoadMap();
     if(raw) Object.values(raw).forEach(c=>(c.visits||[]).forEach(v=>{if(c.name&&v.date) upsert(c.name,c.phone||'',c.email||'',v.date,v.pax||2,v.comment||'');}));
-  } catch(e){}
-  // 2 — In-memory today
+  }catch(e){}
   const today=(typeof currentDate!=='undefined'?currentDate:null)||new Date().toISOString().split('T')[0];
   ['s1','s2','soir','transats'].forEach(svc=>{
     ((typeof reservations!=='undefined'?reservations[svc]:null)||[]).forEach(r=>{
@@ -342,7 +350,6 @@ function clientsCollect() {
       upsert(r.name,r.phone||'',r.email||'',today,r.pax||2,r.comment||'');
     });
   });
-  // 3 — Aggregate
   const notes=(()=>{try{return JSON.parse(localStorage.getItem(CLIENT_NOTES_KEY)||'{}');}catch(e){return {};}})();
   const result=[];
   Object.values(map).forEach(c=>{
@@ -351,9 +358,10 @@ function clientsCollect() {
     c.visitCount=c.visits.length;
     c.lastVisit=c.visits[0].date;
     c.avgPax=c.visits.reduce((s,v)=>s+(v.pax||2),0)/c.visits.length;
-    c.prefs=clientDetectPrefs(c.visits.map(v=>v.comment).join(' '));
+    c.prefs=_extractPrefs(c.visits);
     c.loyalty=clientLoyalty(c.visitCount);
-    c.memoAuto=clientMemoAuto(c);
+    c.season=_seasonOf(c.visits);
+    c.memoAuto=_buildAutoMemo(c.visits,c.prefs,c.avgPax,c.visitCount);
     c.memoUser=notes[c.normKey]||'';
     result.push(c);
   });
@@ -361,25 +369,27 @@ function clientsCollect() {
   return result;
 }
 
-// ── Client preferences cache ──────────────────────────────────────────────
+// ── Client preferences cache (for auto-placement in placement.js) ──────────
 let _clientPrefsCache=null;
 function buildClientPrefsCache(){
-  const clients=clientsCollect(), cache={};
+  const clients=clientsCollect(),cache={};
   clients.forEach(c=>{
-    const p=c.prefs, t=p.find(x=>/^Table \d+$/.test(x.label));
+    const p=c.prefs;
+    const allComments=c.visits.map(v=>v.comment||'').join(' ');
+    const tm=allComments.match(/\btable[s]?\s*n?[°º]?\s*(\d+)/i);
     cache[c.normKey]={
-      tableId:t?parseInt(t.label.split(' ')[1]):null,
-      wantTerrasse:!!p.find(x=>x.label==='Terrasse'),
-      wantInterieur:!!p.find(x=>x.label==='Intérieur'),
-      wantOmbre:!!p.find(x=>x.label==='Ombre'),
-      wantSoleil:!!p.find(x=>x.label==='Soleil'),
-      bedDouble:!!p.find(x=>x.label==='Bed double'),
-      firstRow:!!p.find(x=>x.label==='1ère ligne'),
-      extremite:!!p.find(x=>x.label==='Bout de rang')
+      tableId:tm?parseInt(tm[1]):null,
+      wantTerrasse:!!p.find(x=>x.key==='terrasse'),
+      wantInterieur:false,
+      wantOmbre:!!p.find(x=>x.key==='calme'),
+      wantSoleil:false,
+      bedDouble:!!p.find(x=>x.key==='bedtrans'),
+      firstRow:!!p.find(x=>x.key==='vuemer'),
+      extremite:false
     };
   });
   try{localStorage.setItem('playa-client-prefs-cache',JSON.stringify(cache));}catch(e){}
-  _clientPrefsCache=cache; return cache;
+  _clientPrefsCache=cache;return cache;
 }
 function getClientHistPrefs(name){
   if(!name||name==='Sans nom') return null;
@@ -389,57 +399,57 @@ function getClientHistPrefs(name){
   return _clientPrefsCache[name.toLowerCase().trim()]||null;
 }
 function invalidateClientPrefsCache(){ _clientPrefsCache=null; }
-
 function clientSaveNote(normKey,text){
   try{const n=JSON.parse(localStorage.getItem(CLIENT_NOTES_KEY)||'{}');n[normKey]=text;localStorage.setItem(CLIENT_NOTES_KEY,JSON.stringify(n));}catch(e){}
 }
 
-// ── Render ────────────────────────────────────────────────────────────────
-function renderClients(c) {
+// ── Render ─────────────────────────────────────────────────────────────────
+function renderClients(c){
+  crmInitFromSeed();
   let filterLevel='all', searchQ='';
   c.innerHTML='';
+  c.style.cssText='display:flex;flex-direction:column;overflow:hidden;height:100%;';
 
-  // Ensure CRM is seeded from static data (instant)
-  crmInitFromSeed();
-
-  const hdr=document.createElement('div');
-  hdr.style.cssText='display:flex;align-items:center;gap:8px;padding:10px 12px 0;flex-shrink:0;';
-  hdr.innerHTML='<span style="font-size:13px;font-weight:700;color:var(--tx);flex:1;">Clients & Fidélité</span>'
-    +'<div id="crm-sync-dot" style="width:7px;height:7px;border-radius:50%;background:#F59E0B;display:none;" title="Sync Zenchef en cours"></div>'
-    +'<button id="crm-sync-btn" onclick="crmForceSync()" style="padding:5px 10px;border:1px solid var(--sep);border-radius:8px;background:var(--card);font-size:10px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit;">↺ Sync Zenchef</button>';
-  c.appendChild(hdr);
-
-  const progLine=document.createElement('div');
-  progLine.id='crm-prog-line';
-  progLine.style.cssText='height:2px;background:var(--sep);margin:4px 12px 0;border-radius:2px;overflow:hidden;display:none;flex-shrink:0;';
-  progLine.innerHTML='<div id="crm-prog-fill" style="height:2px;background:var(--accent);width:0%;transition:width .4s;border-radius:2px;"></div>';
-  c.appendChild(progLine);
-
+  // ─ scrollable body
   const body=document.createElement('div');
-  body.style.cssText='flex:1;overflow-y:auto;padding:10px 12px 20px;display:flex;flex-direction:column;gap:10px;';
+  body.style.cssText='flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;';
   c.appendChild(body);
 
-  function setProgress(cur,total){
-    const dot=document.getElementById('crm-sync-dot');
-    const line=document.getElementById('crm-prog-line');
-    const fill=document.getElementById('crm-prog-fill');
-    if(cur===null){if(dot)dot.style.display='none';if(line)line.style.display='none';}
-    else{
-      if(dot)dot.style.display='block';if(line)line.style.display='block';
-      if(fill)fill.style.width=(total>0?Math.round((cur/total)*100):0)+'%';
-    }
+  // ─ Auto-build: 1ère ouverture sans données réelles → import Zenchef automatique
+  if(!localStorage.getItem(CRM_HISTORY_TS_KEY)){
+    const bb=document.createElement('div');
+    bb.id='crm-build-banner';
+    bb.style.cssText='background:linear-gradient(135deg,#7C3AED,#0EA5E9);padding:16px;margin:12px 12px 0;border-radius:12px;color:#fff;flex-shrink:0;';
+    bb.innerHTML='<div style="font-size:14px;font-weight:800;margin-bottom:5px;">🔄 Construction du CRM depuis Zenchef…</div>'
+      +'<div style="font-size:11px;opacity:.85;margin-bottom:10px;">Importation des 5 dernières années de réservations</div>'
+      +'<div style="height:7px;background:rgba(255,255,255,.3);border-radius:6px;overflow:hidden;"><div id="crm-bld-bar" style="height:100%;background:#fff;border-radius:6px;width:1%;transition:width .5s;"></div></div>'
+      +'<div id="crm-bld-txt" style="font-size:10px;margin-top:5px;opacity:.75;">Connexion à Zenchef…</div>';
+    c.insertBefore(bb, body);
+    crmImportHistory(
+      (cur,tot)=>{
+        const bar=document.getElementById('crm-bld-bar'),txt=document.getElementById('crm-bld-txt');
+        if(bar) bar.style.width=Math.round(cur/tot*100)+'%';
+        if(txt) txt.textContent='Page '+cur+' / '+tot+' — chargement en cours…';
+      },
+      (cc,bc)=>{
+        const b2=document.getElementById('crm-build-banner');
+        if(b2){b2.style.background='linear-gradient(135deg,#16A34A,#059669)';b2.innerHTML='<div style="font-size:13px;font-weight:800;color:#fff;">✅ CRM construit — '+cc+' clients · '+bc+' visites importées</div>';}
+        setTimeout(()=>{const b2=document.getElementById('crm-build-banner');if(b2)b2.remove();},4000);
+        rebuild();
+      }
+    ).catch(()=>{
+      const b2=document.getElementById('crm-build-banner');
+      if(b2){b2.style.background='#B91C1C';b2.innerHTML='<div style="font-size:12px;font-weight:700;color:#fff;">⚠️ Zenchef inaccessible — données de référence affichées. Sync depuis l\'app sur réseau autorisé.</div>';}
+      setTimeout(()=>{const b2=document.getElementById('crm-build-banner');if(b2)b2.remove();},7000);
+    });
   }
 
   window.crmForceSync=async function(){
     const btn=document.getElementById('crm-sync-btn');
-    if(btn)btn.disabled=true;
-    setProgress(0,1);
+    if(btn){btn.disabled=true;btn.textContent='⏳ Sync...';}
     try{
-      await crmImportHistory((c,t)=>setProgress(c,t),()=>{setProgress(null,null);rebuild();if(btn){btn.disabled=false;btn.textContent='✓ Sync OK';}setTimeout(()=>{if(btn)btn.textContent='↺ Sync Zenchef';},3000);});
-    }catch(e){
-      setProgress(null,null);
-      if(btn){btn.disabled=false;btn.textContent='⚠ Erreur';setTimeout(()=>{btn.textContent='↺ Sync Zenchef';},4000);}
-    }
+      await crmImportHistory(null,(cc,bc)=>{rebuild();if(btn){btn.disabled=false;btn.textContent='✓ '+cc+'c';setTimeout(()=>{if(btn)btn.textContent='↺ Sync';},3000);}});
+    }catch(e){if(btn){btn.disabled=false;btn.textContent='⚠ Erreur';setTimeout(()=>{btn.textContent='↺ Sync';},4000);}}
   };
 
   function rebuild(){
@@ -447,102 +457,220 @@ function renderClients(c) {
     const clients=clientsCollect();
     buildClientPrefsCache();
 
-    const vip=clients.filter(x=>x.loyalty.level==='vip').length;
-    const habitue=clients.filter(x=>x.loyalty.level==='habitue').length;
-    const fidele=clients.filter(x=>x.loyalty.level==='fidele').length;
-    const regulier=clients.filter(x=>x.loyalty.level==='regulier').length;
-    const withPrefs=clients.filter(x=>x.prefs.length>0).length;
     const totalVisits=clients.reduce((s,x)=>s+x.visitCount,0);
+    const legends=clients.filter(x=>x.loyalty.level==='legende');
+    const vips=clients.filter(x=>x.loyalty.level==='vip');
+    const habitues=clients.filter(x=>x.loyalty.level==='habitue');
+    const fideles=clients.filter(x=>x.loyalty.level==='fidele');
+    const reguliers=clients.filter(x=>x.loyalty.level==='regulier');
+    const nouveaux=clients.filter(x=>x.loyalty.level==='nouveau');
+    const withAlert=clients.filter(x=>x.prefs.some(p=>['allergie','pmr','vegan','vegeta','sansglut','sanslact'].includes(p.key)));
+    const stars=clients.filter(x=>['legende','vip'].includes(x.loyalty.level));
 
-    const kpi=document.createElement('div');
-    kpi.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:8px;';
-    [{l:'Clients',v:clients.length,s:totalVisits+' visites',col:'#2563EB'},
-     {l:'VIP & Habitués',v:vip+habitue,s:'7+ visites',col:'#D97706'},
-     {l:'Avec préfs',v:withPrefs,s:'Auto-placement',col:'#16A34A'},
-     {l:'Réguliers+',v:regulier+fidele,s:'2-9 visites',col:'#7C3AED'}
-    ].forEach(({l,v,s,col})=>{
+    // ─ STATS HEADER
+    const statsEl=document.createElement('div');
+    statsEl.style.cssText='padding:12px 12px 0;';
+    // KPI grid
+    const kpiGrid=document.createElement('div');
+    kpiGrid.style.cssText='display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;';
+    [
+      {v:clients.length,  l:'Clients',       s:totalVisits+' visites total',  col:'#0EA5E9'},
+      {v:legends.length+vips.length,l:'Légendes & VIP',s:'≥8 visites',col:'#7C3AED'},
+      {v:withAlert.length,l:'Alertes régime', s:'Allergie / PMR',              col:'#EF4444'},
+    ].forEach(({v,l,s,col})=>{
       const k=document.createElement('div');
-      k.style.cssText='background:var(--card);border-radius:10px;border:1px solid var(--sep);padding:10px 6px;text-align:center;border-top:3px solid '+col+';';
-      k.innerHTML='<div style="font-size:20px;font-weight:800;color:'+col+'">'+v+'</div>'
-        +'<div style="font-size:10px;font-weight:700;color:var(--tx);margin-top:1px">'+l+'</div>'
-        +'<div style="font-size:9px;color:var(--tx2);margin-top:1px">'+s+'</div>';
-      kpi.appendChild(k);
+      k.style.cssText='background:var(--card);border-radius:10px;border:1px solid var(--sep);padding:9px 6px;text-align:center;';
+      k.innerHTML='<div style="font-size:22px;font-weight:900;color:'+col+';">'+v+'</div>'
+        +'<div style="font-size:10px;font-weight:700;color:var(--tx);margin-top:1px;">'+l+'</div>'
+        +'<div style="font-size:9px;color:var(--tx2);margin-top:1px;">'+s+'</div>';
+      kpiGrid.appendChild(k);
     });
-    body.appendChild(kpi);
+    statsEl.appendChild(kpiGrid);
 
-    const inp=document.createElement('input');
-    inp.placeholder='🔍  Rechercher un client…';
-    inp.value=searchQ;
-    inp.style.cssText='width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid var(--sep);border-radius:10px;font-family:inherit;font-size:13px;background:var(--card);color:var(--tx);outline:none';
-    inp.oninput=()=>{searchQ=inp.value;renderList();};
-    body.appendChild(inp);
-
-    const tabs=[
-      {k:'all',     label:'Tous',      count:clients.length},
-      {k:'vip',     label:'VIP ⭐',     count:vip},
-      {k:'habitue', label:'Habitués',  count:habitue},
-      {k:'fidele',  label:'Fidèles',   count:fidele},
-      {k:'regulier',label:'Réguliers', count:regulier},
-      {k:'nouveau', label:'1× visite', count:clients.filter(x=>x.loyalty.level==='nouveau').length}
+    // Loyalty bar
+    const loyBar=document.createElement('div');
+    loyBar.style.cssText='background:var(--card);border-radius:10px;border:1px solid var(--sep);padding:10px 12px;margin-bottom:10px;';
+    const tiers=[
+      {l:'Légende ⭐⭐',n:legends.length,  col:'#B45309'},
+      {l:'VIP ⭐',      n:vips.length,     col:'#7C3AED'},
+      {l:'Habitué',    n:habitues.length, col:'#0284C7'},
+      {l:'Fidèle',     n:fideles.length,  col:'#16A34A'},
+      {l:'Régulier',   n:reguliers.length,col:'#64748B'},
+      {l:'Nouveau',    n:nouveaux.length, col:'#94A3B8'},
     ];
-    body.appendChild(makeSubNav(tabs,filterLevel,k=>{filterLevel=k;renderList();}));
+    loyBar.innerHTML='<div style="font-size:10px;font-weight:700;color:var(--tx2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;">Fidélité</div>'
+      +'<div style="display:flex;height:10px;border-radius:6px;overflow:hidden;margin-bottom:8px;">'
+      +tiers.map(t=>t.n?'<div style="flex:'+t.n+';background:'+t.col+';" title="'+t.l+' ('+t.n+')"></div>':'').join('')
+      +'</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:6px;">'
+      +tiers.filter(t=>t.n>0).map(t=>'<span style="font-size:10px;font-weight:600;color:'+t.col+';">'+t.l+' : '+t.n+'</span>').join('<span style="color:var(--sep);">·</span>')
+      +'</div>';
+    statsEl.appendChild(loyBar);
 
+    // Top prefs stats
+    const prefCounts={};
+    clients.forEach(cl=>cl.prefs.forEach(p=>{ prefCounts[p.key]=(prefCounts[p.key]||{tag:p,n:0}); prefCounts[p.key].n++; }));
+    const topPrefs=Object.values(prefCounts).sort((a,b)=>b.n-a.n).slice(0,6);
+    if(topPrefs.length){
+      const prefBox=document.createElement('div');
+      prefBox.style.cssText='background:var(--card);border-radius:10px;border:1px solid var(--sep);padding:10px 12px;margin-bottom:10px;';
+      prefBox.innerHTML='<div style="font-size:10px;font-weight:700;color:var(--tx2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px;">Habitudes les plus fréquentes</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:6px;">'
+        +topPrefs.map(({tag,n})=>'<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:'+tag.col+'15;border:1px solid '+tag.col+'30;">'
+          +'<span style="font-size:12px;">'+tag.icon+'</span>'
+          +'<span style="font-size:11px;font-weight:700;color:'+tag.col+';">'+tag.label+'</span>'
+          +'<span style="font-size:10px;color:var(--tx2);">×'+n+'</span>'
+          +'</div>').join('')
+        +'</div>';
+      statsEl.appendChild(prefBox);
+    }
+
+    body.appendChild(statsEl);
+
+    // ─ LÉGENDES & VIP — hero cards
+    if(stars.length){
+      const heroSect=document.createElement('div');
+      heroSect.style.cssText='padding:0 12px 8px;';
+      heroSect.innerHTML='<div style="font-size:11px;font-weight:800;color:var(--tx2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;">'
+        +'<span>⭐ Meilleurs clients</span>'
+        +'<span style="font-size:10px;font-weight:600;color:var(--tx2);opacity:.6;">'+stars.length+' clients</span>'
+        +'</div>';
+
+      const scroll=document.createElement('div');
+      scroll.style.cssText='display:flex;gap:10px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;scrollbar-width:none;';
+      scroll.style.setProperty('scrollbar-width','none');
+
+      stars.forEach(cl=>{
+        const L=cl.loyalty;
+        const init=cl.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+        const fmtD=d=>{if(!d)return'?';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0].slice(2);};
+        const years=[...new Set(cl.visits.map(v=>(v.date||'').substring(0,4)).filter(Boolean))].sort();
+        const span=years.length>1?years[0]+'→'+years[years.length-1]:(years[0]||'');
+        const card=document.createElement('div');
+        card.style.cssText='flex-shrink:0;width:175px;background:var(--card);border-radius:14px;border:1.5px solid '+L.col+'40;overflow:hidden;cursor:pointer;';
+        const alertTag=cl.prefs.find(p=>['allergie','pmr'].includes(p.key));
+        const dietTag=cl.prefs.find(p=>['vegan','vegeta','sansglut','sanslact'].includes(p.key));
+        const spotTag=cl.prefs.find(p=>['terrasse','vuemer','calme','table','transats','bedtrans'].includes(p.key));
+        const memoLines=cl.memoAuto.split('\n').slice(1,4);
+        card.innerHTML='<div style="background:linear-gradient(135deg,'+L.col+','+L.col+'cc);padding:14px 12px 10px;position:relative;overflow:hidden;">'
+          +'<div style="font-size:32px;font-weight:900;color:#fff;opacity:.12;position:absolute;right:6px;top:4px;line-height:1;">'+cl.visitCount+'</div>'
+          +'<div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff;margin-bottom:8px;">'+init+'</div>'
+          +'<div style="font-size:12px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:3px;">'+cl.name+'</div>'
+          +'<div style="display:flex;gap:4px;flex-wrap:wrap;">'
+            +'<span style="font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,.25);color:#fff;">'+L.label+'</span>'
+            +'<span style="font-size:9px;color:rgba(255,255,255,.8);">'+cl.visitCount+' vis. · '+(span||fmtD(cl.lastVisit))+'</span>'
+          +'</div>'
+          +'</div>'
+          +'<div style="padding:8px 10px 10px;">'
+            +(alertTag?'<div style="font-size:10px;font-weight:700;color:'+alertTag.col+';margin-bottom:5px;">'+alertTag.icon+' '+alertTag.label+'</div>':'')
+            +'<div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px;">'
+              +cl.prefs.filter(p=>!['allergie','pmr'].includes(p.key)).slice(0,4).map(p=>'<span style="font-size:9px;padding:2px 5px;border-radius:6px;background:'+p.col+'18;color:'+p.col+';font-weight:700;">'+p.icon+' '+p.label+'</span>').join('')
+            +'</div>'
+            +(memoLines.length?'<div style="font-size:10px;color:var(--tx2);line-height:1.45;white-space:pre-line;">'+memoLines.join('\n')+'</div>':'')
+            +(cl.phone?'<a href="tel:'+cl.phone.replace(/\D/g,'')+'" style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:4px 8px;border-radius:8px;background:'+L.col+'15;color:'+L.col+';font-size:10px;font-weight:700;text-decoration:none;">📞 '+cl.phone+'</a>':'')
+          +'</div>';
+        scroll.appendChild(card);
+      });
+      heroSect.appendChild(scroll);
+      body.appendChild(heroSect);
+    }
+
+    // ─ DIVIDER
+    const div0=document.createElement('div');
+    div0.style.cssText='height:1px;background:var(--sep);margin:0 12px 10px;';
+    body.appendChild(div0);
+
+    // ─ SEARCH + SYNC BTN
+    const topRow=document.createElement('div');
+    topRow.style.cssText='display:flex;gap:8px;padding:0 12px;margin-bottom:8px;';
+    topRow.innerHTML='<input id="crm-search" placeholder="🔍 Rechercher un client…" style="flex:1;padding:9px 12px;border:1px solid var(--sep);border-radius:10px;font-family:inherit;font-size:13px;background:var(--card);color:var(--tx);outline:none;">'
+      +'<button id="crm-sync-btn" onclick="crmForceSync()" style="padding:8px 10px;border:1px solid var(--sep);border-radius:10px;background:var(--card);font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit;white-space:nowrap;">↺ Sync</button>';
+    body.appendChild(topRow);
+    const inp=body.querySelector('#crm-search');
+    inp.value=searchQ;
+    inp.oninput=()=>{searchQ=inp.value;renderList();};
+
+    // ─ FILTER TABS
+    const tabs=[
+      {k:'all',      label:'Tous',        count:clients.length},
+      {k:'legende',  label:'Légendes ⭐⭐',count:legends.length},
+      {k:'vip',      label:'VIP ⭐',       count:vips.length},
+      {k:'habitue',  label:'Habitués',    count:habitues.length},
+      {k:'fidele',   label:'Fidèles',     count:fideles.length},
+      {k:'regulier', label:'Réguliers',   count:reguliers.length},
+      {k:'nouveau',  label:'1 visite',    count:nouveaux.length},
+    ];
+    const tabsEl=document.createElement('div');
+    tabsEl.style.cssText='padding:0 12px;margin-bottom:10px;';
+    tabsEl.appendChild(makeSubNav(tabs,filterLevel,k=>{filterLevel=k;renderList();}));
+    body.appendChild(tabsEl);
+
+    // ─ LIST
     const listEl=document.createElement('div');
+    listEl.style.cssText='padding:0 12px 80px;';
     body.appendChild(listEl);
 
     function renderList(){
       listEl.innerHTML='';
       let list=clients;
       if(filterLevel!=='all') list=list.filter(x=>x.loyalty.level===filterLevel);
-      if(searchQ.trim()){const q=searchQ.toLowerCase();list=list.filter(x=>x.name.toLowerCase().includes(q)||x.phone.includes(q));}
+      if(searchQ.trim()){const q=searchQ.toLowerCase();list=list.filter(x=>x.name.toLowerCase().includes(q)||(x.phone||'').includes(q));}
       if(!list.length){listEl.innerHTML='<div style="text-align:center;padding:30px 20px;color:var(--tx2);font-size:13px;">Aucun client trouvé</div>';return;}
       const grid=document.createElement('div');
       grid.style.cssText='display:flex;flex-direction:column;gap:8px;';
-      list.forEach(cl=>grid.appendChild(makeClientCard(cl)));
+      list.forEach(cl=>grid.appendChild(_makeClientCard(cl)));
       listEl.appendChild(grid);
     }
     renderList();
   }
 
-  function makeClientCard(cl){
+  function _makeClientCard(cl){
     const L=cl.loyalty;
     const card=document.createElement('div');
     card.setAttribute('data-card',cl.normKey);
     card.style.cssText='background:var(--card);border:1px solid var(--sep);border-left:4px solid '+L.col+';border-radius:0 12px 12px 0;overflow:hidden;';
     const init=cl.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
     const fmtD=d=>{if(!d)return'—';const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0].slice(2);};
-    const chips=cl.prefs.map(p=>'<span style="display:inline-flex;padding:2px 7px;border-radius:8px;background:'+p.col+'18;color:'+p.col+';font-size:10px;font-weight:600;margin:2px 2px 0 0;">'+p.label+'</span>').join('');
+    const alertPrefs=cl.prefs.filter(p=>['allergie','pmr'].includes(p.key));
+    const otherPrefs=cl.prefs.filter(p=>!['allergie','pmr'].includes(p.key));
+    const chips=[...alertPrefs,...otherPrefs].map(p=>'<span style="display:inline-flex;align-items:center;gap:2px;padding:2px 6px;border-radius:7px;background:'+p.col+'18;color:'+p.col+';font-size:9.5px;font-weight:700;margin:2px 2px 0 0;border:1px solid '+p.col+'25;">'+p.icon+' '+p.label+'</span>').join('');
+    const years=[...new Set(cl.visits.map(v=>(v.date||'').substring(0,4)).filter(Boolean))].sort();
+    const span=years.length>1?' · '+years[0]+'→'+years[years.length-1]:(years[0]?' · '+years[0]:'');
     const avgStr=cl.avgPax>=2?' · ~'+Math.round(cl.avgPax)+' pers.':'';
-    let span='';
-    if(cl.visits.length>=2){const y1=(cl.visits[cl.visits.length-1].date||'').substring(0,4),y2=(cl.visits[0].date||'').substring(0,4);span=y1&&y2?(y1===y2?' · '+y1:' · '+y1+'→'+y2):'';}
-    const phoneBtn=cl.phone?'<a href="tel:'+cl.phone.replace(/\D/g,'')+'" style="padding:6px 10px;border:1px solid var(--sep);border-radius:8px;background:var(--card);font-size:11px;font-weight:600;color:var(--tx);text-decoration:none;">📞</a>':'';
-
-    card.innerHTML='<div style="padding:10px 12px 8px;">'
-      +'<div style="display:flex;align-items:center;gap:10px;">'
-        +'<div style="width:36px;height:36px;border-radius:50%;background:'+L.col+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;">'+init+'</div>'
+    const phoneBtn=cl.phone?'<a href="tel:'+cl.phone.replace(/\D/g,'')+'" style="padding:5px 9px;border:1px solid var(--sep);border-radius:8px;background:var(--card);font-size:11px;color:var(--tx);text-decoration:none;">📞</a>':'';
+    card.innerHTML='<div style="padding:9px 12px 7px;">'
+      +'<div style="display:flex;align-items:center;gap:9px;">'
+        +'<div style="width:35px;height:35px;border-radius:50%;background:'+L.col+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0;">'+init+'</div>'
         +'<div style="flex:1;min-width:0;">'
-          +'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
+          +'<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">'
             +'<span style="font-size:14px;font-weight:800;color:var(--tx);">'+cl.name+'</span>'
-            +'<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:'+L.bg+';color:'+L.col+';">'+L.label+'</span>'
+            +'<span style="font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:8px;background:'+L.bg+';color:'+L.col+';">'+L.label+'</span>'
+            +'<span style="font-size:9px;padding:1px 6px;border-radius:6px;background:'+cl.season.col+'18;color:'+cl.season.col+';font-weight:600;">'+cl.season.label+'</span>'
           +'</div>'
           +'<div style="font-size:11px;color:var(--tx2);margin-top:1px;">'+cl.visitCount+' visite'+(cl.visitCount>1?'s':'')+avgStr+span+' · Dernière : '+fmtD(cl.lastVisit)+'</div>'
         +'</div>'
       +'</div>'
-      +(cl.prefs.length?'<div style="margin-top:6px;">'+chips+'</div>':'')+
-    '</div>'
-    +(cl.memoAuto&&!cl.memoUser?'<div style="padding:0 12px 6px;background:var(--bg);"><div style="font-size:10px;color:var(--tx2);line-height:1.5;white-space:pre-line;padding:6px 8px;background:var(--card);border-radius:6px;border-left:2px solid '+L.col+';">'+cl.memoAuto+'</div></div>':'')
-    +'<div style="padding:6px 12px 8px;border-top:.5px solid var(--sep);background:var(--bg);">'
-      +'<textarea placeholder="'+(cl.memoAuto?'✏️ Ajouter / modifier la note…':'Note personnalisée…')+'" style="width:100%;box-sizing:border-box;padding:6px 8px;border:1px solid var(--sep);border-radius:8px;font-family:inherit;font-size:11.5px;color:var(--tx);background:var(--card);resize:none;outline:none;line-height:1.5;min-height:38px;" rows="2" onchange="clientSaveNote(\''+cl.normKey+'\', this.value)">'+cl.memoUser+'</textarea>'
-    +'</div>'
-    +'<div style="padding:5px 12px 7px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;border-top:.5px solid var(--sep);">'
-      +phoneBtn
-      +'<button onclick="(function(btn){var h=btn.closest(\'[data-card]\').querySelector(\'.cl-hist\');var o=h.style.display!==\'none\';h.style.display=o?\'none\':\'block\';btn.textContent=o?\'▾ Historique ('+cl.visitCount+')\':\'▴ Masquer\';})(this)" style="padding:5px 10px;border:1px solid var(--sep);border-radius:8px;background:var(--card);font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit;">▾ Historique ('+cl.visitCount+')</button>'
-    +'</div>'
-    +'<div class="cl-hist" style="display:none;border-top:.5px solid var(--sep);">'
-      +'<div style="padding:6px 12px;max-height:200px;overflow-y:auto;">'
-        +cl.visits.map(v=>'<div style="display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:.5px solid var(--sep);font-size:11px;"><span style="font-family:monospace;font-size:10px;color:var(--tx2);flex-shrink:0;width:54px;">'+fmtD(v.date)+'</span><span style="color:var(--tx2);min-width:18px;flex-shrink:0;">'+v.pax+'p</span><span style="color:var(--tx);line-height:1.4;word-break:break-word;font-style:'+(v.comment?'normal':'italic')+';">'+(v.comment||'—')+'</span></div>').join('')
+      +(cl.prefs.length?'<div style="margin-top:6px;">'+chips+'</div>':'')
       +'</div>'
-    +'</div>';
+      +(cl.memoAuto&&!cl.memoUser
+        ?'<div style="padding:0 12px 6px;background:var(--bg);"><div style="font-size:10px;color:var(--tx2);line-height:1.5;white-space:pre-line;padding:5px 8px;background:var(--card);border-radius:6px;border-left:2px solid '+L.col+';">'+cl.memoAuto+'</div></div>'
+        :'')
+      +'<div style="padding:5px 12px 7px;border-top:.5px solid var(--sep);background:var(--bg);">'
+        +'<textarea placeholder="Note personnalisée…" style="width:100%;box-sizing:border-box;padding:5px 8px;border:1px solid var(--sep);border-radius:8px;font-family:inherit;font-size:11px;color:var(--tx);background:var(--card);resize:none;outline:none;line-height:1.5;min-height:34px;" rows="2" onchange="clientSaveNote(\''+cl.normKey+'\',this.value)">'+cl.memoUser+'</textarea>'
+      +'</div>'
+      +'<div style="padding:4px 12px 6px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;border-top:.5px solid var(--sep);">'
+        +phoneBtn
+        +'<button onclick="(function(btn){var h=btn.closest(\'[data-card]\').querySelector(\'.cl-hist\');var o=h.style.display!==\'none\';h.style.display=o?\'none\':\'block\';btn.textContent=o?\'▾ Historique ('+cl.visitCount+')\':\'▴ Masquer\';})(this)" style="padding:4px 10px;border:1px solid var(--sep);border-radius:8px;background:var(--card);font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;font-family:inherit;">▾ Historique ('+cl.visitCount+')</button>'
+      +'</div>'
+      +'<div class="cl-hist" style="display:none;border-top:.5px solid var(--sep);">'
+        +'<div style="padding:6px 12px;max-height:180px;overflow-y:auto;">'
+          +cl.visits.map(v=>'<div style="display:flex;gap:8px;align-items:baseline;padding:3px 0;border-bottom:.5px solid var(--sep);font-size:11px;">'
+            +'<span style="font-family:monospace;font-size:10px;color:var(--tx2);flex-shrink:0;width:54px;">'+fmtD(v.date)+'</span>'
+            +'<span style="color:var(--tx2);min-width:18px;flex-shrink:0;">'+v.pax+'p</span>'
+            +'<span style="color:var(--tx);line-height:1.4;word-break:break-word;font-style:'+(v.comment?'normal':'italic')+';">'+(v.comment||'—')+'</span>'
+            +'</div>').join('')
+        +'</div>'
+      +'</div>';
     return card;
   }
 
