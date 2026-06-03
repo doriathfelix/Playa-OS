@@ -237,6 +237,8 @@ async function zcCacheSet(date, data){
   }
   // Fallback localStorage
   try{ localStorage.setItem('playa_zc_' + date, JSON.stringify({ts: Date.now(), data})); }catch(e){}
+  // Merge into CRM incrementally (silently, no await)
+  if(typeof crmMergeDay === 'function') setTimeout(() => crmMergeDay(date, data), 0);
 }
 
 function zcFullFetchAge(){

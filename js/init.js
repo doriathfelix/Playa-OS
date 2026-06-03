@@ -22,6 +22,8 @@ setTimeout(()=>{ syncZenchef(); startAutoSync(); }, 800);
 // Préchauffage cache : si le pool est périmé, fetch tout en arrière-plan
 // dès que la date initiale est chargée → les changements de date suivants seront instantanés
 setTimeout(()=>{ warmZenchefCache(); }, 3000);
+// CRM : import automatique si pas encore fait ou > 7 jours
+setTimeout(()=>{ if(typeof crmEnsureHistory==='function') crmEnsureHistory(); }, 6000);
 
 // Drag tactile : long press sur carte sidebar → poser sur table/transat
 initTouchDrag();
