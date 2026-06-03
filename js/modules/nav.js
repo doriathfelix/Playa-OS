@@ -20,7 +20,7 @@ function goModule(mod){
   document.getElementById('service-tabs').style.display=isService?'flex':'none';
   document.getElementById('module-topbar-title').style.display=isService?'none':'block';
   document.getElementById('service-top-btns').style.display=isService?'flex':'none';
-  const titles={dash:'Accueil',equipe:'Équipe & RH',stocks:'Stocks & Commandes',analyse:'Analyse',caisse:'Caisse · L\'Addition',admin:'Admin & Finances',resas:'Réservations',settings:'Réglages',ai:'Playa AI',cuisine:'Cuisine',bar:'Bar',haccp:'HACCP & Hygiène',prestataires:'Prestataires & Fournisseurs',event:'Événementiel & Privatisations',urgences:'Urgences & Sécurité'};
+  const titles={dash:'Accueil',equipe:'Équipe & RH',stocks:'Stocks & Commandes',analyse:'Analyse',caisse:'Caisse · L\'Addition',admin:'Admin & Finances',resas:'Réservations',settings:'Réglages',ai:'Playa AI',cuisine:'Cuisine',bar:'Bar',haccp:'HACCP & Hygiène',prestataires:'Prestataires & Fournisseurs',event:'Événementiel & Privatisations',urgences:'Urgences & Sécurité',clients:'Clients & Fidélité'};
   if(!isService) document.getElementById('module-topbar-title').textContent=titles[mod]||mod;
 
   document.getElementById('app').style.display=isService?'flex':'none';
@@ -44,6 +44,7 @@ function goModule(mod){
     else if(mod==='prestataires') renderPrestataires(mc);
     else if(mod==='event') renderEvent(mc);
     else if(mod==='urgences') renderUrgences(mc);
+    else if(mod==='clients') renderClients(mc);
   }
 }
 
