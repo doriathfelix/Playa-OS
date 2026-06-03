@@ -949,6 +949,13 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
       <span class="osni-name">Clients</span>
     </button>
 
+    <button class="osni" id="osni-groupes" onclick="goModule('groupes')">
+      <div class="osni-icon" style="background:#FFF7ED">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="4" width="16" height="15" rx="2" fill="#FED7AA" fill-opacity=".4" stroke="#EA580C" stroke-width="1.3"/><path d="M7 2V5M15 2V5M3 8H19" stroke="#EA580C" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="13" r="1.2" fill="#EA580C" fill-opacity=".7"/><circle cx="11" cy="13" r="1.2" fill="#EA580C" fill-opacity=".4"/><circle cx="14" cy="13" r="1.2" fill="#EA580C" fill-opacity=".4"/></svg>
+      </div>
+      <span class="osni-name">Groupes</span>
+    </button>
+
     <button class="osni" id="osni-prestataires" onclick="goModule('prestataires')">
       <div class="osni-icon" style="background:#EFF6FF">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="4" width="16" height="15" rx="2" fill="#93C5FD" fill-opacity=".25" stroke="#2563EB" stroke-width="1.3"/><circle cx="8" cy="10" r="1.5" fill="#2563EB" fill-opacity=".7"/><circle cx="14" cy="10" r="1.5" fill="#2563EB" fill-opacity=".4"/><path d="M5 15H9M13 15H17M5 12H9M13 12H17" stroke="#2563EB" stroke-width="1" opacity=".5"/></svg>
@@ -6778,7 +6785,7 @@ function goModule(mod){
   document.getElementById('service-tabs').style.display=isService?'flex':'none';
   document.getElementById('module-topbar-title').style.display=isService?'none':'block';
   document.getElementById('service-top-btns').style.display=isService?'flex':'none';
-  const titles={dash:'Accueil',equipe:'Équipe & RH',stocks:'Stocks & Commandes',analyse:'Analyse',caisse:'Caisse · L\'Addition',admin:'Admin & Finances',resas:'Réservations',settings:'Réglages',ai:'Playa AI',cuisine:'Cuisine',bar:'Bar',haccp:'HACCP & Hygiène',prestataires:'Prestataires & Fournisseurs',event:'Événementiel & Privatisations',urgences:'Urgences & Sécurité',clients:'Clients & Fidélité'};
+  const titles={dash:'Accueil',equipe:'Équipe & RH',stocks:'Stocks & Commandes',analyse:'Analyse',caisse:'Caisse · L\'Addition',admin:'Admin & Finances',resas:'Réservations',settings:'Réglages',ai:'Playa AI',cuisine:'Cuisine',bar:'Bar',haccp:'HACCP & Hygiène',prestataires:'Prestataires & Fournisseurs',event:'Événementiel & Privatisations',urgences:'Urgences & Sécurité',clients:'Clients & Fidélité',groupes:'Groupes 2026'};
   if(!isService) document.getElementById('module-topbar-title').textContent=titles[mod]||mod;
 
   document.getElementById('app').style.display=isService?'flex':'none';
@@ -6803,6 +6810,7 @@ function goModule(mod){
     else if(mod==='event') renderEvent(mc);
     else if(mod==='urgences') renderUrgences(mc);
     else if(mod==='clients') renderClients(mc);
+    else if(mod==='groupes') renderGroupes(mc);
   }
 }
 
@@ -10441,6 +10449,228 @@ function renderSettings(c){
   estab.appendChild(prefs);
 
   g2.appendChild(estab);
+}
+
+// ══════════════════════════════════════════
+// GROUPES — Planning 2026
+// ══════════════════════════════════════════
+
+const GROUPES_DATA = [
+  // ── MAI ──
+  {id:'g01', nom:'Sandrine Jacquet',     pax:25,  date:'2026-05-08', service:'Journée',   offre:'',                                                    statut:'urgent',    note:''},
+  {id:'g02', nom:'Moutardier Alexandra', pax:22,  date:'2026-05-15', service:'Midi',       offre:'Tapas · Poissons · Gâteaux',                          statut:'tbd',       note:''},
+  {id:'g03', nom:'Moutardier Alexandra', pax:25,  date:'2026-05-15', service:'Soir',       offre:'Tapas / Cocktail en sus (+2 choc, Mojito, Gin Tonic)', statut:'tbd',       note:''},
+  {id:'g04', nom:'Vinciclette',          pax:30,  date:'2026-05-30', service:'Midi',       offre:'',                                                    statut:'tbd',       note:'À vérifier'},
+  // ── JUIN ──
+  {id:'g05', nom:"Cap Horizon (Pierre Bordas / L'Oréal)", pax:30, date:'2026-06-02', service:'Soir', offre:'2 Tapas · Poisson · Dessert · Café · Eau · Vins', statut:'urgent', note:'3 jours consécutifs'},
+  {id:'g06', nom:"Cap Horizon (Pierre Bordas / L'Oréal)", pax:30, date:'2026-06-03', service:'Midi', offre:'2 Tapas · Poisson · Dessert · Café · Eau · Vins', statut:'urgent', note:'3 jours consécutifs'},
+  {id:'g07', nom:"Cap Horizon (Pierre Bordas / L'Oréal)", pax:30, date:'2026-06-04', service:'Midi', offre:'2 Tapas · Poisson · Dessert · Café · Eau · Vins', statut:'urgent', note:'3 jours consécutifs'},
+  {id:'g08', nom:'Rémy (Géraldine)',     pax:25,  date:'2026-06-04', service:'Midi',       offre:'Tit déj · Tapas · Moules frites — 58€ HT/pers',       statut:'confirmed', note:''},
+  {id:'g09', nom:'Bains Gardians',       pax:47,  date:'2026-06-04', service:'Journée',    offre:'',                                                    statut:'option',    note:''},
+  {id:'g10', nom:'MMA (Bains Gardians)', pax:18,  date:'2026-06-04', service:'Soir',       offre:'2 Tapas · Poisson · Dessert · Café · Eau · Vins — 78€ HT/pers', statut:'confirmed', note:''},
+  {id:'g11', nom:'Famille Gasc',         pax:30,  date:'2026-06-06', service:'Soir',       offre:'',                                                    statut:'tbd',       note:''},
+  {id:'g12', nom:'RC Groupe (Julie Martin)', pax:30, date:'2026-06-10', service:'Soir',    offre:'Privatisation',                                       statut:'tbd',       note:'Privat'},
+  {id:'g13', nom:'Leading Event',        pax:22,  date:'2026-06-12', service:'Midi',       offre:'',                                                    statut:'option',    note:''},
+  {id:'g14', nom:'Christa',              pax:12,  date:'2026-06-13', service:'Midi',       offre:'Anniversaire',                                        statut:'confirmed', note:''},
+  {id:'g15', nom:'Kelly Driscoll',       pax:22,  date:'2026-06-14', service:'Midi',       offre:'Midi + Transats',                                     statut:'confirmed', note:''},
+  {id:'g16', nom:'Pacifica',             pax:30,  date:'2026-06-16', service:'Soir',       offre:'',                                                    statut:'confirmed', note:''},
+  {id:'g17', nom:'Pacifica',             pax:30,  date:'2026-06-17', service:'Soir',       offre:'',                                                    statut:'confirmed', note:'J2'},
+  {id:'g18', nom:'Longitude 7',          pax:45,  date:'2026-06-18', service:'Midi',       offre:'',                                                    statut:'option',    note:''},
+  {id:'g19', nom:'Artz and Co',          pax:57,  date:'2026-06-18', service:'Soir',       offre:'',                                                    statut:'option',    note:'Date : 18/06 ou 25/06'},
+  {id:'g20', nom:'Chlorophyll',          pax:40,  date:'2026-06-22', service:'Soir',       offre:'',                                                    statut:'urgent',    note:''},
+  {id:'g21', nom:'Symadrem',             pax:30,  date:'2026-06-25', service:'Midi',       offre:'',                                                    statut:'confirmed', note:''},
+  // ── JUILLET ──
+  {id:'g22', nom:'Simone Suisse / Roche Hof', pax:40, date:'2026-07-15', service:'Soir',  offre:'Privatisation',                                       statut:'tbd',       note:'Date : 15 ou 16/07'},
+  {id:'g23', nom:'Antoine Rosenfeld',    pax:40,  date:'2026-07-18', service:'Midi & Soir',offre:'',                                                    statut:'urgent',    note:'Journée complète'},
+  // ── AOÛT ──
+  {id:'g24', nom:'Abaziou Marine',       pax:20,  date:'2026-08-02', service:'Midi',       offre:'',                                                    statut:'tbd',       note:''},
+  {id:'g25', nom:'Bains Gardians (Insulet)', pax:33, date:'2026-08-27', service:'Dîner',   offre:'MAJ tarifaire à confirmer',                           statut:'confirmed', note:''},
+  // ── SEPTEMBRE ──
+  {id:'g26', nom:'France à la Carte',    pax:15,  date:'2026-09-06', service:'Soir',       offre:'10 à 20 PAX',                                         statut:'tbd',       note:''},
+  {id:'g27', nom:'Pulsea',               pax:26,  date:'2026-09-11', service:'Déjeuner',   offre:'MAJ tarifaire à confirmer',                           statut:'confirmed', note:''},
+  {id:'g28', nom:'LR Communication',     pax:80,  date:'2026-09-17', service:'Soir',       offre:'Privatisation',                                       statut:'tbd',       note:'Privat — Grand format'},
+  {id:'g29', nom:'Evea',                 pax:30,  date:null,          service:'Soir',       offre:'',                                                    statut:'tbd',       note:'Date à définir'},
+];
+
+const GROUPES_STATUT = {
+  urgent:    {label:'Urgent / Confirmé',   color:'#DC2626', bg:'#FEF2F2'},
+  confirmed: {label:'Confirmé',            color:'#16A34A', bg:'#F0FDF4'},
+  option:    {label:'Option / En attente', color:'#D97706', bg:'#FFFBEB'},
+  tbd:       {label:'À définir',           color:'#6B7280', bg:'#F9FAFB'},
+};
+
+function groupesDaysUntil(dateStr) {
+  if (!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const d = new Date(dateStr); d.setHours(0,0,0,0);
+  return Math.round((d - today) / 86400000);
+}
+
+function groupesFmtDate(dateStr) {
+  if (!dateStr) return 'Date à définir';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+}
+
+function groupesFmtMonth(dateStr) {
+  if (!dateStr) return 'À définir';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('fr-FR', {month:'long', year:'numeric'}).replace(/^./, c => c.toUpperCase());
+}
+
+function renderGroupes(c) {
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const sorted = [...GROUPES_DATA].sort((a, b) => {
+    if (!a.date && !b.date) return 0;
+    if (!a.date) return 1;
+    if (!b.date) return -1;
+    return a.date.localeCompare(b.date);
+  });
+
+  c.innerHTML = '';
+
+  const bar = document.createElement('div');
+  bar.style.cssText = 'padding:10px 12px 6px;display:flex;align-items:center;gap:8px;flex-shrink:0;';
+  bar.innerHTML = `<span style="font-size:13px;font-weight:700;color:var(--tx);flex:1;">Planning Groupes 2026</span>
+    <span style="font-size:11px;font-weight:600;background:#F0FDF4;color:#16A34A;padding:3px 8px;border-radius:12px;">
+      ${sorted.filter(g=>g.statut==='confirmed'||g.statut==='urgent').length} confirmés
+    </span>
+    <span style="font-size:11px;font-weight:600;background:#FFFBEB;color:#D97706;padding:3px 8px;border-radius:12px;">
+      ${sorted.filter(g=>g.statut==='option').length} options
+    </span>`;
+  c.appendChild(bar);
+
+  const alert14 = sorted.filter(g => {
+    const d = groupesDaysUntil(g.date);
+    return d !== null && d >= 0 && d <= 14;
+  });
+
+  if (alert14.length > 0) {
+    const banner = document.createElement('div');
+    banner.style.cssText = 'margin:0 12px 8px;padding:10px 14px;background:#FFF7ED;border:1.5px solid #F59E0B;border-radius:10px;flex-shrink:0;';
+    const lines = alert14.map(g => {
+      const d = groupesDaysUntil(g.date);
+      const prefix = d === 0 ? '🔴 <b>Aujourd\'hui</b>' : d === 1 ? '🟠 <b>Demain</b>' : `🟡 <b>J-${d}</b>`;
+      return `${prefix} — ${g.nom} · ${g.pax} pax · ${g.service}`;
+    }).join('<br>');
+    banner.innerHTML = `<div style="font-size:12px;font-weight:700;color:#92400E;margin-bottom:4px;">⚠️ Groupes dans les 14 prochains jours</div>
+      <div style="font-size:12px;color:#78350F;line-height:1.7;">${lines}</div>`;
+    c.appendChild(banner);
+  }
+
+  const legend = document.createElement('div');
+  legend.style.cssText = 'display:flex;gap:6px;padding:0 12px 8px;flex-wrap:wrap;flex-shrink:0;';
+  Object.entries(GROUPES_STATUT).forEach(([k, v]) => {
+    const chip = document.createElement('span');
+    chip.style.cssText = `font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:${v.bg};color:${v.color};border:1px solid ${v.color}33;`;
+    chip.textContent = v.label;
+    legend.appendChild(chip);
+  });
+  c.appendChild(legend);
+
+  const scroll = document.createElement('div');
+  scroll.style.cssText = 'flex:1;overflow-y:auto;padding:0 12px 20px;';
+  c.appendChild(scroll);
+
+  const byMonth = {};
+  sorted.forEach(g => {
+    const mk = g.date ? g.date.slice(0, 7) : 'tbd';
+    if (!byMonth[mk]) byMonth[mk] = [];
+    byMonth[mk].push(g);
+  });
+
+  Object.keys(byMonth).sort().forEach(mk => {
+    const groups = byMonth[mk];
+    const monthLabel = mk === 'tbd' ? 'Date à définir' : groupesFmtMonth(mk + '-01');
+    const totalPax = groups.reduce((s, g) => s + g.pax, 0);
+
+    const mh = document.createElement('div');
+    mh.style.cssText = 'display:flex;align-items:center;gap:8px;margin:12px 0 8px;';
+    mh.innerHTML = `<div style="font-size:13px;font-weight:800;color:var(--tx);text-transform:uppercase;letter-spacing:.5px;">${monthLabel}</div>
+      <div style="flex:1;height:1px;background:var(--sep);"></div>
+      <div style="font-size:11px;color:var(--tx2);font-weight:600;">${groups.length} groupe${groups.length>1?'s':''} · ${totalPax} pax total</div>`;
+    scroll.appendChild(mh);
+
+    groups.forEach(g => {
+      const daysLeft = groupesDaysUntil(g.date);
+      const st = GROUPES_STATUT[g.statut] || GROUPES_STATUT.tbd;
+      const isUrgent = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
+      const isPast = daysLeft !== null && daysLeft < 0;
+
+      const card = document.createElement('div');
+      card.style.cssText = `background:var(--card);border-radius:12px;border:1.5px solid ${isUrgent ? '#F59E0B' : 'var(--sep)'};margin-bottom:8px;overflow:hidden;opacity:${isPast ? '.55' : '1'};`;
+
+      const header = document.createElement('div');
+      header.style.cssText = `padding:10px 12px 8px;border-left:4px solid ${st.color};display:flex;flex-direction:column;gap:4px;`;
+
+      const topRow = document.createElement('div');
+      topRow.style.cssText = 'display:flex;align-items:flex-start;gap:6px;';
+      topRow.innerHTML = `<div style="flex:1;font-size:13px;font-weight:700;color:var(--tx);line-height:1.3;">${g.nom}</div>
+        <div style="font-size:13px;font-weight:800;color:${st.color};white-space:nowrap;">${g.pax} pax</div>`;
+      header.appendChild(topRow);
+
+      const dateRow = document.createElement('div');
+      dateRow.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
+
+      let dateHtml = '';
+      if (g.date) {
+        const dateLabel = groupesFmtDate(g.date);
+        let countdown = '';
+        if (daysLeft === 0) countdown = `<span style="font-size:10px;font-weight:700;background:#DC2626;color:#fff;padding:1px 6px;border-radius:8px;">Aujourd'hui</span>`;
+        else if (daysLeft === 1) countdown = `<span style="font-size:10px;font-weight:700;background:#EA580C;color:#fff;padding:1px 6px;border-radius:8px;">Demain</span>`;
+        else if (daysLeft !== null && daysLeft >= 2 && daysLeft <= 14) countdown = `<span style="font-size:10px;font-weight:700;background:#F59E0B;color:#fff;padding:1px 6px;border-radius:8px;">J-${daysLeft}</span>`;
+        else if (isPast) countdown = `<span style="font-size:10px;color:var(--tx2);">Passé</span>`;
+        dateHtml = `<span style="font-size:11px;color:var(--tx2);">📅 ${dateLabel}</span>${countdown}`;
+      } else {
+        dateHtml = `<span style="font-size:11px;color:var(--tx2);">📅 Date à définir</span>`;
+      }
+
+      dateRow.innerHTML = dateHtml +
+        `<span style="font-size:11px;font-weight:600;background:${st.bg};color:${st.color};padding:1px 7px;border-radius:8px;">${g.service}</span>` +
+        `<span style="font-size:10px;font-weight:600;background:${st.bg};color:${st.color};padding:1px 7px;border-radius:8px;border:1px solid ${st.color}33;">${st.label}</span>`;
+      header.appendChild(dateRow);
+
+      card.appendChild(header);
+
+      if (g.offre || g.note) {
+        const body = document.createElement('div');
+        body.style.cssText = `padding:8px 12px 10px;border-top:.5px solid var(--sep);background:var(--bg);`;
+        if (g.offre) {
+          body.innerHTML += `<div style="font-size:12px;color:var(--tx);line-height:1.5;">🍽️ <b>Offre :</b> ${g.offre}</div>`;
+        }
+        if (g.note) {
+          body.innerHTML += `<div style="font-size:11px;color:var(--tx2);margin-top:${g.offre?'4px':'0'};">💬 ${g.note}</div>`;
+        }
+        card.appendChild(body);
+      }
+
+      scroll.appendChild(card);
+    });
+  });
+
+  const sumDiv = document.createElement('div');
+  sumDiv.style.cssText = 'margin-top:16px;padding:12px;background:var(--card);border-radius:12px;border:1px solid var(--sep);';
+  const totalGroups = sorted.filter(g => g.date).length;
+  const totalPaxAll = sorted.filter(g => g.date).reduce((s, g) => s + g.pax, 0);
+  const maxGroup = sorted.reduce((m, g) => g.pax > m.pax ? g : m, {pax:0, nom:'—'});
+  sumDiv.innerHTML = `
+    <div style="font-size:12px;font-weight:700;color:var(--tx);margin-bottom:8px;">Récapitulatif saison 2026</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+      <div style="text-align:center;padding:8px;background:var(--bg);border-radius:8px;">
+        <div style="font-size:20px;font-weight:800;color:var(--accent);">${totalGroups}</div>
+        <div style="font-size:10px;color:var(--tx2);">Groupes planifiés</div>
+      </div>
+      <div style="text-align:center;padding:8px;background:var(--bg);border-radius:8px;">
+        <div style="font-size:20px;font-weight:800;color:#16A34A;">${totalPaxAll}</div>
+        <div style="font-size:10px;color:var(--tx2);">Couverts groupes</div>
+      </div>
+      <div style="text-align:center;padding:8px;background:var(--bg);border-radius:8px;">
+        <div style="font-size:20px;font-weight:800;color:#D97706;">${maxGroup.pax}</div>
+        <div style="font-size:10px;color:var(--tx2);">Max pax (${maxGroup.nom.split(' ')[0]})</div>
+      </div>
+    </div>`;
+  scroll.appendChild(sumDiv);
 }
 
 // ══════════════════════════
