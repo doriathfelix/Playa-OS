@@ -159,6 +159,46 @@ function clientsCollect() {
   return result;
 }
 
+// ── Client preferences cache (used by placement.js) ───────────────────────
+let _clientPrefsCache = null;
+
+function buildClientPrefsCache() {
+  const clients = clientsCollect();
+  const cache = {};
+  clients.forEach(c => {
+    const p = c.prefs;
+    const tMatch = p.find(x => /^Table \d+$/.test(x.label));
+    cache[c.normKey] = {
+      tableId:      tMatch ? parseInt(tMatch.label.split(' ')[1]) : null,
+      wantTerrasse: !!p.find(x => x.label === 'Terrasse'),
+      wantInterieur:!!p.find(x => x.label === 'Intérieur'),
+      wantOmbre:    !!p.find(x => x.label === 'Ombre'),
+      wantSoleil:   !!p.find(x => x.label === 'Soleil'),
+      bedDouble:    !!p.find(x => x.label === 'Bed double'),
+      firstRow:     !!p.find(x => x.label === '1ère ligne'),
+      extremite:    !!p.find(x => x.label === 'Bout de rang')
+    };
+  });
+  try { localStorage.setItem('playa-client-prefs-cache', JSON.stringify(cache)); } catch(e) {}
+  _clientPrefsCache = cache;
+  return cache;
+}
+
+function getClientHistPrefs(name) {
+  if (!name || name === 'Sans nom') return null;
+  if (!_clientPrefsCache) {
+    try {
+      const s = localStorage.getItem('playa-client-prefs-cache');
+      _clientPrefsCache = s ? JSON.parse(s) : {};
+    } catch(e) { _clientPrefsCache = {}; }
+  }
+  return _clientPrefsCache[name.toLowerCase().trim()] || null;
+}
+
+function invalidateClientPrefsCache() {
+  _clientPrefsCache = null;
+}
+
 // ── Save manual note ────────────────────────────────────────────────────────
 function clientSaveNote(normKey, text) {
   try {
@@ -181,17 +221,20 @@ function renderClients(c) {
   function rebuild() {
     body.innerHTML = '';
     const clients = clientsCollect();
+    // Rebuild placement cache silently every time module is opened
+    buildClientPrefsCache();
 
     // ── KPIs
     const vip      = clients.filter(x => x.loyalty.level === 'vip').length;
     const habitue  = clients.filter(x => x.loyalty.level === 'habitue').length;
     const fidele   = clients.filter(x => x.loyalty.level === 'fidele').length;
     const regulier = clients.filter(x => x.loyalty.level === 'regulier').length;
+    const withPrefs = clients.filter(c => c.prefs.length > 0).length;
     body.appendChild(makeKPIRow([
-      {l:'Clients détectés', v:clients.length,     s:'Sur tout l\'historique Zenchef', col:'#2563EB'},
-      {l:'VIP & Habitués',   v:vip+habitue,         s:'7+ visites détectées',           col:'#D97706'},
-      {l:'Fidèles',          v:fidele,               s:'4 à 6 visites',                 col:'#16A34A'},
-      {l:'Réguliers',        v:regulier,             s:'2 à 3 visites',                 col:'#7C3AED'}
+      {l:'Clients détectés', v:clients.length,  s:'Sur tout l\'historique Zenchef', col:'#2563EB'},
+      {l:'VIP & Habitués',   v:vip+habitue,     s:'7+ visites détectées',           col:'#D97706'},
+      {l:'Avec préférences', v:withPrefs,        s:'✓ Utilisées en auto-placement',  col:'#16A34A'},
+      {l:'Réguliers',        v:regulier,         s:'2 à 3 visites',                 col:'#7C3AED'}
     ]));
 
     // ── Search

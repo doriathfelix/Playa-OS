@@ -255,6 +255,23 @@ function parseTablePreference(text){
   };
 }
 
+// Fusionne les préférences du commentaire du jour avec l'historique client.
+// Le commentaire du jour est prioritaire : si une préférence est explicite aujourd'hui,
+// elle écrase l'historique. L'historique ne s'applique que sur les champs non renseignés.
+function mergeTablePrefs(commentPref, hist){
+  if(!hist) return commentPref;
+  const p = {...commentPref};
+  if(!p.wantTerrasse && !p.wantInterieur){
+    if(hist.wantTerrasse) p.wantTerrasse = true;
+    else if(hist.wantInterieur) p.wantInterieur = true;
+  }
+  if(!p.wantOmbre && !p.wantSoleil){
+    if(hist.wantOmbre) p.wantOmbre = true;
+    else if(hist.wantSoleil) p.wantSoleil = true;
+  }
+  return p;
+}
+
 function autoTables(resas, skipped=0){
   const used = new Set(gr().filter(r=>r.placed&&r.tableId).map(r=>r.tableId));
 
@@ -291,7 +308,8 @@ function autoTables(resas, skipped=0){
 
   resas.forEach(r=>{
     // ── PRIORITÉ -1 : table demandée explicitement (stockée à l'import ou dans le commentaire)
-    const requestedTable = r.requested_table_id || parseTableRequest(r.comment);
+    const _hist = (typeof getClientHistPrefs === 'function') ? getClientHistPrefs(r.name) : null;
+    const requestedTable = r.requested_table_id || parseTableRequest(r.comment) || (_hist && _hist.tableId) || null;
     if(requestedTable && !used.has(requestedTable) && TABLE_DATA[requestedTable] && TABLE_DATA[requestedTable].hi >= r.pax){
       r.placed = true; r.tableId = requestedTable; used.add(requestedTable);
       return;
@@ -306,8 +324,8 @@ function autoTables(resas, skipped=0){
       return;
     }
 
-    // ── PRIORITÉ 1 : table seule suffisante, avec préférences issues du commentaire
-    const pref1 = parseTablePreference(r.comment);
+    // ── PRIORITÉ 1 : table seule suffisante, avec préférences (commentaire + historique client)
+    const pref1 = mergeTablePrefs(parseTablePreference(r.comment), _hist);
     let pool1 = ordered.filter(t => !used.has(t.id) && t.hi >= r.pax);
     if(pref1.wantTerrasse){ const f = pool1.filter(t => t.p);  if(f.length) pool1 = f; }
     else if(pref1.wantInterieur){ const f = pool1.filter(t => !t.p); if(f.length) pool1 = f; }
@@ -678,6 +696,17 @@ function autoTransats(resas, skipped=0){
       }
     }
   });
+
+  // ─── Enrichissement historique client (préférences connues, commentaire prioritaire) ───
+  if(typeof getClientHistPrefs === 'function'){
+    resas.forEach(r => {
+      const h = getClientHistPrefs(r.name);
+      if(!h) return;
+      if(!r.bed && h.bedDouble)    r.bed = true;
+      if(!r.row_transats && h.firstRow) r.row_transats = 500;
+      if(!r.pref_extremite && h.extremite) r.pref_extremite = true;
+    });
+  }
 
   // ─── Phase 0 : BEDS — placer exclusivement sur BED_SLOTS (lit double = 2 PAX max) ───
   // Les BED_SLOTS ne peuvent accueillir qu'UNE resa bed chacun.
