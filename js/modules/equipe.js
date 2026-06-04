@@ -6,7 +6,7 @@
 const EQ_MEMBRES = [
   // ── CUISINE ───────────────────────────────────────────────────────────
   { id:'chef',   nom:'Chef',   role:'Chef de cuisine', poste:'Cuisine',    team:'cuisine', color:'#EA580C' },
-  { id:'carla',  nom:'Carla',  role:'Cuisinière',       poste:'Cuisine',    team:'cuisine', color:'#F97316' },
+  { id:'carlo',  nom:'Carlo',  role:'Cuisinier',        poste:'Cuisine',    team:'cuisine', color:'#F97316' },
   { id:'noa',    nom:'Noa',    role:'Cuisinière',       poste:'Cuisine',    team:'cuisine', color:'#FB923C' },
   { id:'ju',     nom:'Ju',     role:'Cuisinier',        poste:'Cuisine',    team:'cuisine', color:'#F59E0B' },
   { id:'che',    nom:'Che',    role:'Cuisinier',        poste:'Cuisine',    team:'cuisine', color:'#D97706' },
@@ -44,7 +44,7 @@ function eqGetConfig() {
   const defaults = {
     repos: {
       // cuisine
-      chef:'lundi', carla:'mardi', noa:'lundi', ju:'mercredi',
+      chef:'lundi', carlo:'mardi', noa:'lundi', ju:'mercredi',
       che:'lundi', joanna:'lundi', fifou:'mardi', teo:'mercredi',
       // salle
       antoine:'vendredi', mathis:'lundi', aurelie:'mardi', eliott:'mercredi',
