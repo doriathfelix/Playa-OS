@@ -420,21 +420,22 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .TBL.dropping{background:var(--bbg);border-color:var(--blue);border-style:dashed;border-width:2px}
 .TBL.prio{border-color:var(--gdb)}
 .TBL.fuse-sel{border:3px solid var(--gold);background:var(--gdbg);box-shadow:0 0 0 3px rgba(245,158,11,0.2)}
-.TBL.fused-entity{background:var(--pbg);border-color:var(--pb);border-width:2px;padding:4px 0 5px}
-.TBL.fused-entity.occ{background:var(--pbg);border-color:var(--pb)}
+.TBL.fused-entity{background:#FFFBEB;border-color:#F59E0B;border-width:2px;border-top:4px solid #F59E0B;padding:3px 0 4px}
+.TBL.fused-entity.occ{background:#FFF3CD;border-color:#D97706;border-top:4px solid #D97706}
 .fuse-nums{display:flex;align-items:stretch;justify-content:center;width:100%;margin-bottom:2px}
-.fuse-tnum{flex:1;font-size:13px;font-weight:800;color:var(--pt);font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;line-height:1}
-.TBL.fused-entity.occ .fuse-tnum{color:var(--gt)}
-.fuse-sep{position:relative;width:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.fuse-sep::before{content:'';position:absolute;left:50%;top:0;bottom:0;border-left:1.5px dashed var(--sep2);transform:translateX(-50%)}
-.fuse-sep-badge{position:relative;z-index:1;font-size:7px;font-weight:900;color:var(--purple);background:var(--pbg);border:1.5px solid var(--pb);border-radius:50%;width:13px;height:13px;display:flex;align-items:center;justify-content:center;line-height:1}.tbl-num{font-size:26px;font-weight:600;color:var(--t5);line-height:1;letter-spacing:-.5px;font-family:'DM Mono',monospace}
+.fuse-tnum{flex:1;font-size:15px;font-weight:900;color:#92400E;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;line-height:1}
+.TBL.fused-entity.occ .fuse-tnum{color:#92400E}
+.fuse-sep{position:relative;width:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fuse-sep::before{content:'';position:absolute;left:50%;top:0;bottom:0;border-left:2px solid #F59E0B;transform:translateX(-50%)}
+.fuse-sep-badge{position:relative;z-index:1;font-size:10px;font-weight:900;color:#92400E;background:#FFFBEB;border:2px solid #D97706;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;line-height:1}.tbl-num{font-size:26px;font-weight:600;color:var(--t5);line-height:1;letter-spacing:-.5px;font-family:'DM Mono',monospace}
 .TBL.occ .tbl-num{font-size:21px;color:var(--gt)}
 .TBL.urg .tbl-num{font-size:21px;color:var(--rt)}
 .tbl-name{font-size:10px;font-weight:600;color:var(--t2);max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
 .tbl-time{font-size:9px;font-weight:600;color:var(--gt);margin-top:1px}
 .tbl-time.urg{color:var(--rt)}
 .tbl-cap{font-size:9px;font-weight:600;color:var(--t5)}
-.tbl-fuse-tag{font-size:8px;font-weight:700;color:var(--pt);background:var(--pbg);border:0.5px solid var(--pb);border-radius:20px;padding:1px 6px;margin-top:2px}
+.tbl-fuse-tag{font-size:8px;font-weight:700;color:#92400E;background:#FEF3C7;border:1px solid #D97706;border-radius:20px;padding:1px 6px;margin-top:2px}
+.fuse-corner-tag{position:absolute;top:2px;right:3px;font-size:6px;font-weight:900;letter-spacing:.05em;color:#92400E;line-height:1;text-transform:uppercase}
 .pax-bubble{
   position:absolute;top:-7px;right:-7px;
   background:var(--s1);color:#fff;
@@ -444,7 +445,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
   font-family:'DM Mono',monospace;
 }
 .pax-bubble.urg{background:var(--red)}
-.pax-bubble.fused{background:var(--purple)}
+.pax-bubble.fused{background:#D97706}
 .prio-star{position:absolute;top:4px;left:6px;font-size:10px;color:var(--gold);pointer-events:none;line-height:1}
 /* Indicateur service sur table occupée — bandeau bas */
 .TBL.tbl-s1::after,.TBL.tbl-s2::after,.TBL.tbl-soir::after,.TBL.tbl-rt::after{
@@ -2232,8 +2233,8 @@ function makeCell(id, tMap){
       `<span class="fuse-tnum">${TABLE_DATA[tid]?.lbl||tid}</span>`
     ).join('');
     cell.innerHTML = rr
-      ? `<div class="fuse-nums">${segsHtml}</div><div class="tbl-name">${rr.name}</div><div class="pax-bubble fused">${rr.pax}</div>`
-      : `<div class="fuse-nums">${segsHtml}</div><div class="tbl-fuse-tag">fusionné</div>`;
+      ? `<span class="fuse-corner-tag">⊕ fusion</span><div class="fuse-nums">${segsHtml}</div><div class="tbl-name">${rr.name}</div><div class="pax-bubble fused">${rr.pax}</div>`
+      : `<span class="fuse-corner-tag">⊕ fusion</span><div class="fuse-nums">${segsHtml}</div><div class="tbl-fuse-tag">libre</div>`;
     cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('dropping')});
     cell.addEventListener('dragleave',()=>cell.classList.remove('dropping'));
     cell.addEventListener('drop',e=>{e.preventDefault();cell.classList.remove('dropping');if(!dragId)return;saveUndo();const dr=gr().find(x=>x.id===dragId);if(!dr)return;fg.tids.forEach(tid=>{gr().forEach(x=>{if(x.id!==dr.id&&x.tableId===tid){x.placed=false;x.tableId=null;}})});dr.placed=true;dr.tableId=fg.tids[0];dragId=null;selectedId=dr.id;render();});
@@ -5432,18 +5433,11 @@ function printServiceSheet() {
       const fg = !entry.tranat && (fusedGroups||[]).find(f => f.tids.includes(id));
       if (fg && !done.has(fg.tids[0])) {
         const r = fg.tids.map(t => map[t]).find(x => x) || null;
-        // Première table de la fusion : ligne normale avec la resa
-        rows += dataRow(String(fg.tids[0]), r);
-        // Tables suivantes : border-top pointillée + [+] encadré centré sur la bordure
-        fg.tids.slice(1).forEach(tid => {
-          const dot = 'border-top:2px dotted #555';
-          const plus = `<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);border:1.5px solid #555;border-radius:2px;padding:0 4px;font-size:7pt;font-weight:900;line-height:1.5;background:#fff;white-space:nowrap">+</span>`;
-          rows += `<tr>
-            <td class="d-tbl" style="${dot};position:relative;overflow:visible">${plus}${tid}</td>
-            <td class="d-cov" style="${dot}"></td>
-            <td class="d-nom" style="${dot}"></td>
-          </tr>`;
-        });
+        const fusedLbl = fg.tids.join('+');
+        const tbadge = (r && r.tr > 0) ? `<span class="t-badge">T</span>` : '';
+        rows += r
+          ? `<tr class="occ fused-print-row"><td class="d-tbl"><span class="d-tbl-fused">${fusedLbl}</span></td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`
+          : `<tr class="fused-print-row"><td class="d-tbl"><span class="d-tbl-fused">${fusedLbl}</span></td><td class="d-cov"></td><td class="d-nom" style="font-size:7pt;color:#B45309;font-style:italic">⊕ fusion libre</td></tr>`;
         fg.tids.forEach(t => done.add(t));
         return;
       }
@@ -5512,6 +5506,9 @@ body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000;
 .t-badge { display:inline-block; border:1px solid #000; border-radius:50%;
   width:11px; height:11px; text-align:center; line-height:10px;
   font-size:6.5pt; font-weight:800; margin-left:5px; vertical-align:middle; }
+.fused-print-row td { background: #FFF3CD !important; }
+.fused-print-row td:first-child { border-left: 4px solid #D97706 !important; }
+.d-tbl-fused { font-size: 9pt; font-weight: 900; color: #92400E; letter-spacing: -.5px; }
 </style></head><body>
 <div class="no-print">
   <button class="btn btn-pri" onclick="window.print()">⎙ Imprimer</button>
@@ -5566,16 +5563,11 @@ function printSoirSheet() {
     const fg = !entry.tranat && [...(fused.soir||[])].find(f => f.tids.includes(id));
     if (fg && !done.has(fg.tids[0])) {
       const r = fg.tids.map(t => mapSoir[t]).find(x => x) || null;
-      rows += dataRow(String(fg.tids[0]), r);
-      fg.tids.slice(1).forEach(tid => {
-        const dot = 'border-top:2px dotted #555';
-        const plus = `<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);border:1.5px solid #555;border-radius:2px;padding:0 4px;font-size:7pt;font-weight:900;line-height:1.5;background:#fff;white-space:nowrap">+</span>`;
-        rows += `<tr>
-          <td class="d-tbl" style="${dot};position:relative;overflow:visible">${plus}${tid}</td>
-          <td class="d-cov" style="${dot}"></td>
-          <td class="d-nom" style="${dot}"></td>
-        </tr>`;
-      });
+      const fusedLbl = fg.tids.join('+');
+      const tbadge = (r && r.tr > 0) ? `<span class="t-badge">T</span>` : '';
+      rows += r
+        ? `<tr class="occ fused-print-row"><td class="d-tbl"><span class="d-tbl-fused">${fusedLbl}</span></td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`
+        : `<tr class="fused-print-row"><td class="d-tbl"><span class="d-tbl-fused">${fusedLbl}</span></td><td class="d-cov"></td><td class="d-nom" style="font-size:7pt;color:#B45309;font-style:italic">⊕ fusion libre</td></tr>`;
       fg.tids.forEach(t => done.add(t));
       return;
     }
@@ -5614,6 +5606,9 @@ body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000;
 .t-badge { display:inline-block; border:1px solid #000; border-radius:50%;
   width:11px; height:11px; text-align:center; line-height:10px;
   font-size:6.5pt; font-weight:800; margin-left:5px; vertical-align:middle; }
+.fused-print-row td { background: #FFF3CD !important; }
+.fused-print-row td:first-child { border-left: 4px solid #D97706 !important; }
+.d-tbl-fused { font-size: 9pt; font-weight: 900; color: #92400E; letter-spacing: -.5px; }
 </style></head><body>
 <div class="no-print">
   <button class="btn btn-pri" onclick="window.print()">⎙ Imprimer</button>
