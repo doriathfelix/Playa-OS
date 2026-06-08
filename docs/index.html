@@ -4086,10 +4086,14 @@ function autoTables(resas, skipped=0){
   const all     = Object.entries(TABLE_DATA).map(([id,d])=>({id:+id,...d}));
   const ordered = [...all].sort((a,b) => (a.prio||99) - (b.prio||99));
 
-  // Tri : grands groupes (besoin de fusion) EN PREMIER → réservent les combos avant les petits
-  // puis PAX décroissant, enfin ancienneté de réservation
+  // Tri : demandes explicites EN PREMIER (leur table doit être libre quand on les traite),
+  // puis grands groupes (besoin de fusion), puis PAX décroissant, enfin ancienneté.
   const maxSingleHi = Math.max(...Object.values(TABLE_DATA).map(t => t.hi));
   resas.sort((a,b)=>{
+    const aExplicit = !!(a.requested_table_id || parseTableRequest(a.comment));
+    const bExplicit = !!(b.requested_table_id || parseTableRequest(b.comment));
+    if(aExplicit && !bExplicit) return -1;
+    if(!aExplicit && bExplicit) return 1;
     const aNeedsFusion = a.pax > maxSingleHi;
     const bNeedsFusion = b.pax > maxSingleHi;
     if(aNeedsFusion && !bNeedsFusion) return -1;
@@ -4105,10 +4109,18 @@ function autoTables(resas, skipped=0){
 
   resas.forEach(r=>{
     // ── PRIORITÉ -1 : table demandée explicitement (stockée à l'import ou dans le commentaire)
+    // Pour une demande EXPLICITE (pas juste l'historique CRM) on honore sans vérifier la capacité :
+    // le client et le staff connaissent la table, on leur fait confiance.
     const _hist = (typeof getClientHistPrefs === 'function') ? getClientHistPrefs(r.name) : null;
-    const requestedTable = r.requested_table_id || parseTableRequest(r.comment) || (_hist && _hist.tableId) || null;
-    if(requestedTable && !used.has(requestedTable) && TABLE_DATA[requestedTable] && TABLE_DATA[requestedTable].hi >= r.pax){
-      r.placed = true; r.tableId = requestedTable; used.add(requestedTable);
+    const explicitTable = r.requested_table_id || parseTableRequest(r.comment) || null;
+    const histTable     = (!explicitTable && _hist) ? (_hist.tableId || null) : null;
+    const requestedTable = explicitTable || histTable;
+    if(explicitTable && !used.has(explicitTable) && TABLE_DATA[explicitTable]){
+      r.placed = true; r.tableId = explicitTable; used.add(explicitTable);
+      return;
+    }
+    if(histTable && !used.has(histTable) && TABLE_DATA[histTable] && TABLE_DATA[histTable].hi >= r.pax){
+      r.placed = true; r.tableId = histTable; used.add(histTable);
       return;
     }
 
@@ -4701,6 +4713,7 @@ function clearAll(){
   fused[tk()]=[];selectedId=null;render();
   toast('Toutes les tables libérées');
 }
+
 
 
 // ══════════════════════════════════════════
