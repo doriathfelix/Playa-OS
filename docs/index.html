@@ -5311,7 +5311,8 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
 /* ─── groupe de slots ─── */
 .tr-gs{flex:1;min-height:0;display:flex;gap:0.8mm;border:0.75pt solid #555;border-radius:1.5mm;padding:1mm;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .tr-gs.bed{border-radius:3mm}
-.tr-gs.s1,.tr-gs.s2{background-color:#fff;background-image:url("data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-1,1 l2,-2 M0,12 l12,-12 M11,13 l2,-2' stroke='%23333' stroke-width='0.75' fill='none'/%3E%3C/svg%3E");background-size:12px 12px}
+.tr-gs.s1,.tr-gs.s2{background-color:#fff}
+.tr-gs.s1 .tr-is,.tr-gs.s2 .tr-is{background:linear-gradient(to top right,transparent calc(50% - 0.6px),#111 calc(50% - 0.6px),#111 calc(50% + 0.6px),transparent calc(50% + 0.6px));-webkit-print-color-adjust:exact;print-color-adjust:exact}
 .tr-gs.soir{background:#BBBBBB;border-color:#666}
 .tr-gs.rt{background:#fff;border:1.5pt dashed #333;border-radius:4mm}
 .tr-gs.empty{background:#EBEBEB;border:0.5pt solid #BBBBBB}
@@ -5330,8 +5331,8 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
   <div style="display:flex;align-items:center;gap:5mm">
     <div style="font-size:13pt;font-weight:800">${dateStr}</div>
     <div style="display:flex;align-items:center;flex-wrap:wrap">
-      <span class="leg"><span class="leg-swatch" style="background-image:url(&quot;data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-1,1 l2,-2 M0,12 l12,-12 M11,13 l2,-2' stroke='%23333' stroke-width='0.75' fill='none'/%3E%3C/svg%3E&quot;);background-size:12px 12px;border:0.6pt solid #555;-webkit-print-color-adjust:exact"></span>1er service (S1)</span>
-      <span class="leg"><span class="leg-swatch" style="background-image:url(&quot;data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-1,1 l2,-2 M0,12 l12,-12 M11,13 l2,-2' stroke='%23333' stroke-width='0.75' fill='none'/%3E%3C/svg%3E&quot;);background-size:12px 12px;border:0.6pt solid #555;-webkit-print-color-adjust:exact"></span>2ème service (S2)</span>
+      <span class="leg"><span class="leg-swatch" style="background:linear-gradient(to top right,transparent calc(50% - 0.6px),#111 calc(50% - 0.6px),#111 calc(50% + 0.6px),transparent calc(50% + 0.6px));border:0.6pt solid #555;-webkit-print-color-adjust:exact"></span>1er service (S1)</span>
+      <span class="leg"><span class="leg-swatch" style="background:linear-gradient(to top right,transparent calc(50% - 0.6px),#111 calc(50% - 0.6px),#111 calc(50% + 0.6px),transparent calc(50% + 0.6px));border:0.6pt solid #555;-webkit-print-color-adjust:exact"></span>2ème service (S2)</span>
       <span class="leg"><span class="leg-swatch" style="background:#BBBBBB;border:0.6pt solid #666;-webkit-print-color-adjust:exact"></span>Soir</span>
       <span class="leg"><span class="leg-swatch" style="background:#fff;border:1.5pt dashed #333;border-radius:3px"></span>Repas transat (RT)</span>
     </div>
