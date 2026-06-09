@@ -5152,7 +5152,7 @@ ${unplacedHtml}
 // ══════════════════════════════════════════
 function printTransats(){
   const dateStr = fmtDateLong(currentDate);
-  const W=10.8, GAP=1.2, ALLEY=5, LBL=14;
+  const W=9.0, GAP=1.0, ALLEY=5, LBL=14;
 
   function sCol(slot){
     const pos=slot-Math.floor(slot/100)*100;
@@ -5300,13 +5300,15 @@ function printTransats(){
     </div>`;
   }
 
-  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  const html=`<!DOCTYPE html><html lang="fr" style="-webkit-print-color-adjust:exact;print-color-adjust:exact;color-scheme:light"><head><meta charset="UTF-8">
 <title>Plan transats - ${dateStr}</title>
 <style>
 @page{size:A4 landscape;margin:7mm 9mm}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact;height:196mm;display:flex;flex-direction:column}
-.no-print{padding:4px 0;flex-shrink:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;forced-color-adjust:none!important}
+html,body{color-scheme:light}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;height:196mm;display:flex;flex-direction:column}
+@media screen{body{height:calc(196mm + 36px)}}
+.no-print{height:36px;display:flex;align-items:center;flex-shrink:0}
 @media print{.no-print{display:none!important}}
 .btn{padding:4px 12px;background:#111;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:4px}
 .hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:2mm;border-bottom:1pt solid #222;margin-bottom:2mm;flex-shrink:0}
@@ -5314,25 +5316,21 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
 .sea{flex-shrink:0;text-align:center;font-size:6pt;font-weight:700;letter-spacing:.1em;color:#555;border-top:0.5pt solid #CCCCCC;padding-top:1.5mm;margin-top:1.5mm}
 .leg{display:inline-flex;align-items:center;gap:2mm;font-size:5pt;font-weight:600;margin-right:4mm}
 .leg-swatch{display:inline-block;width:11px;height:11px;vertical-align:middle;border-radius:1px}
-/* ─── wrapper ─── */
 .tr-wrap{display:flex;flex-direction:column;margin:0.5mm}
-.tr-gname{font-size:6pt;font-weight:800;color:#111;text-align:center;line-height:1.3;white-space:normal;word-break:break-word;overflow-wrap:anywhere;padding:0.5mm 1.5mm;margin-bottom:0.6mm;border-radius:1mm;flex-shrink:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.tr-wrap.s1   .tr-gname{background:#BBF7D0;color:#14532D}
-.tr-wrap.s2   .tr-gname{background:#FED7AA;color:#9A3412}
-.tr-wrap.rt   .tr-gname{background:#BFDBFE;color:#1E3A8A}
-.tr-wrap.soir .tr-gname{background:#DDD6FE;color:#4C1D95}
+.tr-gname{font-size:6pt;font-weight:800;color:#111;text-align:center;line-height:1.3;white-space:normal;word-break:break-word;overflow-wrap:anywhere;padding:0.5mm 1.5mm;margin-bottom:0.6mm;border-radius:1mm;flex-shrink:0}
+.tr-wrap.s1   .tr-gname{background:#BBF7D0!important;color:#14532D!important}
+.tr-wrap.s2   .tr-gname{background:#FED7AA!important;color:#9A3412!important}
+.tr-wrap.rt   .tr-gname{background:#BFDBFE!important;color:#1E3A8A!important}
+.tr-wrap.soir .tr-gname{background:#DDD6FE!important;color:#4C1D95!important}
 .tr-gname-ph{min-height:6.5pt;flex-shrink:0}
-/* ─── T entouré pour RT — un seul, centré sur le groupe ─── */
 .tr-gs.rt{position:relative}
-.tr-rt-t{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:8mm;height:8mm;border:1.5pt solid #111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8pt;font-weight:900;color:#111;pointer-events:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-/* ─── groupe de slots ─── */
-.tr-gs{flex:1;min-height:0;display:flex;gap:0.8mm;border:0.75pt solid #555;border-radius:1.5mm;padding:1mm;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.tr-rt-t{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:8mm;height:8mm;border:1.5pt solid #111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8pt;font-weight:900;color:#111;pointer-events:none}
+.tr-gs{flex:1;min-height:0;display:flex;gap:0.8mm;border:0.75pt solid #555;border-radius:1.5mm;padding:1mm;overflow:hidden}
 .tr-gs.bed{border-radius:3mm}
-.tr-gs.s1,.tr-gs.s2{background:linear-gradient(to top right,transparent calc(50% - 0.6px),#111 calc(50% - 0.6px),#111 calc(50% + 0.6px),transparent calc(50% + 0.6px));-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.tr-gs.soir{background:linear-gradient(to top right,transparent calc(50% - 0.6px),#111 calc(50% - 0.6px),#111 calc(50% + 0.6px),transparent calc(50% + 0.6px));border-color:#7C3AED;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.tr-gs.rt{background:#fff;border:1.5pt dashed #333;border-radius:4mm}
-.tr-gs.empty{background:#EBEBEB;border:0.5pt solid #BBBBBB}
-/* ─── slot individuel à l'intérieur du groupe ─── */
+.tr-gs.s1,.tr-gs.s2{background:linear-gradient(to top right,rgba(255,255,255,0) calc(50% - 0.5px),#111 calc(50% - 0.5px),#111 calc(50% + 0.5px),rgba(255,255,255,0) calc(50% + 0.5px))!important}
+.tr-gs.soir{background:linear-gradient(to top right,rgba(255,255,255,0) calc(50% - 0.5px),#111 calc(50% - 0.5px),#111 calc(50% + 0.5px),rgba(255,255,255,0) calc(50% + 0.5px))!important;border-color:#7C3AED!important}
+.tr-gs.rt{background:#fff!important;border:1.5pt dashed #333;border-radius:4mm}
+.tr-gs.empty{background:#EBEBEB!important;border:0.5pt solid #BBBBBB}
 .tr-is{flex:1;min-width:0;min-height:0;border:0.4pt solid rgba(0,0,0,0.22);border-radius:0.8mm;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:0.5mm;background:transparent}
 .tr-gs.empty .tr-is{border-color:transparent}
 .tr-in{font-size:3.5pt;color:#777;font-weight:600;line-height:1;text-align:center}
