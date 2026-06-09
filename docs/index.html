@@ -5213,7 +5213,7 @@ function printTransats(){
     }).join('');
     const rtT=isRT?`<div class="tr-rt-t">T</div>`:'';
     return `<div class="tr-wrap ${sk}" style="grid-column:${gc};grid-row:${gridRow}">
-      <div class="tr-gname">${resa.name||''}</div>
+      <div class="tr-gname">${resa.name||''} x${resa.tr||slots.length}</div>
       <div class="tr-gs ${sk}">${innerSlots}${rtT}</div>
     </div>`;
   }
