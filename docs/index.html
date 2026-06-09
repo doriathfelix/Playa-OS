@@ -5148,23 +5148,14 @@ ${unplacedHtml}
 
 
 // ══════════════════════════════════════════
-// PRINT PLAN DE TRANSATS — fond blanc, lisible, blocs g/m/d séparés
+// PRINT PLAN DE TRANSATS — une cellule par slot, hachures par service
 // ══════════════════════════════════════════
 function printTransats(){
   const dateStr = fmtDateLong(currentDate);
-
   const W=10.8, GAP=1.2, ALLEY=5, LBL=14;
 
-  const C = {
-    s1:   {bg:'#FFFFFF', tx:'#111', lbl:'S1',   bw:'0.5pt'},
-    s2:   {bg:'#FFFFFF', tx:'#111', lbl:'S2',   bw:'0.5pt'},
-    soir: {bg:'#FFFFFF', tx:'#111', lbl:'Soir', bw:'0.5pt'},
-    rt:   {bg:'#FFFFFF', tx:'#111', lbl:'RT',   bw:'0.5pt'},
-  };
-  function cFor(r){ return r.repas_transat ? C.rt : C[r.svc] || C.s1; }
-
   function sCol(slot){
-    const pos = slot - Math.floor(slot/100)*100;
+    const pos=slot-Math.floor(slot/100)*100;
     if(pos>=1&&pos<=7)  return 1+pos;
     if(pos>=8&&pos<=13) return 2+pos;
     return 3+pos;
@@ -5178,10 +5169,9 @@ function printTransats(){
     return String(slot);
   }
 
-  const placed = reservations.transats.filter(r=>r.placed&&!r.ns&&(r.slot||0)<1001);
-  const unplcd = reservations.transats.filter(r=>!r.placed&&!r.ns);
+  const placed=reservations.transats.filter(r=>r.placed&&!r.ns&&(r.slot||0)<1001);
+  const unplcd=reservations.transats.filter(r=>!r.placed&&!r.ns);
 
-  // slotIdxMap : slot → index dans placed (entier, pas objet → comparaison fiable)
   const slotIdxMap={};
   placed.forEach((resa,idx)=>{
     const isBed=BED_SLOTS.includes(resa.slot);
@@ -5201,146 +5191,86 @@ function printTransats(){
   reservations.transats.filter(r=>r.placed&&!r.ns&&(r.slot||0)>=1001&&(r.slot||0)<=1004)
     .forEach(r=>{if(!salonResaMap[r.slot])salonResaMap[r.slot]=r;});
 
-  const allTr  = reservations.transats.filter(r=>!r.ns);
-  const nbSlots= placed.reduce((s,r)=>s+(r.tr||1),0);
-  const nbRT   = allTr.filter(r=>r.repas_transat).length;
-  const nbS1   = placed.filter(r=>r.svc==='s1'  &&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
-  const nbS2   = placed.filter(r=>r.svc==='s2'  &&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
-  const nbSoir = placed.filter(r=>r.svc==='soir'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const allTr=reservations.transats.filter(r=>!r.ns);
+  const nbSlots=placed.reduce((s,r)=>s+(r.tr||1),0);
+  const nbRT=allTr.filter(r=>r.repas_transat).length;
+  const nbS1=placed.filter(r=>r.svc==='s1'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const nbS2=placed.filter(r=>r.svc==='s2'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const nbSoir=placed.filter(r=>r.svc==='soir'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
 
-  function emptySlot(slot, gridRow){
+  function svcKey(resa){ return resa.repas_transat?'rt':(resa.svc||'s1'); }
+
+  function occupiedSlot(slot, gridRow, resa){
+    const col=sCol(slot), lbl=slotLbl(slot);
     const isBed=BED_SLOTS.includes(slot);
-    return `<div style="grid-column:${sCol(slot)};grid-row:${gridRow};margin:0.8mm;background:#EBEBEB;border:0.5pt solid #AAAAAA;border-radius:1.5mm;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
-      ${isBed?`<div style="font-size:4.5pt;font-weight:800;color:#999;line-height:1">BED</div>`:''}
-      <div style="font-size:4.5pt;color:#999;font-weight:500;line-height:1">${slotLbl(slot)}</div>
+    const sk=svcKey(resa);
+    const bedLbl=isBed?`<div class="tr-bed-lbl">BED</div>`:'';
+    return `<div class="tr-wrap" style="grid-column:${col};grid-row:${gridRow}">
+      <div class="tr-name">${resa.name||''}</div>
+      <div class="tr-box ${sk}${isBed?' bed':''}">
+        ${bedLbl}<div class="tr-num">${lbl}</div>
+      </div>
     </div>`;
   }
 
-  function resaBlock(resa, cMin, cMax, rowMin, rowMax){
-    const nCols=cMax-cMin+1, nRows=rowMax-rowMin+1;
-    const c=cFor(resa);
-    const tot=resa.tr||nCols;
-    const totalW=nCols*W+(nCols-1)*GAP;
-    let slotOutlines='';
-    if(nRows===1){
-      slotOutlines=Array.from({length:nCols},(_,i)=>{
-        const lPct=(i*(W+GAP)/totalW*100).toFixed(2);
-        const wPct=(W/totalW*100).toFixed(2);
-        return `<div style="position:absolute;left:${lPct}%;top:5%;width:${wPct}%;height:90%;border:0.5pt solid #AAAAAA;border-radius:1mm;pointer-events:none"></div>`;
-      }).join('');
-    }
-    const fsName=nCols>=5?'8.5pt':nCols>=3?'7pt':nCols>=2?'6pt':'4.5pt';
-    const fsCnt =nCols>=3?'7.5pt':nCols>=2?'6.5pt':'5.5pt';
-    const fsLbl =nCols>=4?'8pt':nCols>=2?'7pt':'6pt';
-    return `<div style="grid-column:${cMin}/${cMax+1};grid-row:${rowMin}/${rowMax+1};margin:0.8mm;position:relative;overflow:hidden;border-radius:1.5mm;background:${c.bg};border:${c.bw} solid #666">
-      ${slotOutlines}
-      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8mm;padding:2mm 1.5mm;z-index:1">
-        <div style="font-size:${fsName};font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${resa.name}</div>
-        <div style="font-size:${fsCnt};font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${tot}</div>
-        <div style="font-size:${fsLbl};font-weight:900;color:#fff;line-height:1;background:#111;border-radius:0.8mm;padding:0.3mm 1.5mm">${c.lbl}</div>
+  function emptySlot(slot, gridRow){
+    const col=sCol(slot), lbl=slotLbl(slot);
+    const isBed=BED_SLOTS.includes(slot);
+    const bedLbl=isBed?`<div class="tr-bed-lbl">BED</div>`:'';
+    return `<div class="tr-wrap" style="grid-column:${col};grid-row:${gridRow}">
+      <div class="tr-name-ph"></div>
+      <div class="tr-box empty${isBed?' bed':''}">
+        ${bedLbl}<div class="tr-num">${lbl}</div>
       </div>
     </div>`;
   }
 
   function salonCell(salon, gridRow){
     const r=salonResaMap[salon.id], gc=salon.gridCol;
-    const N=parseInt(gc.split('/')[1])-parseInt(gc.split('/')[0]);
     if(r){
-      const c=cFor(r);
-      const totalW=N*W+(N-1)*GAP;
-      const slotOutlines=Array.from({length:N},(_,i)=>{
-        const lPct=(i*(W+GAP)/totalW*100).toFixed(2);
-        const wPct=(W/totalW*100).toFixed(2);
-        return `<div style="position:absolute;left:${lPct}%;top:5%;width:${wPct}%;height:90%;border:0.5pt solid #AAAAAA;border-radius:1mm;pointer-events:none"></div>`;
-      }).join('');
-      return `<div style="grid-column:${gc};grid-row:${gridRow};margin:0.8mm;position:relative;overflow:hidden;border-radius:1.5mm;background:${c.bg};border:${c.bw} solid #666">
-        ${slotOutlines}
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5mm;padding:2mm 1.5mm;z-index:1">
-          <div style="font-size:3.5pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;line-height:1">${salon.lbl}</div>
-          <div style="font-size:7pt;font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${r.name}</div>
-          <div style="font-size:6.5pt;font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${r.tr||r.pax||2}</div>
-          <div style="font-size:7pt;font-weight:900;color:#fff;line-height:1;background:#111;border-radius:0.8mm;padding:0.3mm 1.5mm">${c.lbl}</div>
+      const sk=svcKey(r);
+      return `<div class="tr-wrap" style="grid-column:${gc};grid-row:${gridRow}">
+        <div class="tr-name">${r.name}</div>
+        <div class="tr-box ${sk}">
+          <div class="tr-salon-lbl">${salon.lbl}</div>
         </div>
       </div>`;
     }
-    return `<div style="grid-column:${gc};grid-row:${gridRow};margin:0.8mm;background:#EBEBEB;border:0.5pt solid #AAAAAA;border-radius:1.5mm;display:flex;align-items:center;justify-content:center">
-      <div style="font-size:5pt;color:#999;font-weight:600;text-align:center;line-height:1.4">${salon.lbl}</div>
+    return `<div class="tr-wrap" style="grid-column:${gc};grid-row:${gridRow}">
+      <div class="tr-name-ph"></div>
+      <div class="tr-box empty">
+        <div class="tr-num">${salon.lbl}</div>
+      </div>
     </div>`;
   }
 
-  // Rectangles englobants par index de reservation (indices numériques = pas de pb de référence)
-  const resaRegions=placed.map(()=>null); // [idx] = {cMin,cMax,rowMin,rowMax} ou null
-
-  TR_ROWS.forEach((row,ri)=>{
-    const rb=row.id, gridRow=ri+1;
-    if(rb===100) return;
-    for(const blk of ['g','m','d']){
-      const bSlots=trSlots(rb)[blk]; let i=0;
-      while(i<bSlots.length){
-        const s=bSlots[i], idx=slotIdxMap[s];
-        if(idx===undefined){i++;continue;}
-        let j=i+1;
-        while(j<bSlots.length && slotIdxMap[bSlots[j]]===idx) j++;
-        const cols=bSlots.slice(i,j).map(sCol);
-        const cMin=Math.min(...cols), cMax=Math.max(...cols);
-        if(!resaRegions[idx]){
-          resaRegions[idx]={cMin,cMax,rowMin:gridRow,rowMax:gridRow};
-        } else {
-          const reg=resaRegions[idx];
-          reg.cMin=Math.min(reg.cMin,cMin); reg.cMax=Math.max(reg.cMax,cMax);
-          reg.rowMin=Math.min(reg.rowMin,gridRow); reg.rowMax=Math.max(reg.rowMax,gridRow);
-        }
-        i=j;
-      }
-    }
-  });
-
-  // Cellules couvertes par des blocs s'étendant sur plusieurs rangées
-  const coveredCells=new Set();
-  resaRegions.forEach(reg=>{
-    if(!reg) return;
-    for(let r=reg.rowMin;r<=reg.rowMax;r++)
-      for(let c=reg.cMin;c<=reg.cMax;c++)
-        coveredCells.add(`${r}:${c}`);
-  });
-
   let cells='';
-
-  // Labels de rangée + slots vides
   TR_ROWS.forEach((row,ri)=>{
     const rb=row.id, gridRow=ri+1;
-    cells+=`<div style="grid-column:1;grid-row:${gridRow};display:flex;align-items:center;justify-content:flex-end;padding-right:2.5mm">
-      <span style="font-size:7pt;font-weight:800;color:#555;font-family:monospace">${rb}</span>
+    cells+=`<div style="grid-column:1;grid-row:${gridRow};display:flex;align-items:flex-end;justify-content:flex-end;padding-right:2mm;padding-bottom:1.5mm">
+      <span style="font-size:6.5pt;font-weight:800;color:#666;font-family:monospace">${rb}</span>
     </div>`;
     if(rb===100){
       for(let s=101;s<=103;s++){
         const idx=slotIdxMap[s];
-        cells+=idx!==undefined?resaBlock(placed[idx],sCol(s),sCol(s),gridRow,gridRow):emptySlot(s,gridRow);
+        cells+=idx!==undefined?occupiedSlot(s,gridRow,placed[idx]):emptySlot(s,gridRow);
       }
       SALON_SLOTS.forEach(sl=>{cells+=salonCell(sl,gridRow);});
       return;
     }
     for(const blk of ['g','m','d']){
       trSlots(rb)[blk].forEach(s=>{
-        if(slotIdxMap[s]===undefined){
-          const col=sCol(s);
-          if(!coveredCells.has(`${gridRow}:${col}`)) cells+=emptySlot(s,gridRow);
-        }
+        const idx=slotIdxMap[s];
+        cells+=idx!==undefined?occupiedSlot(s,gridRow,placed[idx]):emptySlot(s,gridRow);
       });
     }
-  });
-
-  // Blocs de réservation — un seul bloc par resa, potentiellement multi-rangée
-  resaRegions.forEach((reg,idx)=>{
-    if(!reg) return;
-    cells+=resaBlock(placed[idx],reg.cMin,reg.cMax,reg.rowMin,reg.rowMax);
   });
 
   let unplacedHtml='';
   if(unplcd.length){
     unplacedHtml=`<div style="margin-top:2mm;border:0.6pt solid #555;border-radius:1.5mm;padding:1.5mm 3mm;display:flex;flex-wrap:wrap;gap:1.5mm;align-items:center">
-      <span style="font-size:6pt;font-weight:800;flex-shrink:0">&#9888; Non places :</span>
-      ${unplcd.map(r=>{const c=cFor(r);return`<span style="font-size:5.5pt;font-weight:700;padding:0.5mm 2mm;border-radius:1mm;background:#fff;border:0.5pt solid #555">${r.name} x${r.tr||1} ${c.lbl}</span>`;}).join('')}
+      <span style="font-size:6pt;font-weight:800;flex-shrink:0">&#9888; Non placés :</span>
+      ${unplcd.map(r=>`<span style="font-size:5.5pt;font-weight:700;padding:0.5mm 2mm;border-radius:1mm;background:#fff;border:0.5pt solid #555">${r.name} x${r.tr||1} ${svcKey(r).toUpperCase()}</span>`).join('')}
     </div>`;
   }
 
@@ -5354,22 +5284,44 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
 @media print{.no-print{display:none!important}}
 .btn{padding:4px 12px;background:#111;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:4px}
 .hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:2mm;border-bottom:1pt solid #222;margin-bottom:2mm;flex-shrink:0}
-.grid{flex:1;min-height:0;display:grid;grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(8,${W}mm);grid-template-rows:15mm repeat(4,1fr);column-gap:${GAP}mm;row-gap:2mm}
-.sea{flex-shrink:0;text-align:center;font-size:6pt;font-weight:700;letter-spacing:.1em;color:#555;border-top:0.5pt solid #CCCCCC;padding-top:1.5mm;margin-top:2mm}
-.leg{display:inline-flex;align-items:center;gap:1.5mm;font-size:5pt;margin-right:3mm}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(8,${W}mm);grid-template-rows:20mm repeat(4,1fr);column-gap:${GAP}mm;row-gap:1.5mm}
+.sea{flex-shrink:0;text-align:center;font-size:6pt;font-weight:700;letter-spacing:.1em;color:#555;border-top:0.5pt solid #CCCCCC;padding-top:1.5mm;margin-top:1.5mm}
+.leg{display:inline-flex;align-items:center;gap:2mm;font-size:5pt;font-weight:600;margin-right:4mm}
+.leg-swatch{display:inline-block;width:11px;height:11px;vertical-align:middle;border-radius:1px}
+/* ─── slot wrapper ─── */
+.tr-wrap{display:flex;flex-direction:column;margin:0.5mm}
+.tr-name{font-size:4.5pt;font-weight:700;color:#111;text-align:center;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 0.5mm 0.7mm;flex-shrink:0}
+.tr-name-ph{min-height:6.5pt;flex-shrink:0}
+/* ─── slot box base ─── */
+.tr-box{position:relative;flex:1;min-height:0;border:0.6pt solid #555;border-radius:1.5mm;overflow:hidden;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.tr-box.bed{border-radius:3mm}
+/* ─── S1 : hachures /// ─── */
+.tr-box.s1{background-color:#fff;background-image:url("data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-1,1 l2,-2 M0,12 l12,-12 M11,13 l2,-2' stroke='%23333' stroke-width='0.75' fill='none'/%3E%3C/svg%3E");background-size:12px 12px}
+/* ─── S2 : hachures \\\ ─── */
+.tr-box.s2{background-color:#fff;background-image:url("data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11,-1 l2,2 M0,0 l12,12 M-1,11 l2,2' stroke='%23333' stroke-width='0.75' fill='none'/%3E%3C/svg%3E");background-size:12px 12px}
+/* ─── Soir : grisé ─── */
+.tr-box.soir{background:#BBBBBB;border-color:#666}
+/* ─── RT : tirets, arrondi ─── */
+.tr-box.rt{background:#fff;border:1.5pt dashed #333;border-radius:4mm}
+/* ─── Vide ─── */
+.tr-box.empty{background:#EBEBEB;border:0.5pt solid #BBBBBB}
+/* ─── labels internes ─── */
+.tr-num{position:absolute;bottom:1mm;left:0;right:0;text-align:center;font-size:3.5pt;color:#888;font-weight:600;line-height:1}
+.tr-bed-lbl{position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);font-size:3.5pt;font-weight:800;color:#999;line-height:1;text-align:center}
+.tr-salon-lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:4pt;font-weight:700;color:#777;text-align:center}
 </style></head><body>
 <div class="no-print">
   <button class="btn" onclick="window.print()">Imprimer</button>
   <button class="btn" style="background:#555" onclick="window.close()">Fermer</button>
 </div>
 <div class="hd">
-  <div style="display:flex;align-items:center;gap:4mm">
+  <div style="display:flex;align-items:center;gap:5mm">
     <div style="font-size:13pt;font-weight:800">${dateStr}</div>
-    <div>
-      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">S1</span> Service 1</span>
-      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">S2</span> Service 2</span>
-      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">Soir</span> Soir</span>
-      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">RT</span> Repas-transat</span>
+    <div style="display:flex;align-items:center;flex-wrap:wrap">
+      <span class="leg"><span class="leg-swatch" style="background-image:url(&quot;data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-1,1 l2,-2 M0,12 l12,-12 M11,13 l2,-2' stroke='%23333' stroke-width='0.75' fill='none'/%3E%3C/svg%3E&quot;);background-size:12px 12px;border:0.6pt solid #555;-webkit-print-color-adjust:exact"></span>1er service (S1)</span>
+      <span class="leg"><span class="leg-swatch" style="background-image:url(&quot;data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11,-1 l2,2 M0,0 l12,12 M-1,11 l2,2' stroke='%23333' stroke-width='0.75' fill='none'/%3E%3C/svg%3E&quot;);background-size:12px 12px;border:0.6pt solid #555;-webkit-print-color-adjust:exact"></span>2ème service (S2)</span>
+      <span class="leg"><span class="leg-swatch" style="background:#BBBBBB;border:0.6pt solid #666;-webkit-print-color-adjust:exact"></span>Soir</span>
+      <span class="leg"><span class="leg-swatch" style="background:#fff;border:1.5pt dashed #333;border-radius:3px"></span>Repas transat (RT)</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:2.5mm;flex-wrap:wrap">
@@ -5379,11 +5331,11 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-w
     </div>
     ${nbRT?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbRT}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">RT</div></div>`:''}
     <div style="display:flex;gap:1.5mm;align-items:center;flex-wrap:wrap">
-      ${nbS1  ?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333;background:#FFF">S1 - ${nbS1}</span>`:''}
-      ${nbS2  ?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333;background:#FFF">S2 - ${nbS2}</span>`:''}
-      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333;background:#FFF">Soir - ${nbSoir}</span>`:''}
+      ${nbS1?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333">S1 · ${nbS1}</span>`:''}
+      ${nbS2?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333">S2 · ${nbS2}</span>`:''}
+      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333">Soir · ${nbSoir}</span>`:''}
     </div>
-    ${unplcd.length?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${unplcd.length}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">non places</div></div>`:''}
+    ${unplcd.length?`<div style="border:0.8pt solid #c00;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1;color:#c00">${unplcd.length}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#c00;margin-top:0.5mm">non placés</div></div>`:''}
   </div>
 </div>
 <div class="grid">${cells}</div>
