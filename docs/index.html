@@ -5219,12 +5219,18 @@ function printTransats(){
       salonResaMap[r.slot].push(r);
     });
 
-  const allTr=reservations.transats.filter(r=>!r.ns);
-  const nbSlots=placed.reduce((s,r)=>s+(r.tr||1),0);
-  const nbRT=allTr.filter(r=>r.repas_transat).length;
-  const nbS1=placed.filter(r=>r.svc==='s1'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
-  const nbS2=placed.filter(r=>r.svc==='s2'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
-  const nbSoir=placed.filter(r=>r.svc==='soir'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  // Partition claire : beds vs transats ordinaires — zéro doublon garanti
+  const trPlaced  = placed.filter(r => !r.bed);
+  const bedPlaced = placed.filter(r => r.bed);
+  const nbTransats = trPlaced.reduce((s,r) => s+(r.tr||1), 0);  // sièges hors beds
+  const nbBeds     = bedPlaced.length;                           // lits doubles réservés
+  // 1ère ligne = rangée 500 (front de mer)
+  const nbLigne1   = trPlaced.filter(r => Math.floor((r.slot||0)/100)===5).reduce((s,r) => s+(r.tr||1), 0);
+  // Ventilation service : mutually exclusive → nbS1+nbS2+nbSoir+nbRT = nbTransats
+  const nbS1   = trPlaced.filter(r => r.svc==='s1'   && !r.repas_transat).reduce((s,r) => s+(r.tr||1), 0);
+  const nbS2   = trPlaced.filter(r => r.svc==='s2'   && !r.repas_transat).reduce((s,r) => s+(r.tr||1), 0);
+  const nbSoir = trPlaced.filter(r => r.svc==='soir' && !r.repas_transat).reduce((s,r) => s+(r.tr||1), 0);
+  const nbRT   = trPlaced.filter(r => r.repas_transat).reduce((s,r) => s+(r.tr||1), 0);
 
   function svcKey(resa){ return resa.repas_transat?'rt':(resa.svc||'s1'); }
 
@@ -5406,14 +5412,16 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;he
   </div>
   <div style="display:flex;align-items:center;gap:2.5mm;flex-wrap:wrap">
     <div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center">
-      <div style="font-size:11pt;font-weight:700;line-height:1">${nbSlots}</div>
+      <div style="font-size:11pt;font-weight:700;line-height:1">${nbTransats}</div>
       <div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">transats</div>
     </div>
-    ${nbRT?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbRT}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">RT</div></div>`:''}
+    ${nbBeds?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbBeds}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">beds</div></div>`:''}
+    ${nbLigne1?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbLigne1}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">1ère ligne</div></div>`:''}
     <div style="display:flex;gap:1.5mm;align-items:center;flex-wrap:wrap">
-      ${nbS1?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333">S1 · ${nbS1}</span>`:''}
-      ${nbS2?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333">S2 · ${nbS2}</span>`:''}
-      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333">Soir · ${nbSoir}</span>`:''}
+      ${nbS1?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #166534;color:#166534">S1 · ${nbS1}</span>`:''}
+      ${nbS2?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #9A3412;color:#9A3412">S2 · ${nbS2}</span>`:''}
+      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #4C1D95;color:#4C1D95">Soir · ${nbSoir}</span>`:''}
+      ${nbRT?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #1E3A8A;color:#1E3A8A">RT · ${nbRT}</span>`:''}
     </div>
     ${unplcd.length?`<div style="border:0.8pt solid #c00;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1;color:#c00">${unplcd.length}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#c00;margin-top:0.5mm">non placés</div></div>`:''}
   </div>
