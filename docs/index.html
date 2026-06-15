@@ -6559,11 +6559,13 @@ function reAnalyzeAllResas(){
     if(!r.bed && parseBedFromText(raw) > 0) r.bed = true;
   });
 
-  // ── Déduplication : supprime les doublons créés par plusieurs bookings Zenchef
-  // pour la même personne (IDs différents, non détectés par isDupe exact).
-  // Cause typique : booking modifié dans Zenchef → nouvel ID, ancien gardé ; ou doublon d'import.
+  // ── Déduplication complète : élimine les doublons Zenchef (booking modifié → 2 IDs différents)
+  // Stratégie en 4 passes de plus en plus larges :
+  // 1. Intra-service (s1/s2/soir) par (nom, date) — même service, même personne
+  // 2. Cross-service par (nom, date) sur l'ensemble s1+s2+soir — même personne, services différents
+  // 3. Transats non-bed par (nom, date) — toutes catégories confondues (_tr, RT, etc.)
+  // 4. Cross-catégorie : supprime les RT purs si un _tr sub-resa pour même personne+date existe
   (function dedupeReservations(){
-    // Helper : déduplique un tableau par clé string, garde l'entrée préférée (max tr/pax)
     function dedupe(arr, keyFn, preferFn){
       const seen = {}, bad = new Set();
       arr.forEach((r,i) => {
@@ -6575,31 +6577,73 @@ function reAnalyzeAllResas(){
           else bad.add(i);
         } else seen[k]=i;
       });
-      if(bad.size) console.warn('[Playa] ' + bad.size + ' doublon(s) supprimé(s) :', [...bad].map(i=>arr[i]?.name));
+      if(bad.size) console.warn('[Playa dedup] ' + bad.size + ' doublon(s):', [...bad].map(i=>arr[i]?.name));
       return bad.size ? arr.filter((_,i)=>!bad.has(i)) : arr;
     }
-    const betterTr = (a,b) => (a.tr||a.pax||0) > (b.tr||b.pax||0);
-    // Resas table (s1/s2/soir) : déduplique par (nom, date) dans chaque service
+    const byTrPax = (a,b) => (a.tr||a.pax||0) > (b.tr||b.pax||0);
+    // Préfère les _tr sub-resas (liés à une table) sur les RT purs
+    const preferTrOverRT = (a,b) => !a.repas_transat && b.repas_transat ? true : byTrPax(a,b);
+
+    // Passe 1 : intra-service — même nom + même date dans chaque bucket séparé
     ['s1','s2','soir'].forEach(svc => {
       reservations[svc] = dedupe(
         reservations[svc]||[],
         r => r.zenchef_id && !(String(r.zenchef_id).endsWith('_tr')||String(r.zenchef_id).endsWith('_bed'))
              ? (r.name||'')+'|'+(r.date||'').substring(0,10) : null,
-        betterTr
+        byTrPax
       );
     });
-    // Sous-resas transats (_tr) : déduplique par (nom, date, svc)
+
+    // Passe 2 : cross-service — même nom + même date dans s1+s2+soir combinés
+    // Cas : booking modifié change de service (S1→S2) ou doublon dans deux services
+    {
+      const crossSeen = {}, crossBad = new Map(); // svc → Set<idx>
+      ['s1','s2','soir'].forEach(svc => {
+        (reservations[svc]||[]).forEach((r,i) => {
+          if(!r.zenchef_id||String(r.zenchef_id).endsWith('_tr')||String(r.zenchef_id).endsWith('_bed')) return;
+          const k = (r.name||'')+'|'+(r.date||'').substring(0,10);
+          if(crossSeen[k]){
+            const {r:prev, svc:pSvc, i:pIdx} = crossSeen[k];
+            const removePrev = byTrPax(r, prev);
+            const [rSvc, rIdx] = removePrev ? [pSvc, pIdx] : [svc, i];
+            if(!crossBad.has(rSvc)) crossBad.set(rSvc, new Set());
+            crossBad.get(rSvc).add(rIdx);
+            if(removePrev) crossSeen[k] = {r, svc, i};
+          } else crossSeen[k] = {r, svc, i};
+        });
+      });
+      crossBad.forEach((bad, svc) => {
+        if(bad.size) console.warn('[Playa dedup cross-svc] ' + bad.size + ' doublon(s) ' + svc);
+        reservations[svc] = (reservations[svc]||[]).filter((_,i)=>!bad.has(i));
+      });
+    }
+
+    // Passe 3 : transats — toutes catégories non-bed confondues, par (nom, date)
+    // Attrape _tr+RT pour même personne, _tr svc1 + _tr svc2, etc.
     reservations.transats = dedupe(
       reservations.transats||[],
-      r => (!r.bed && !r.repas_transat) ? (r.name||'')+'|'+(r.date||'').substring(0,10)+'|'+(r.svc||'') : null,
-      betterTr
+      r => !r.bed ? (r.name||'')+'|'+(r.date||'').substring(0,10) : null,
+      preferTrOverRT
     );
-    // Repas-transats purs : déduplique par (nom, date)
-    reservations.transats = dedupe(
-      reservations.transats||[],
-      r => r.repas_transat ? (r.name||'')+'|'+(r.date||'').substring(0,10) : null,
-      betterTr
-    );
+
+    // Passe 4 : si une resa table (s1/s2/soir) avec tr>0 et un RT pur en transats
+    // pour même personne+date → supprimer le RT (doublon du booking table+transat)
+    {
+      const tableNames = new Set();
+      ['s1','s2','soir'].forEach(svc =>
+        (reservations[svc]||[]).forEach(r => {
+          if((r.tr||0)>0) tableNames.add((r.name||'')+'|'+(r.date||'').substring(0,10));
+        })
+      );
+      const before = (reservations.transats||[]).length;
+      reservations.transats = (reservations.transats||[]).filter(r => {
+        if(!r.repas_transat) return true;
+        const k = (r.name||'')+'|'+(r.date||'').substring(0,10);
+        return !tableNames.has(k);
+      });
+      const removed = before - reservations.transats.length;
+      if(removed > 0) console.warn('[Playa dedup passe4] ' + removed + ' RT supprimé(s) (doublon table+transat)');
+    }
   })();
 }
 
