@@ -5219,18 +5219,29 @@ function printTransats(){
       salonResaMap[r.slot].push(r);
     });
 
-  // Partition claire : beds vs transats ordinaires — zéro doublon garanti
-  const trPlaced  = placed.filter(r => !r.bed);
-  const bedPlaced = placed.filter(r => r.bed);
-  const nbTransats = trPlaced.reduce((s,r) => s+(r.tr||1), 0);  // sièges hors beds
-  const nbBeds     = bedPlaced.length;                           // lits doubles réservés
-  // 1ère ligne = rangée 500 (front de mer)
-  const nbLigne1   = trPlaced.filter(r => Math.floor((r.slot||0)/100)===5).reduce((s,r) => s+(r.tr||1), 0);
-  // Ventilation service : mutually exclusive → nbS1+nbS2+nbSoir+nbRT = nbTransats
-  const nbS1   = trPlaced.filter(r => r.svc==='s1'   && !r.repas_transat).reduce((s,r) => s+(r.tr||1), 0);
-  const nbS2   = trPlaced.filter(r => r.svc==='s2'   && !r.repas_transat).reduce((s,r) => s+(r.tr||1), 0);
-  const nbSoir = trPlaced.filter(r => r.svc==='soir' && !r.repas_transat).reduce((s,r) => s+(r.tr||1), 0);
-  const nbRT   = trPlaced.filter(r => r.repas_transat).reduce((s,r) => s+(r.tr||1), 0);
+  // Même logique que renderStats — source de vérité, identique à la barre de stats
+  // Sous-résa = zenchef_id finissant par _tr ou _bed (créées pour le placement uniquement)
+  const isSubResa = r => r.zenchef_id && (String(r.zenchef_id).endsWith('_tr')||String(r.zenchef_id).endsWith('_bed'));
+  // Transats issus de resas table : lire depuis s1/s2/soir (PAS depuis transats[])
+  // pour éviter de compter les sous-resas ET les resas parentes (doublon)
+  const tableResas = [...(reservations.s1||[]),...(reservations.s2||[]),...(reservations.soir||[])]
+    .filter(r => !r.ns && (r.tr||0)>0 && !isSubResa(r));
+  // Repas-transat purs : uniquement dans transats[] avec repas_transat=true
+  const rtResas = (reservations.transats||[]).filter(r => r.repas_transat && !r.ns);
+  // Beds : sous-resas lit double dans transats[]
+  const bedResas = (reservations.transats||[]).filter(r => r.bed && !r.ns && isSubResa(r));
+
+  const nbTransats = tableResas.reduce((s,r) => s+(r.tr||0), 0)
+                   + rtResas.reduce((s,r) => s+(r.tr||r.pax||0), 0);
+  const nbBeds     = bedResas.length;
+  // 1ère ligne = préférence row_transats===500 (front de mer)
+  const nbLigne1   = tableResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||0), 0)
+                   + rtResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||r.pax||0), 0);
+  // Ventilation service — mutuellement exclusive, somme = nbTransats
+  const nbS1   = tableResas.filter(r => r.svc==='s1').reduce((s,r) => s+(r.tr||0), 0);
+  const nbS2   = tableResas.filter(r => r.svc==='s2').reduce((s,r) => s+(r.tr||0), 0);
+  const nbSoir = tableResas.filter(r => r.svc==='soir').reduce((s,r) => s+(r.tr||0), 0);
+  const nbRT   = rtResas.reduce((s,r) => s+(r.tr||r.pax||0), 0);
 
   function svcKey(resa){ return resa.repas_transat?'rt':(resa.svc||'s1'); }
 
