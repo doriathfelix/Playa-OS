@@ -6558,6 +6558,49 @@ function reAnalyzeAllResas(){
     // Bed si non encore détecté (toutes sources)
     if(!r.bed && parseBedFromText(raw) > 0) r.bed = true;
   });
+
+  // ── Déduplication : supprime les doublons créés par plusieurs bookings Zenchef
+  // pour la même personne (IDs différents, non détectés par isDupe exact).
+  // Cause typique : booking modifié dans Zenchef → nouvel ID, ancien gardé ; ou doublon d'import.
+  (function dedupeReservations(){
+    // Helper : déduplique un tableau par clé string, garde l'entrée préférée (max tr/pax)
+    function dedupe(arr, keyFn, preferFn){
+      const seen = {}, bad = new Set();
+      arr.forEach((r,i) => {
+        const k = keyFn(r);
+        if(!k) return;
+        if(seen[k] !== undefined){
+          const prev = arr[seen[k]];
+          if(preferFn(r, prev)){ bad.add(seen[k]); seen[k]=i; }
+          else bad.add(i);
+        } else seen[k]=i;
+      });
+      if(bad.size) console.warn('[Playa] ' + bad.size + ' doublon(s) supprimé(s) :', [...bad].map(i=>arr[i]?.name));
+      return bad.size ? arr.filter((_,i)=>!bad.has(i)) : arr;
+    }
+    const betterTr = (a,b) => (a.tr||a.pax||0) > (b.tr||b.pax||0);
+    // Resas table (s1/s2/soir) : déduplique par (nom, date) dans chaque service
+    ['s1','s2','soir'].forEach(svc => {
+      reservations[svc] = dedupe(
+        reservations[svc]||[],
+        r => r.zenchef_id && !(String(r.zenchef_id).endsWith('_tr')||String(r.zenchef_id).endsWith('_bed'))
+             ? (r.name||'')+'|'+(r.date||'').substring(0,10) : null,
+        betterTr
+      );
+    });
+    // Sous-resas transats (_tr) : déduplique par (nom, date, svc)
+    reservations.transats = dedupe(
+      reservations.transats||[],
+      r => (!r.bed && !r.repas_transat) ? (r.name||'')+'|'+(r.date||'').substring(0,10)+'|'+(r.svc||'') : null,
+      betterTr
+    );
+    // Repas-transats purs : déduplique par (nom, date)
+    reservations.transats = dedupe(
+      reservations.transats||[],
+      r => r.repas_transat ? (r.name||'')+'|'+(r.date||'').substring(0,10) : null,
+      betterTr
+    );
+  })();
 }
 
 // ── Helpers UI sync
