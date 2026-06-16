@@ -1359,6 +1359,10 @@ function mkResa(fields){
     pref_extremite: fields.pref_extremite ?? false, // préfère un slot en extrémité (col 1 ou 20)
     requested_table_id: fields.requested_table_id ?? null, // table demandée explicitement ("table 5")
     bed: fields.bed ?? false, // lit double → BED_SLOTS
+    requested_slot: fields.requested_slot ?? null, // slot précis demandé ("en 501") → placement exact
+    tr_fallback: fields.tr_fallback ?? null, // nb transats de secours si bed impossible
+    tr_fallback_row: fields.tr_fallback_row ?? null, // rangée fallback (500=1ère ligne)
+    _typeTransatAmbiguous: fields._typeTransatAmbiguous ?? false, // typeExp dit table+transat mais sans nb → warning UI
   };
 }
 
@@ -1528,6 +1532,12 @@ function detectAlerts(r){
     alerts.push({icon:'🍃', label:'Régime', bg:'#F0FDF4', bd:'#BBF7D0', col:'#15803D'});
   if(/\b(chaise\s*haute|bebe|nourisson|poussette|highchair|baby|nourrisson)\b/.test(all))
     alerts.push({icon:'👶', label:'Bébé', bg:'#FDF4FF', bd:'#F0ABFC', col:'#7E22CE'});
+  // Incohérence : type d'expérience "table+transats" sans nb précisé → signaler
+  if(r._typeTransatAmbiguous)
+    alerts.push({icon:'⚠', label:'Transats non confirmés', bg:'#FFF7ED', bd:'#FED7AA', col:'#C2410C'});
+  // Resa bed avec fallback transats si aucun bed libre
+  if(r.tr_fallback)
+    alerts.push({icon:'🔄', label:`Bed ou ${r.tr_fallback}T L1`, bg:'#F0FDF4', bd:'#BBF7D0', col:'#15803D'});
   // Tags Zenchef bruts : tous ceux non déjà couverts par une alerte ci-dessus
   const coveredRe = /allergi|intoleran|gluten|lactose|noix|arachide|peanut|celiac|nuts|anniversaire|birthday|fiancailles|mariage|evjf|evg|pedida|noces|proposal|celebration|pmr|wheelchair|handicap|mobilite|fauteuil|vegetar|vegan|vegetal|halal|casher|kosher|viande|pescet|highchair|nourrisson|poussette/i;
   (r.tags||[]).forEach(tag => {
@@ -1629,6 +1639,9 @@ function renderSidebar(){
     const extBadge = r.pref_extremite
       ? `<span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:20px;background:var(--gdbg);border:0.5px solid var(--gdb);color:var(--gdt)">⟺ côté</span>`
       : '';
+    const rowBadge = (!r.placed && r.row_transats && rowLabels[r.row_transats])
+      ? `<span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:20px;background:${r.row_transats===500?'#FFEAEA':'var(--rtbg)'};border:0.5px solid ${r.row_transats===500?'#FF5555':'var(--rtbd)'};color:${r.row_transats===500?'#CC0000':'var(--rtt)'}">🌊 ${rowLabels[r.row_transats]}</span>`
+      : '';
 
     d.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
@@ -1646,6 +1659,7 @@ function renderSidebar(){
             <div class="rc-pax">${r.pax} PAX</div>
           </div>
           ${trBottomRight}
+          ${rowBadge}
           ${extBadge}
         </div>
       </div>
@@ -4324,6 +4338,30 @@ function placeTransat(r, sm, opts){
   const needed = r.tr || r.pax || 1;
   const forceRow = r.row_transats || null;
 
+  // ─── Slot précis demandé ("en 501") — priorité absolue ───
+  if(r.requested_slot && r.requested_slot >= 101 && r.requested_slot <= 521){
+    const start = r.requested_slot;
+    // Vérifier que les N slots consécutifs sont libres (même rangée)
+    const rowBase = Math.floor(start / 100) * 100;
+    const rowEnd = rowBase + 20; // fin de rangée (max slot = rowBase+20)
+    const slots = [];
+    for(let i = 0; i < needed && (start + i) <= rowEnd; i++){
+      if(sm[start + i]) break;
+      slots.push(start + i);
+    }
+    if(slots.length === needed){
+      r.placed = true; r.slot = slots[0]; r.extraSlots = null;
+      slots.forEach(s => sm[s] = r);
+      return true;
+    } else if(slots.length > 0){
+      // Place autant que possible à partir du slot demandé
+      r.placed = true; r.slot = slots[0]; r.extraSlots = null; r.tr = slots.length;
+      slots.forEach(s => sm[s] = r);
+      return true;
+    }
+    // Slot occupé → fall-through vers placement normal dans la même rangée
+  }
+
   // ─── Rangée forcée + extrémité (ex: "1ère ligne sur le côté") — priorité max ───
   if(forceRow && r.pref_extremite){
     const ext = findExtremity(sm, needed, forceRow);
@@ -4560,6 +4598,15 @@ function autoTransats(resas, skipped=0){
       bedPlaced++;
     } else {
       bedFailed++;
+      // Si resa conditionnelle bed/transat (ex: "1 bed / 2 transats 1ère ligne") :
+      // fallback automatique → convertir en transats sur 1ère ligne
+      if(r.tr_fallback){
+        r.bed = false;
+        r.tr = r.tr_fallback;
+        r.row_transats = r.tr_fallback_row || 500;
+        transatResas.push(r); // sera placé dans les phases 1-3
+        bedFailed--; // ne compte pas comme échec — fallback géré
+      }
     }
   });
 
@@ -6093,6 +6140,32 @@ function parseExtremiteFromText(txt){
   );
 }
 
+// Détecte "N transats si ça libère / 1 bed" ou "soit N transats soit 1 bed"
+// Retourne {fallbackTr: N, fallbackRow: 500} si pattern trouvé, sinon null
+// Logique : bed est la préférence principale, les N transats en 1ère ligne sont le plan B
+function parseBedOrTransatFromText(txt){
+  if(!txt) return null;
+  const t = txt.toLowerCase()
+    .replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u').replace(/[îï]/g,'i').replace(/[ôö]/g,'o');
+  // "2 transats si ça libère / 1 bed" ou "N transats si ca libere / bed"
+  const m1 = t.match(/(\d+)\s*transats?\s*(?:si\s*[cç]a\s*lib[eè]re|if\s*available|si\s*dispo)[\s/\\|]*(?:\d+\s*)?beds?/);
+  if(m1) return { fallbackTr: parseInt(m1[1]), fallbackRow: 500 };
+  // "1 bed / 2 transats" (bed prioritaire, transats en fallback)
+  const m2 = t.match(/(?:\d+\s*)?beds?[\s/\\|]+(\d+)\s*transats?/);
+  if(m2) return { fallbackTr: parseInt(m2[1]), fallbackRow: 500 };
+  // "soit N transats soit 1 bed" / "soit 1 bed soit N transats"
+  const m3 = t.match(/soit\s*(\d+)\s*transats?\s*soit\s*(?:\d+\s*)?beds?/);
+  if(m3) return { fallbackTr: parseInt(m3[1]), fallbackRow: 500 };
+  const m4 = t.match(/soit\s*(?:\d+\s*)?beds?\s*soit\s*(\d+)\s*transats?/);
+  if(m4) return { fallbackTr: parseInt(m4[1]), fallbackRow: 500 };
+  // "N transats ou 1 bed" / "1 bed ou N transats"
+  const m5 = t.match(/(\d+)\s*transats?\s*ou\s*(?:\d+\s*)?beds?/);
+  if(m5) return { fallbackTr: parseInt(m5[1]), fallbackRow: 500 };
+  const m6 = t.match(/(?:\d+\s*)?beds?\s*ou\s*(\d+)\s*transats?/);
+  if(m6) return { fallbackTr: parseInt(m6[1]), fallbackRow: 500 };
+  return null;
+}
+
 // "en 501", "slot 501", "n°315", "#412" → numéro de slot → rangée = Math.floor(slot/100)*100
 // Couvre les notes comme "2T en 501" ou "transats n°315"
 function parseSlotFromText(txt){
@@ -6173,13 +6246,21 @@ function zcToResa(b){
   const nbBeds = parseBedFromText(allTextFields);
   const isBed  = nbBeds > 0;
 
-  // Si type "repas à table + transat" sans nb indiqué → autant de transats que de PAX
+  // Si type "repas à table + transat" — on N'assigne PAS de transats depuis le type seul.
+  // Règle : il faut un nb explicite dans le formulaire OU dans le texte libre.
+  // Sans info explicite, nbTransats reste 0 et le flag _typeTransatAmbiguous est levé.
   const isTablePlusTransat = typeExp.toLowerCase().includes('table') && typeExp.toLowerCase().includes('transat');
-  if(isTablePlusTransat && nbTransats === 0 && !isBed) nbTransats = b.nb_guests || 1;
+  const typeTransatAmbiguous = isTablePlusTransat && nbTransats === 0 && !isBed;
+  // (pas de fallback pax : trop de faux positifs — cf. Rambaud Philippe)
+
+  // "N transats si ça libère / 1 bed" : bed prioritaire, transats 1ère ligne en secours
+  const conditionalBedTransat = parseBedOrTransatFromText(allTextFields);
 
   // Rangée préférentielle : scan de tous les champs texte
   const preferredRow = parsePreferredRowFromText(allTextFields)
     || (()=>{ const s=parseSlotFromText(allTextFields); return s?Math.floor(s/100)*100:null; })();
+  // Slot précis demandé : "en 501", "slot 315" → placement exact à ce slot
+  const requestedSlot = parseSlotFromText(allTextFields);
   // Préférence extrémité : "en extrémité", "au bout", "côté" → slot 1 ou 20
   const preferExtremite = parseExtremiteFromText(allTextFields);
   // Table spécifique demandée : "table 5", "T3" → stocké pour le placement
@@ -6256,11 +6337,15 @@ function zcToResa(b){
   // Forcer svc='transats' pour les repas transats purs → couleur bleue RT
   const svcFinal = isRepasTransatFinal ? 'transats' : svc;
 
+  // Si pattern conditionnel bed/transat : bed comme resa principale, transats en fallback
+  const finalIsBed = isBed || (conditionalBedTransat ? true : false);
+  const finalNbTransats = (!finalIsBed || isBed) ? nbTransats : 0;
+
   return {
     _cancelled: isCancelled,
     _isTablePlusTransat: isTablePlusTransat,
-    _nbTransats: nbTransats,
-    _isBed: isBed,
+    _nbTransats: finalNbTransats,
+    _isBed: finalIsBed,
     _nbBeds: nbBeds,
     _preferredRow: preferredRow,
     _preferExtremite: preferExtremite,
@@ -6279,7 +6364,7 @@ function zcToResa(b){
       tags: Array.isArray(b.tags) ? b.tags.map(t=>typeof t==='string'?t:(t.name||t.label||'')).filter(Boolean) : [],
       svc: svcFinal,
       repas_transat: isRepasTransatFinal,
-      tr: nbTransats > 0 ? nbTransats : (isRepasTransatFinal ? (b.nb_guests || 1) : null),
+      tr: finalNbTransats > 0 ? finalNbTransats : (isRepasTransatFinal ? (b.nb_guests || 1) : null),
       ns,
       zenchef_status,
       waiting: b.phase === 'waiting_list',
@@ -6288,9 +6373,14 @@ function zcToResa(b){
       slot: null,
       booked_at: b.date || b.created_at || null,
       time_transats: heureTransats || null,
-      row_transats: preferredRow,
+      row_transats: conditionalBedTransat ? conditionalBedTransat.fallbackRow : preferredRow,
       pref_extremite: preferExtremite,
       requested_table_id: requestedTableId,
+      requested_slot: requestedSlot,
+      bed: finalIsBed,
+      tr_fallback: conditionalBedTransat ? conditionalBedTransat.fallbackTr : null,
+      tr_fallback_row: conditionalBedTransat ? conditionalBedTransat.fallbackRow : null,
+      _typeTransatAmbiguous: typeTransatAmbiguous,
     })
   };
 }
@@ -6548,6 +6638,21 @@ function reAnalyzeAllResas(){
         if(slot) r.row_transats = Math.floor(slot / 100) * 100;
       }
     }
+    // Slot précis demandé (toutes sources, y compris saisie manuelle)
+    if(!r.requested_slot && (r.tr > 0 || r.bed)){
+      const slot = parseSlotFromText(raw);
+      if(slot) r.requested_slot = slot;
+    }
+    // Pattern conditionnel bed/transat (ex: "2 transats si ça libère / 1 bed")
+    if(!r.tr_fallback && r.source !== 'zenchef'){
+      const cond = parseBedOrTransatFromText(raw);
+      if(cond && !r.bed){
+        r.bed = true;
+        r.tr_fallback = cond.fallbackTr;
+        r.tr_fallback_row = cond.fallbackRow;
+        r.row_transats = cond.fallbackRow;
+      }
+    }
 
     // Nb transats si non encore fixé (resas manuelles)
     if(r.source !== 'zenchef' && !r.tr && !r.bed){
@@ -6580,9 +6685,18 @@ function reAnalyzeAllResas(){
       if(bad.size) console.warn('[Playa dedup] ' + bad.size + ' doublon(s):', [...bad].map(i=>arr[i]?.name));
       return bad.size ? arr.filter((_,i)=>!bad.has(i)) : arr;
     }
-    const byTrPax = (a,b) => (a.tr||a.pax||0) > (b.tr||b.pax||0);
+    // Préfère une resa confirmée sur une liste d'attente ; à égalité, préfère le plus grand nb
+    const byTrPax = (a,b) => {
+      if(!a.waiting && b.waiting) return true;  // confirmé > liste d'attente
+      if(a.waiting && !b.waiting) return false;
+      return (a.tr||a.pax||0) > (b.tr||b.pax||0);
+    };
     // Préfère les _tr sub-resas (liés à une table) sur les RT purs
-    const preferTrOverRT = (a,b) => !a.repas_transat && b.repas_transat ? true : byTrPax(a,b);
+    const preferTrOverRT = (a,b) => {
+      if(!a.waiting && b.waiting) return true;
+      if(a.waiting && !b.waiting) return false;
+      return !a.repas_transat && b.repas_transat ? true : byTrPax(a,b);
+    };
 
     // Passe 1 : intra-service — même nom + même date dans chaque bucket séparé
     ['s1','s2','soir'].forEach(svc => {
