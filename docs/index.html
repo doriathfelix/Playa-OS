@@ -8648,18 +8648,20 @@ function renderCuisine(c){
       {l:'Meilleure marge',     v:'Smash ×7.1', s:'Coef multiplicateur', col:'#0284C7'}
     ]));
     const tabs = [
-      {k:'fiches',    label:'📋 Fiches techniques'},
-      {k:'foodcost',  label:'💰 Food Cost'},
-      {k:'recettes',  label:'👨‍🍳 Recette vedette'},
-      {k:'process',   label:'⏱ Process service'},
-      {k:'formation', label:'🎓 Formation'}
+      {k:'fiches',     label:'📋 Fiches techniques'},
+      {k:'foodcost',   label:'💰 Food Cost'},
+      {k:'recettes',   label:'👨‍🍳 Recette vedette'},
+      {k:'process',    label:'⏱ Process service'},
+      {k:'formation',  label:'🎓 Formation'},
+      {k:'allergenes', label:'⚠ Allergènes'},
     ];
     body.appendChild(makeSubNav(tabs, currentTab, k => { currentTab = k; rebuild(); }));
-    if(currentTab === 'fiches')    renderFichesTab();
-    else if(currentTab === 'foodcost')  renderFoodcostTab();
-    else if(currentTab === 'recettes')  renderRecettesTab();
-    else if(currentTab === 'process')   renderProcessTab();
-    else if(currentTab === 'formation') renderFormationTab();
+    if(currentTab === 'fiches')      renderFichesTab();
+    else if(currentTab === 'foodcost')   renderFoodcostTab();
+    else if(currentTab === 'recettes')   renderRecettesTab();
+    else if(currentTab === 'process')    renderProcessTab();
+    else if(currentTab === 'formation')  renderFormationTab();
+    else if(currentTab === 'allergenes') renderAllergènesTab();
   }
 
   function renderFichesTab(){
@@ -9005,6 +9007,147 @@ function renderCuisine(c){
       grid.appendChild(card);
     });
     body.appendChild(grid);
+  }
+
+  function renderAllergènesTab(){
+    // ── Données menu + numéros allergènes (source : carte physique La Playa)
+    // Légende : 14 allergènes réglementaires UE
+    const ALLERGENS = [
+      {n:1,  icon:'🌾', label:'Gluten',         sub:'céréales'},
+      {n:2,  icon:'🦐', label:'Crustacés',      sub:''},
+      {n:3,  icon:'🥚', label:'Œufs',           sub:''},
+      {n:4,  icon:'🐟', label:'Poissons',       sub:''},
+      {n:5,  icon:'🥜', label:'Arachides',      sub:'cacahuètes'},
+      {n:6,  icon:'🫘', label:'Soja',           sub:''},
+      {n:7,  icon:'🥛', label:'Lait',           sub:'lactose'},
+      {n:8,  icon:'🌰', label:'Fruits à coque', sub:'noix…'},
+      {n:9,  icon:'🥬', label:'Céleri',         sub:''},
+      {n:10, icon:'🟡', label:'Moutarde',       sub:''},
+      {n:11, icon:'⚫', label:'Sésame',         sub:'graines'},
+      {n:12, icon:'🍷', label:'Sulfites',       sub:'SO₂ > 10 mg/kg'},
+      {n:13, icon:'🌿', label:'Lupin',          sub:'farine'},
+      {n:14, icon:'🦑', label:'Mollusques',     sub:''},
+    ];
+
+    const MENU = [
+      { section:'NOS STARTERS', items:[
+        {plat:'Bao de "Carlo" le tentacule, sauce mangue piment',                                   all:[1,7,13,14],        prix:'17,00€'},
+        {plat:'Pain perdu à l\'ail, joue de lotte en persillade',                                   all:[1,7,9,12],         prix:'18,00€'},
+        {plat:'Mini tacos de cochon, cuit basse température',                                       all:[1,2,4,5,6,7,8,10,13], prix:'12,00€'},
+        {plat:'Pain Pita, burrata, pesto maison',                                                   all:[1,2,4,9,13],       prix:'16,00€'},
+        {plat:'Palourdines à la crème d\'ail',                                                      all:[3,9],              prix:'18,00€'},
+        {plat:'Couteaux (×10) en persillade gratinés',                                              all:[2,3,4,9],          prix:'18,00€'},
+        {plat:'Croque comté, farce de truffe, jambon italien truffé',                               all:[1,2,4,6,9],        prix:'14,00€'},
+        {plat:'Sardines de Médit. à la plancha, sauce blanche épicée',                              all:[6,7,8,9],          prix:'12,00€'},
+        {plat:'Fleurs de courgette en tempura, yaourt aux herbes',                                  all:[1,2,6,9,13],       prix:'14,50€'},
+        {plat:'Pinsa truffe, roquette, tomates cerises',                                            all:[1,2,4,5,6,9,10],   prix:'22,00€'},
+        {plat:'Huîtres de Bouzigues',                                                               all:[3,14],             prix:'16,00€ ×6 / 28,00€ ×12'},
+      ]},
+      { section:'LES ENTRÉES EN MATIÈRE', items:[
+        {plat:'Tataki de taureau AOP Camargue, wok croque, glace wasabi',                           all:[1,2,4,8,9],        prix:'22,00€'},
+        {plat:'Ceviche de poisson blanc au leche de tigre',                                         all:[7,9],              prix:'22,00€'},
+        {plat:'Salade de pastèque, burrata, Féta, pesto maison',                                    all:[5,6,8,9,12],       prix:'22,00€'},
+      ]},
+      { section:'NOS BONS PETITS PLATS', items:[
+        {plat:'Smash burger bœuf de Galice maturé, Cheddar Mild Red, mayonnaise fumée',             all:[1,2,4,5,6,9],      prix:'24,00€'},
+        {plat:'Volaille et poulette, condiment pistache, lissé petit pois, carotte des sables',     all:[1,2,5,6,9,13],     prix:'29,00€'},
+        {plat:'Faux Filet Wagyu (180g), Grade 6+, jus réduit Umami, Carotte BBQ',                  all:[1,2,3,4,5,6,9,10], prix:'56,00€'},
+        {plat:'Risotto aux 3 riz de Camargue, Car\'hot, ananas',                                    all:[1,9,13],           prix:'26,00€'},
+        {plat:'Notre filet de poisson, smashed grenaille, fenouil, hollandaise aérienne',           all:[1,2,4,6,7,8,13],   prix:'30,00€'},
+        {plat:'Nos poissons sauvages (selon arrivage), riz Camargue, beurre blanc tomate xères',    all:[1,2,4,6,7,8,13],   prix:'11,00 – 16,00€ / 100g'},
+      ]},
+      { section:'NOS GOURANDISES', items:[
+        {plat:'Pélardon des Cévennes',                                                              all:[9],                prix:'10,00€'},
+        {plat:'Gaspacho de framboise, bavarois 2 citrons, citron caviar, crumble, spéculoos',       all:[2,5,9,13],         prix:'12,00€'},
+        {plat:'K\'ouète en tartelette, praliné pécan cajou, ganache chocolat, glace chouchou',      all:[2,5,9,10,13],      prix:'16,00€'},
+        {plat:'Clafoutis à l\'ananas flambé, sorbet coco, suzette pina colada',                     all:[1,2,5,9,13],       prix:'14,00€'},
+      ]},
+    ];
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:14px';
+
+    // Barre d'action
+    const bar = document.createElement('div');
+    bar.style.cssText = 'display:flex;justify-content:flex-end;width:100%;max-width:820px';
+    bar.innerHTML = `<button id="print-allergen-btn" style="display:flex;align-items:center;gap:6px;padding:9px 20px;background:#C41E1E;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(196,30,30,.3)">🖨 Imprimer A4</button>`;
+    wrap.appendChild(bar);
+
+    // Feuille A4 (écran)
+    const sheet = document.createElement('div');
+    sheet.id = 'playa-allergen-sheet';
+    sheet.style.cssText = 'width:100%;max-width:820px;background:#fff;padding:12mm 14mm;box-sizing:border-box;font-family:Georgia,serif;box-shadow:0 4px 32px rgba(0,0,0,.15);border-radius:6px';
+
+    function renderSection(sec){
+      const rows = sec.items.map(it => {
+        const nums = it.all.map(n=>`<sup style="font-size:6pt;font-weight:700;color:#C41E1E;font-style:normal">${n}</sup>`).join('<span style="font-size:5pt;color:#bbb">,</span>');
+        return `<div style="display:flex;align-items:baseline;gap:5px;padding:1.6mm 0;border-bottom:0.3px solid #ede8e2">
+          <div style="flex:1;font-size:8pt;color:#1a1a1a;line-height:1.4">${it.plat} ${nums}</div>
+          <div style="white-space:nowrap;font-size:7.5pt;font-weight:700;color:#C41E1E;font-family:'Courier New',monospace;text-align:right;min-width:58px">${it.prix}</div>
+        </div>`;
+      }).join('');
+      return `<div style="margin-bottom:4mm">
+        <div style="font-size:7.5pt;font-weight:900;color:#C41E1E;letter-spacing:0.1em;text-transform:uppercase;border-bottom:1.2px solid #C41E1E;padding-bottom:1mm;margin-bottom:1.5mm">${sec.section}</div>
+        ${rows}
+      </div>`;
+    }
+
+    const allergenCells = ALLERGENS.map(a =>
+      `<div style="border:0.8px solid #ddd5cc;border-radius:4px;padding:2mm 1mm;text-align:center;background:#faf8f5">
+        <div style="font-size:15px;line-height:1.15">${a.icon}</div>
+        <div style="font-size:10.5pt;font-weight:900;color:#C41E1E;line-height:1">${a.n}</div>
+        <div style="font-size:6pt;font-weight:700;color:#1a1a1a;margin-top:1px;line-height:1.25">${a.label}</div>
+        ${a.sub ? `<div style="font-size:5pt;color:#999;line-height:1.2">${a.sub}</div>` : ''}
+      </div>`
+    ).join('');
+
+    sheet.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;border-bottom:2.5px solid #C41E1E;padding-bottom:4mm;margin-bottom:5mm">
+        <div style="font-size:40px">🦞</div>
+        <div style="text-align:center">
+          <div style="font-size:26pt;font-weight:900;color:#C41E1E;letter-spacing:0.04em;line-height:1">LA PLAYA</div>
+          <div style="font-size:10pt;font-weight:700;letter-spacing:0.2em;color:#1a1a1a">CLUB DE PLAGE</div>
+          <div style="font-size:7.5pt;color:#999;letter-spacing:0.1em;margin-top:1px">DEPUIS 2013</div>
+        </div>
+        <div style="font-size:40px;transform:scaleX(-1)">🦞</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7mm;margin-bottom:5mm">
+        <div>${[MENU[0],MENU[1]].map(renderSection).join('')}</div>
+        <div>${[MENU[2],MENU[3]].map(renderSection).join('')}</div>
+      </div>
+
+      <div style="border-top:2px solid #C41E1E;padding-top:4mm">
+        <div style="font-size:8.5pt;font-weight:900;color:#C41E1E;text-align:center;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:3mm">Tableau des Allergènes</div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2.5mm">${allergenCells}</div>
+        <div style="margin-top:3mm;font-size:6.5pt;color:#aaa;text-align:center;border-top:0.5px solid #ede8e2;padding-top:2mm">
+          Les allergènes sont identifiés par leur numéro dans la description de chaque plat · En cas de doute, interrogez notre équipe · Les plats peuvent contenir des traces dues aux manipulations en cuisine
+        </div>
+      </div>
+
+      <div style="text-align:center;font-size:7pt;font-weight:700;color:#aaa;letter-spacing:0.12em;margin-top:3mm">SERVICE COMPRIS · PRIX TTC</div>`;
+
+    wrap.appendChild(sheet);
+    body.appendChild(wrap);
+
+    // Bouton impression
+    document.getElementById('print-allergen-btn').onclick = function(){
+      const content = document.getElementById('playa-allergen-sheet').innerHTML;
+      const w = window.open('', '_blank', 'width=920,height=720');
+      if(!w) return toast('Autorisez les popups pour imprimer');
+      w.document.write(`<!DOCTYPE html><html><head><title>Allergènes – La Playa</title>
+        <style>
+          @page{size:A4 portrait;margin:8mm 10mm}
+          body{margin:0;font-family:Georgia,serif;background:#fff;color:#1a1a1a}
+          @media screen{body{background:#e8e3de}#s{max-width:210mm;margin:auto;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:12mm 14mm;box-sizing:border-box}}
+          @media print{body{background:#fff}#s{padding:0;box-shadow:none}}
+          sup{font-size:6pt!important;font-weight:700!important;color:#C41E1E!important;vertical-align:super}
+        </style>
+      </head><body><div id="s">${content}</div>
+      <script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script>
+      </body></html>`);
+      w.document.close();
+    };
   }
 
   rebuild();
