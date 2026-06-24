@@ -6797,7 +6797,7 @@ async function syncZenchef(date){
 
   // ── ÉTAPE 1 : cache (IndexedDB/localStorage) valide → retour immédiat
   const cached = await zcCacheGet(date);
-  if(cached){
+  if(cached && cached.length > 0){
     reservations = {s1:[], s2:[], transats:[], soir:[]};
     fused = {s1:[],s2:[],transats:[],soir:[]};
     selectedId = null;
