@@ -4343,7 +4343,7 @@ function placeTransat(r, sm, opts){
     const start = r.requested_slot;
     // Vérifier que les N slots consécutifs sont libres (même rangée)
     const rowBase = Math.floor(start / 100) * 100;
-    const rowEnd = rowBase + 20; // fin de rangée (max slot = rowBase+20)
+    const rowEnd = rowBase + 21; // fin de rangée (max slot = rowBase+21, ex: 521 pour rangée 500)
     const slots = [];
     for(let i = 0; i < needed && (start + i) <= rowEnd; i++){
       if(sm[start + i]) break;
@@ -6292,7 +6292,8 @@ function zcToResa(b){
   const is13h00 = (b.time || '').startsWith('13:00');
   // Transat mentionné dans les notes (même sans nombre précis) → équivaut à avoir des transats
   const mentionsTransatsInText = nbTransats > 0 || /\btransats?\b/i.test(allTextFields);
-  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || (is13h00 && mentionsTransatsInText);
+  // Exclure explicitement "table + transats" des deux conditions : la règle Rambaud s'applique partout
+  const isRepasTransatFinal = !isTablePlusTransat && (isRepasTransat || (is13h00 && mentionsTransatsInText));
 
   // Heure : "13:00" -> "13h00"
   const timeRaw = b.time || '12:00';
@@ -6339,7 +6340,9 @@ function zcToResa(b){
 
   // Si pattern conditionnel bed/transat : bed comme resa principale, transats en fallback
   const finalIsBed = isBed || (conditionalBedTransat ? true : false);
-  const finalNbTransats = (!finalIsBed || isBed) ? nbTransats : 0;
+  // Si pattern conditionnel détecté ("bed / N transats") : les transats sont le fallback, pas la demande principale
+  // → finalNbTransats = 0 pour éviter que parseTransatsFromText compte les transats du fallback comme directs
+  const finalNbTransats = conditionalBedTransat ? 0 : ((!finalIsBed || isBed) ? nbTransats : 0);
 
   return {
     _cancelled: isCancelled,
@@ -6648,6 +6651,7 @@ function reAnalyzeAllResas(){
       const cond = parseBedOrTransatFromText(raw);
       if(cond && !r.bed){
         r.bed = true;
+        r.tr = null;  // les transats sont le fallback, pas la demande principale
         r.tr_fallback = cond.fallbackTr;
         r.tr_fallback_row = cond.fallbackRow;
         r.row_transats = cond.fallbackRow;
