@@ -6658,6 +6658,22 @@ function reAnalyzeAllResas(){
       }
     }
 
+    // ── CRM enrichment : combler les préférences manquantes depuis l'historique client
+    // Règle : l'historique ne s'applique QUE si le champ n'est pas déjà renseigné
+    // (commentaire du jour est prioritaire), et uniquement si la resa a déjà des transats/bed.
+    if(r.tr > 0 || r.bed){
+      const hist = (typeof getClientHistPrefs === 'function') ? getClientHistPrefs(r.name) : null;
+      if(hist){
+        if(!r.row_transats && hist.preferredRow) r.row_transats = hist.preferredRow;
+        if(!r.requested_slot && hist.preferredSlot) r.requested_slot = hist.preferredSlot;
+        if(!r.pref_extremite && hist.extremite) r.pref_extremite = true;
+        // Badge CRM pour indiquer que le placement vient de l'historique
+        if((!r.row_transats || !r.requested_slot) && (hist.preferredRow || hist.preferredSlot)){
+          if(!r._crmHint) r._crmHint = true;
+        }
+      }
+    }
+
     // Nb transats si non encore fixé (resas manuelles)
     if(r.source !== 'zenchef' && !r.tr && !r.bed){
       const nbT = parseTransatsFromText(raw);
@@ -11030,8 +11046,25 @@ function _buildAutoMemo(visits, prefs, avgPax, visitCount) {
   else if(pax<=3.8) parts.push('Table de 3 personnes');
   else if(pax<=5.5) parts.push('En groupe ('+Math.round(pax)+' pers.)');
   else parts.push('Grands groupes (~'+Math.round(pax)+' pers.)');
-  const spots=prefs.filter(p=>['terrasse','vuemer','calme','table','transats','bedtrans'].includes(p.key));
+  const spots=prefs.filter(p=>['terrasse','vuemer','calme','table'].includes(p.key));
+  const transatPrefs=prefs.filter(p=>['transats','bedtrans'].includes(p.key));
   if(spots.length) parts.push(spots.map(p=>p.icon+' '+p.label).join(' · '));
+  // Transat detail: extract specific preferences from visit comments
+  if(transatPrefs.length){
+    const trComments=(visits||[]).map(v=>v.comment||'').filter(Boolean);
+    const rows=trComments.map(t=>parsePreferredRowFromText(t)).filter(Boolean);
+    const trNums=trComments.map(t=>parseTransatsFromText(t)).filter(n=>n>0);
+    const bedMentions=trComments.filter(t=>parseBedFromText(t)>0).length;
+    const rowLabels={500:'1ère ligne',400:'2ème ligne',300:'3ème ligne',200:'4ème ligne'};
+    const topRow=rows.length?rows.reduce((acc,r)=>{acc[r]=(acc[r]||0)+1;return acc;},{}):null;
+    const topRowId=topRow?parseInt(Object.entries(topRow).sort((a,b)=>b[1]-a[1])[0][0]):null;
+    const avgTr=trNums.length?Math.round(trNums.reduce((a,b)=>a+b,0)/trNums.length):null;
+    let transatLine='🏖️';
+    if(bedMentions>=2) transatLine+=' Bed double';
+    else if(avgTr) transatLine+=' '+avgTr+' transats';
+    if(topRowId&&rowLabels[topRowId]) transatLine+=' · '+rowLabels[topRowId]+' préféré';
+    parts.push(transatLine);
+  }
   const diets=prefs.filter(p=>['allergie','vegan','vegeta','sansglut','sanslact'].includes(p.key));
   if(diets.length) parts.push('⚠️ '+diets.map(p=>p.label).join(' + '));
   const occs=prefs.filter(p=>['anniv','romant','surprise','repaspro'].includes(p.key));
@@ -11130,7 +11163,10 @@ async function crmImportHistory(onProgress,onDone){
     const p1=await _crmFetchPage(1,yearMin,today);
     const total=p1.paginator&&p1.paginator.total||0;
     const totalPages=Math.max(1,Math.ceil(total/250));
-    const map=_crmLoadMap()||{};
+    // Premier import : partir d'un slate vierge pour éviter que le seed data fictif persiste
+    // Imports suivants (refresh) : merger dans les données existantes pour préserver les vraies visites
+    const isFirstImport=!localStorage.getItem(CRM_HISTORY_TS_KEY);
+    const map=isFirstImport?{}:(_crmLoadMap()||{});
     let changed=false;
     function addBookings(bookings){
       (bookings||[]).forEach(b=>{
@@ -11227,15 +11263,49 @@ function buildClientPrefsCache(){
     const p=c.prefs;
     const allComments=c.visits.map(v=>v.comment||'').join(' ');
     const tm=allComments.match(/\btable[s]?\s*n?[°º]?\s*(\d+)/i);
+
+    // Extract transat/bed preferences from all visit comments
+    const rowCounts={};
+    const slotCounts={};
+    let trTotal=0, trN=0, bedN=0;
+    c.visits.forEach(v=>{
+      const txt=v.comment||'';
+      const row=parsePreferredRowFromText(txt);
+      if(row) rowCounts[row]=(rowCounts[row]||0)+1;
+      const slot=parseSlotFromText(txt);
+      if(slot) slotCounts[slot]=(slotCounts[slot]||0)+1;
+      const nbTr=parseTransatsFromText(txt);
+      if(nbTr>0){trTotal+=nbTr;trN++;}
+      if(parseBedFromText(txt)>0) bedN++;
+    });
+    // Most frequently mentioned row and slot
+    const topRowEntry=Object.entries(rowCounts).sort((a,b)=>b[1]-a[1])[0];
+    const topSlotEntry=Object.entries(slotCounts).sort((a,b)=>b[1]-a[1])[0];
+    const preferredRow=topRowEntry?parseInt(topRowEntry[0]):null;
+    const preferredSlot=topSlotEntry?parseInt(topSlotEntry[0]):null;
+    const avgTr=trN>0?Math.round(trTotal/trN):null;
+    // bedDouble: >1 bed mention OR existing bedtrans pref tag
+    const usesBed=bedN>=2||!!p.find(x=>x.key==='bedtrans');
+    // firstRow from vuemer pref OR preferredRow=500
+    const firstRow=!!p.find(x=>x.key==='vuemer')||preferredRow===500;
+    // extremite: more than 1 extremity mention in history
+    let extN=0;
+    c.visits.forEach(v=>{if(parseExtremiteFromText(v.comment||''))extN++;});
+    const hasExtremite=extN>=2;
+
     cache[c.normKey]={
       tableId:tm?parseInt(tm[1]):null,
       wantTerrasse:!!p.find(x=>x.key==='terrasse'),
       wantInterieur:false,
       wantOmbre:!!p.find(x=>x.key==='calme'),
       wantSoleil:false,
-      bedDouble:!!p.find(x=>x.key==='bedtrans'),
-      firstRow:!!p.find(x=>x.key==='vuemer'),
-      extremite:false
+      bedDouble:usesBed,
+      firstRow,
+      extremite:hasExtremite,
+      preferredRow,        // NEW: 500=1ère ligne, 400=2ème, etc. (null if not found)
+      preferredSlot,       // NEW: specific slot number (null if not found)
+      avgTr,               // NEW: average nb transats (null if never mentioned)
+      usesBed,             // NEW: uses bed double (bool)
     };
   });
   try{localStorage.setItem('playa-client-prefs-cache',JSON.stringify(cache));}catch(e){}
