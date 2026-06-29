@@ -264,7 +264,11 @@ const NOSHOW    = new Set(['noshow','no_show']);
 
 function buildProfiles(bookings) {
   const map={}, phoneMap={}, emailMap={};
+  const seenIds = new Set();
   bookings.forEach(b => {
+    // Dédup par booking ID (évite les doublons liés aux pages qui se chevauchent ou aux modifications)
+    const bid = b.id || b._id || b.booking_id;
+    if (bid) { if (seenIds.has(String(bid))) return; seenIds.add(String(bid)); }
     const f=(b.firstname||'').trim(), l=(b.lastname||'').trim();
     const name=[capWord(l),capWord(f)].filter(Boolean).join(' ');
     if (!name||name.length<2) return;
@@ -294,7 +298,8 @@ function buildProfiles(bookings) {
 
     if (isCancelled) { c.cancelCount++; return; }
 
-    const dup = c.visits.find(v=>v.date===date&&v.pax===pax&&v.svc===svc);
+    // Un seul enregistrement par (date + service) — évite les doublons booking/modification
+    const dup = c.visits.find(v=>v.date===date&&v.svc===svc);
     if (!dup) {
       c.visits.push({date, pax, svc, comment,
         tr:parseTrFromBooking(b), bed:parseBedFromBooking(b),
@@ -312,7 +317,7 @@ function mergeProfiles(existing, newBookings) {
     if (!existing[key]) { existing[key]=nc; return; }
     const c = existing[key];
     nc.visits.forEach(nv => {
-      if (!c.visits.find(v=>v.date===nv.date&&v.svc===nv.svc&&v.pax===nv.pax)) c.visits.push(nv);
+      if (!c.visits.find(v=>v.date===nv.date&&v.svc===nv.svc)) c.visits.push(nv);
     });
     c.cancelCount = (c.cancelCount||0)+(nc.cancelCount||0);
     if (!c.phone&&nc.phone) c.phone=nc.phone;
