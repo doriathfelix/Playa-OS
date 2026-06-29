@@ -199,9 +199,26 @@ function parseRowFromBooking(b) {
 }
 
 function parseTableFromBooking(b) {
-  const tid = b.table_id || (b.table && typeof b.table==='object' ? b.table.id : null)
-             || (typeof b.table==='number' ? b.table : null);
-  if (tid) { const n=parseInt(tid); if (n>0&&n<1000) return n; }
+  // Champs directs Zenchef
+  const candidates = [
+    b.table_id, b.table_number,
+    typeof b.table==='number' ? b.table : null,
+    b.table && typeof b.table==='object' ? (b.table.id||b.table.number||b.table.table_id) : null,
+    b.plan_element && (b.plan_element.id||b.plan_element.table_id),
+  ];
+  for (const v of candidates) {
+    const n=parseInt(v); if (!isNaN(n)&&n>0&&n<1000) return n;
+  }
+  // Tableau de tables (grandes tablées)
+  if (Array.isArray(b.tables)&&b.tables.length>0) {
+    const t=b.tables[0];
+    const n=parseInt(t.id||t.table_id||t.number||t);
+    if (!isNaN(n)&&n>0&&n<1000) return n;
+  }
+  // Nom de table ("Table 5", "T.5")
+  const tblName=(b.table&&b.table.name)||(Array.isArray(b.tables)&&b.tables[0]&&b.tables[0].name)||'';
+  if (tblName) { const m=tblName.match(/\d+/); if(m) return parseInt(m[0]); }
+  // Fallback texte libre
   return parseTable(extractAllText(b));
 }
 
@@ -358,13 +375,16 @@ function computeStats(c) {
   const topSlot  = Object.entries(slotC).sort((a,b)=>b[1]-a[1])[0];
   const topSvc   = Object.entries(svcC).sort((a,b)=>b[1]-a[1])[0];
   const tblMap   = c.visits.reduce((acc,v)=>{if(v.table)acc[v.table]=(acc[v.table]||0)+1;return acc;},{});
-  const topTable = Object.entries(tblMap).sort((a,b)=>b[1]-a[1])[0];
+  const tblRank  = Object.entries(tblMap).sort((a,b)=>b[1]-a[1]);
+  const topTable = tblRank[0];
 
   c.preferredRow   = topRow  ? parseInt(topRow[0])  : null;
   c.preferredSlot  = topSlot ? parseInt(topSlot[0]) : null;
   c.avgTr          = trN>0   ? Math.round(trTotal/trN) : null;
   c.usesBed        = bedN>=2 || (bedN>=1&&c.visitCount<=2);
-  c.preferredTable = topTable? parseInt(topTable[0]): null;
+  c.preferredTable      = topTable ? parseInt(topTable[0]) : null;
+  c.preferredTableCount = topTable ? topTable[1] : 0;
+  c.allTables           = tblRank.map(([t,n])=>({t:parseInt(t),n}));
   c.preferredSvc   = topSvc  ? topSvc[0] : 's1';
   c.yearsActive    = [...new Set(c.visits.map(v=>(v.date||'').substring(0,4)).filter(Boolean))].sort();
 
@@ -420,7 +440,13 @@ function computeStats(c) {
     parts.push('🌊 '+ROW_LABELS[c.preferredRow]+' habituellement');
   }
 
-  if (c.preferredTable) parts.push('📍 Table '+c.preferredTable+' habituelle');
+  if (c.preferredTable) {
+    const cnt = c.preferredTableCount||1;
+    const suffix = cnt>=3 ? ' ('+cnt+'x — systématique)' : cnt>=2 ? ' ('+cnt+'x)' : '';
+    parts.push('📍 Table '+c.preferredTable+' habituelle'+suffix);
+    if (c.allTables&&c.allTables.length>1)
+      parts.push('   Autres tables : '+c.allTables.slice(1,4).map(({t,n})=>'T.'+t+(n>1?' ('+n+'x)':'')).join(', '));
+  }
   const spots=c.prefs.filter(p=>['terrasse','calme','vuemer'].includes(p.key));
   if (spots.length) parts.push(spots.map(p=>p.icon+' '+p.label).join(' · '));
   const diets=c.prefs.filter(p=>['allergie','vegan','vegeta','sansglut','sanslact'].includes(p.key));
@@ -774,7 +800,7 @@ function makeCard(c, note) {
         ${svcBar}
         <div class="cl-badges">
           <span class="badge" style="background:${svcCol}18;color:${svcCol};">⏰ ${SVC_LABELS[c.preferredSvc]||''}</span>
-          ${c.preferredTable?'<span class="badge" style="background:#8B5CF618;color:#8B5CF6;">📍 T.'+c.preferredTable+'</span>':''}
+          ${c.preferredTable?'<span class="badge" style="background:#8B5CF618;color:#8B5CF6;">📍 T.'+c.preferredTable+(c.preferredTableCount>=2?' ×'+c.preferredTableCount:'')+'</span>':''}
           ${c.usesBed?'<span class="badge" style="background:#FEF3C7;color:#92400E;">🛏️ Bed double</span>':''}
           ${!c.usesBed&&c.avgTr?'<span class="badge" style="background:#FEF3C718;color:#D97706;">🏖️ ~'+c.avgTr+'T</span>':''}
           ${!c.usesBed&&c.preferredRow===500?'<span class="badge" style="background:#06B6D418;color:#06B6D4;">🌊 1ère ligne</span>':''}
