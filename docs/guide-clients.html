@@ -6,69 +6,54 @@
   <title>Guide Clients — La Playa</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-    :root{
-      --bg:#F8FAFC;--card:#fff;--tx:#1E293B;--tx2:#64748B;--sep:#E2E8F0;
-      --teal:#0EA5E9;--purple:#7C3AED;--gold:#B45309;
-    }
+    :root{--bg:#F8FAFC;--card:#fff;--tx:#1E293B;--tx2:#64748B;--sep:#E2E8F0;--teal:#0EA5E9;--purple:#7C3AED;}
     html,body{background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;color:var(--tx);min-height:100vh;}
-
-    /* ── HEADER ─────────────────────────── */
     .hdr{background:linear-gradient(135deg,#0F172A 0%,#1E293B 100%);color:#fff;padding:18px 16px 14px;position:sticky;top:0;z-index:100;}
     .hdr-title{font-size:19px;font-weight:900;letter-spacing:-.02em;margin-bottom:2px;}
     .hdr-sub{font-size:10.5px;opacity:.55;margin-bottom:12px;}
     .hdr-btns{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
     .btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:12px;}
-    .btn-blue{background:#0EA5E9;color:#fff;}
-    .btn-red{background:#EF4444;color:#fff;}
-    .btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.22);}
-    .btn:disabled{opacity:.45;cursor:wait;}
-    .btn:not(:disabled):hover{opacity:.84;}
+    .btn-blue{background:#0EA5E9;color:#fff;}.btn-red{background:#EF4444;color:#fff;}
+    .btn-green{background:#16A34A;color:#fff;}.btn-ghost{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.22);}
+    .btn:disabled{opacity:.45;cursor:wait;}.btn:not(:disabled):hover{opacity:.84;}
     .prog-wrap{height:4px;background:rgba(255,255,255,.18);border-radius:2px;overflow:hidden;margin-top:10px;display:none;}
     .prog-bar{height:100%;background:#38BDF8;border-radius:2px;width:0%;transition:width .35s;}
     .prog-lbl{font-size:10px;opacity:.6;margin-top:4px;min-height:14px;}
-
-    /* ── BODY ───────────────────────────── */
     .body{padding-bottom:80px;}
-
-    /* ── KPI ────────────────────────────── */
     .kpi-section{padding:14px 12px 0;}
     .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
     .kpi-card{background:var(--card);border:1px solid var(--sep);border-radius:12px;padding:11px 7px;text-align:center;}
-    .kpi-val{font-size:22px;font-weight:900;}
-    .kpi-lbl{font-size:9.5px;font-weight:700;color:var(--tx2);margin-top:2px;}
+    .kpi-val{font-size:22px;font-weight:900;}.kpi-lbl{font-size:9.5px;font-weight:700;color:var(--tx2);margin-top:2px;}
     .kpi-sub{font-size:8.5px;color:var(--tx2);opacity:.7;margin-top:1px;}
-
-    /* ── LOYALTY ────────────────────────── */
+    .alert-sect{margin:0 0 12px;background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:12px;padding:10px 14px;}
+    .alert-sect-title{font-size:10px;font-weight:800;color:#B91C1C;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;}
+    .alert-row{display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:.5px solid #FCA5A540;}
+    .alert-row:last-child{border-bottom:none;}
+    .alert-name{font-size:12px;font-weight:700;flex:1;}
+    .alert-tags{display:flex;flex-wrap:wrap;gap:3px;}
     .loy-card{background:var(--card);border:1px solid var(--sep);border-radius:12px;padding:12px 14px;margin-bottom:10px;}
     .sect-lbl{font-size:9.5px;font-weight:800;color:var(--tx2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:8px;}
     .loy-track{height:10px;border-radius:6px;overflow:hidden;display:flex;margin-bottom:7px;}
     .loy-legend{display:flex;flex-wrap:wrap;gap:8px;}
-
-    /* ── PREFS HEAT ─────────────────────── */
     .prefs-card{background:var(--card);border:1px solid var(--sep);border-radius:12px;padding:12px 14px;margin-bottom:12px;}
     .prefs-chips{display:flex;flex-wrap:wrap;gap:5px;}
     .pchip{display:inline-flex;align-items:center;gap:3px;padding:4px 9px;border-radius:8px;font-size:11px;font-weight:700;}
-
-    /* ── VIP SCROLL ─────────────────────── */
     .vip-wrap{padding:0 12px;margin-bottom:14px;}
     .sect-title{font-size:11.5px;font-weight:800;color:var(--tx2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
     .vip-scroll{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;}
     .vip-scroll::-webkit-scrollbar{display:none;}
     .vip-card{flex-shrink:0;width:162px;background:var(--card);border-radius:14px;overflow:hidden;border:1.5px solid var(--sep);}
-
-    /* ── FILTERS ────────────────────────── */
     .filters{padding:0 12px 10px;display:flex;flex-direction:column;gap:8px;}
     .search{width:100%;padding:10px 14px;border:1.5px solid var(--sep);border-radius:10px;font-size:14px;font-family:inherit;background:var(--card);color:var(--tx);outline:none;}
     .search:focus{border-color:var(--teal);}
-    .filter-row{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;}
-    .filter-row::-webkit-scrollbar{display:none;}
+    .filter-row,.sort-row{display:flex;gap:5px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;align-items:center;}
+    .filter-row::-webkit-scrollbar,.sort-row::-webkit-scrollbar{display:none;}
     .fbtn{padding:5px 12px;border-radius:20px;border:1px solid var(--sep);background:var(--card);font-family:inherit;font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;white-space:nowrap;flex-shrink:0;}
     .fbtn.on{background:var(--teal);border-color:var(--teal);color:#fff;}
-
-    /* ── CLIENT LIST ────────────────────── */
+    .sbtn{padding:4px 10px;border-radius:16px;border:1px solid var(--sep);background:var(--card);font-family:inherit;font-size:10px;font-weight:600;color:var(--tx2);cursor:pointer;white-space:nowrap;flex-shrink:0;}
+    .sbtn.on{background:var(--tx);border-color:var(--tx);color:#fff;}
+    .sort-lbl{font-size:10px;font-weight:700;color:var(--tx2);white-space:nowrap;}
     .cl-list{padding:0 12px;display:flex;flex-direction:column;gap:8px;}
-
-    /* ── CLIENT CARD ────────────────────── */
     .cl-card{background:var(--card);border:1px solid var(--sep);border-left:4px solid var(--sep);border-radius:0 12px 12px 0;overflow:hidden;}
     .cl-head{padding:11px 12px 7px;display:flex;gap:10px;align-items:flex-start;}
     .cl-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;flex-shrink:0;}
@@ -77,549 +62,512 @@
     .cl-name{font-size:15px;font-weight:800;}
     .cl-loy{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:8px;}
     .cl-season{font-size:9px;font-weight:600;padding:1px 6px;border-radius:6px;}
-    .cl-stat{font-size:11px;color:var(--tx2);margin-bottom:4px;}
+    .cl-stat{font-size:11px;color:var(--tx2);margin-bottom:3px;}
+    .svc-bar{display:flex;height:4px;border-radius:3px;overflow:hidden;margin:4px 0;}
     .cl-badges{display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
     .badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:6px;}
-
     .cl-prefs{padding:0 12px 7px;display:flex;flex-wrap:wrap;gap:4px;}
     .cpref{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:7px;font-size:10px;font-weight:700;}
-
     .cl-memo{margin:0 12px 8px;background:var(--bg);border-radius:8px;border-left:3px solid var(--sep);padding:7px 10px;font-size:11px;color:var(--tx2);line-height:1.6;white-space:pre-line;}
-
     .cl-note{margin:0 12px 7px;}
     .cl-note textarea{width:100%;padding:5px 9px;border:1px solid var(--sep);border-radius:8px;font-family:inherit;font-size:11px;color:var(--tx);background:var(--card);resize:none;outline:none;line-height:1.5;min-height:32px;}
     .cl-note textarea:focus{border-color:var(--teal);}
-
     .cl-foot{padding:5px 12px 6px;border-top:.5px solid var(--sep);background:var(--bg);display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
     .hist-btn{padding:4px 10px;border:1px solid var(--sep);border-radius:8px;background:var(--card);font-family:inherit;font-size:11px;font-weight:600;color:var(--tx2);cursor:pointer;}
     .cl-phone{padding:4px 9px;border:1px solid var(--sep);border-radius:8px;font-size:11px;text-decoration:none;color:var(--tx);display:inline-flex;align-items:center;gap:4px;}
-
     .cl-hist{display:none;border-top:.5px solid var(--sep);}
-    .cl-hist-inner{padding:6px 12px;max-height:220px;overflow-y:auto;}
+    .cl-hist-inner{padding:6px 12px;max-height:240px;overflow-y:auto;}
     .hist-row{display:flex;gap:7px;align-items:baseline;padding:3px 0;border-bottom:.5px solid var(--sep);font-size:11px;}
     .hist-date{font-family:monospace;font-size:10px;color:var(--tx2);flex-shrink:0;width:54px;}
     .hist-pax{color:var(--tx2);flex-shrink:0;min-width:20px;}
     .hist-svc{font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;flex-shrink:0;}
-    .hist-icons{flex-shrink:0;font-size:10px;}
+    .hist-icons{flex-shrink:0;font-size:10px;min-width:36px;}
     .hist-comment{color:var(--tx);line-height:1.4;word-break:break-word;flex:1;}
-
-    /* ── EMPTY / LOADING ────────────────── */
     .empty{text-align:center;padding:50px 20px;color:var(--tx2);font-size:13px;}
     .loading{text-align:center;padding:60px 20px;color:var(--tx2);}
     .spinner{width:32px;height:32px;border:3px solid var(--sep);border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px;}
     @keyframes spin{to{transform:rotate(360deg);}}
-
-    /* ── PRINT ──────────────────────────── */
     @media print{
       .hdr{background:#0F172A!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;position:static;}
       .hdr-btns,.filters,.cl-note,.cl-foot .hist-btn{display:none!important;}
-      .cl-hist{display:block!important;}
-      .cl-hist-inner{max-height:none;}
-      .cl-card{break-inside:avoid;margin-bottom:6px;}
-      body{background:#fff;}
+      .cl-hist{display:block!important;}.cl-hist-inner{max-height:none;}
+      .cl-card{break-inside:avoid;margin-bottom:6px;}body{background:#fff;}
     }
   </style>
 </head>
 <body>
 <div id="app"><div class="loading"><div class="spinner"></div>Initialisation…</div></div>
-
 <script>
-// ═══════════════════════════════════════════════════════════════
-//  CONFIGURATION
-// ═══════════════════════════════════════════════════════════════
 const ZC_API           = 'https://api.zenchef.com/api/v1';
 const ZC_TOKEN         = '2742e3c9-0609-436c-8349-2d02554a11ed';
 const ZC_RESTAURANT_ID = '364557';
-const CACHE_KEY        = 'playaguide-profiles-v2';
-const CACHE_TS_KEY     = 'playaguide-ts-v2';
+const CACHE_KEY        = 'playaguide-profiles-v3';
+const CACHE_TS_KEY     = 'playaguide-ts-v3';
+const LAST_SYNC_KEY    = 'playaguide-lastsync-v3';
 const NOTES_KEY        = 'playaguide-notes-v1';
-const CACHE_TTL        = 7 * 24 * 3600 * 1000; // 7 jours
+const CACHE_TTL        = 30 * 24 * 3600 * 1000;
+const BATCH            = 12;
 
-// ═══════════════════════════════════════════════════════════════
-//  PREFERENCE TAGS
-// ═══════════════════════════════════════════════════════════════
+// ── PREF TAGS ─────────────────────────────────────────────────────
 const PREF_TAGS = [
-  {key:'allergie', re:/allergi/i,                                                            label:'Allergie',        icon:'⚠️', col:'#EF4444'},
-  {key:'pmr',      re:/\bPMR\b|fauteuil roulant/i,                                          label:'PMR',             icon:'♿', col:'#6366F1'},
-  {key:'vuemer',   re:/vue mer|c[oô]t[eé] mer|1[eè]re ligne|premi[eè]re ligne/i,           label:'Vue mer',         icon:'🌊', col:'#06B6D4'},
-  {key:'terrasse', re:/terrasse|playa terrasse|ext[eé]rieur|dehors|outside/i,               label:'Terrasse',        icon:'🌅', col:'#0EA5E9'},
-  {key:'transats', re:/\btransat/i,                                                          label:'Transats',        icon:'🏖️', col:'#F59E0B'},
-  {key:'bedtrans', re:/bed double|lit double/i,                                              label:'Bed double',      icon:'🛏️', col:'#D97706'},
-  {key:'calme',    re:/ombre|coin calme|calme|loin de la piscine/i,                         label:'Coin calme',      icon:'🌿', col:'#94A3B8'},
-  {key:'table',    re:/table \d|table hab|la m[eê]me table|table du fond|table attit/i,     label:'Table attitrée',  icon:'📍', col:'#8B5CF6'},
-  {key:'chien',    re:/\bchien\b/i,                                                         label:'Avec chien',      icon:'🐕', col:'#92400E'},
-  {key:'vegan',    re:/\bvegan\b|v[eé]gane/i,                                              label:'Vegan',           icon:'🌱', col:'#16A34A'},
-  {key:'vegeta',   re:/v[eé]g[eé]tari/i,                                                   label:'Végétarien·ne',   icon:'🥗', col:'#22C55E'},
-  {key:'sansglut', re:/sans gluten|gluten.free/i,                                           label:'Sans gluten',     icon:'🌾', col:'#F97316'},
-  {key:'sanslact', re:/sans lactose/i,                                                      label:'Sans lactose',    icon:'🥛', col:'#FB923C'},
-  {key:'enfants',  re:/chaise haute|b[eé]b[eé]/i,                                          label:'Chaise haute',    icon:'👶', col:'#EC4899'},
-  {key:'anniv',    re:/anniversaire|anniv/i,                                                label:'Anniversaire',    icon:'🎂', col:'#EAB308'},
-  {key:'romant',   re:/lune de miel|mariage|fian[cç]|notre anniversaire/i,                 label:'Occasion spéciale',icon:'💍',col:'#F472B6'},
-  {key:'repaspro', re:/repas d.[eé]quipe|repas pro/i,                                      label:'Repas pro',       icon:'👔', col:'#64748B'},
-  {key:'surprise', re:/surprise/i,                                                           label:'Surprise',        icon:'🎁', col:'#A855F7'},
+  {key:'allergie', re:/allergi/i,                                                         label:'Allergie',         icon:'⚠️', col:'#EF4444'},
+  {key:'pmr',      re:/\bPMR\b|fauteuil roulant|handicap/i,                              label:'PMR',              icon:'♿', col:'#6366F1'},
+  {key:'vuemer',   re:/vue mer|c[oô]t[eé] mer|1[eè]re ligne|premi[eè]re ligne/i,        label:'Vue mer',          icon:'🌊', col:'#06B6D4'},
+  {key:'terrasse', re:/terrasse|playa terrasse|ext[eé]rieur|dehors/i,                    label:'Terrasse',         icon:'🌅', col:'#0EA5E9'},
+  {key:'transats', re:/\btransat/i,                                                       label:'Transats',         icon:'🏖️', col:'#F59E0B'},
+  {key:'bedtrans', re:/bed double|lit double/i,                                           label:'Bed double',       icon:'🛏️', col:'#D97706'},
+  {key:'calme',    re:/ombre|coin calme|calme|loin de la piscine/i,                      label:'Coin calme',       icon:'🌿', col:'#94A3B8'},
+  {key:'table',    re:/table \d|table hab|la m[eê]me table|table du fond|table attit/i,  label:'Table attitrée',   icon:'📍', col:'#8B5CF6'},
+  {key:'chien',    re:/\bchien\b/i,                                                       label:'Avec chien',       icon:'🐕', col:'#92400E'},
+  {key:'vegan',    re:/\bvegan\b|v[eé]gane/i,                                           label:'Vegan',            icon:'🌱', col:'#16A34A'},
+  {key:'vegeta',   re:/v[eé]g[eé]tari/i,                                                label:'Végétarien·ne',    icon:'🥗', col:'#22C55E'},
+  {key:'sansglut', re:/sans gluten|gluten.free/i,                                        label:'Sans gluten',      icon:'🌾', col:'#F97316'},
+  {key:'sanslact', re:/sans lactose/i,                                                    label:'Sans lactose',     icon:'🥛', col:'#FB923C'},
+  {key:'enfants',  re:/chaise haute|b[eé]b[eé]/i,                                       label:'Chaise haute',     icon:'👶', col:'#EC4899'},
+  {key:'anniv',    re:/anniversaire|anniv/i,                                              label:'Anniversaire',     icon:'🎂', col:'#EAB308'},
+  {key:'romant',   re:/lune de miel|mariage|fian[cç]|notre anniversaire/i,              label:'Occasion spéciale',icon:'💍', col:'#F472B6'},
+  {key:'repaspro', re:/repas d.[eé]quipe|repas pro/i,                                   label:'Repas pro',        icon:'👔', col:'#64748B'},
+  {key:'surprise', re:/surprise/i,                                                        label:'Surprise',         icon:'🎁', col:'#A855F7'},
 ];
 
-// ═══════════════════════════════════════════════════════════════
-//  TEXT PARSERS
-// ═══════════════════════════════════════════════════════════════
-function normTxt(t){
+// ── TEXT EXTRACTION ───────────────────────────────────────────────
+function extractAllText(b) {
+  const acc = [];
+  function walk(x) {
+    if (!x) return;
+    if (typeof x === 'string') {
+      const t = x.trim();
+      if (t.length > 1 && !/^\d{1,4}$/.test(t) && !/^https?:/i.test(t)) acc.push(t);
+    } else if (Array.isArray(x)) x.forEach(walk);
+    else if (typeof x === 'object') Object.values(x).forEach(walk);
+  }
+  walk(b);
+  return [...new Set(acc)].join(' · ');
+}
+
+function normTxt(t) {
   return (t||'').toLowerCase()
     .replace(/[éèêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u')
     .replace(/[îï]/g,'i').replace(/[ôö]/g,'o').replace(/ç/g,'c');
 }
-function parseTr(txt){
-  const m=(txt||'').match(/(\d+)\s*transats?/i);
-  return m?parseInt(m[1]):0;
-}
-function parseRow(txt){
-  const t=normTxt(txt);
-  if(/1[e]?re\s*ligne|premiere\s*ligne|vue\s*mer|cote\s*mer/.test(t)) return 500;
-  if(/2[e]?me\s*ligne|deuxieme\s*ligne/.test(t)) return 400;
-  if(/3[e]?me\s*ligne/.test(t)) return 300;
-  if(/4[e]?me\s*ligne/.test(t)) return 200;
+
+// ── PARSERS (texte) ───────────────────────────────────────────────
+function parseTr(txt)   { const m=(txt||'').match(/(\d+)\s*transats?/i); return m?parseInt(m[1]):0; }
+function parseBed(txt)  { return /bed\s*double|lit\s*double/i.test(txt||''); }
+function parseTable(txt){ const m=(txt||'').match(/\btable[s]?\s*n?[°º]?\s*(\d+)/i); return m?parseInt(m[1]):null; }
+function parseRow(txt) {
+  const t = normTxt(txt);
+  if (/1[e]?re?\s*ligne|premiere\s*ligne|vue\s*mer|cote\s*mer/.test(t)) return 500;
+  if (/2[e]?me?\s*ligne|deuxieme\s*ligne/.test(t)) return 400;
+  if (/3[e]?me?\s*ligne|troisieme\s*ligne/.test(t)) return 300;
+  if (/4[e]?me?\s*ligne/.test(t)) return 200;
   return null;
 }
-function parseBed(txt){return /bed\s*double|lit\s*double/i.test(txt||'');}
-function parseTable(txt){
-  const m=(txt||'').match(/\btable[s]?\s*n?[°º]?\s*(\d+)/i);
-  return m?parseInt(m[1]):null;
-}
-function parseSlotTxt(txt){
-  const t=normTxt(txt||'');
-  const pts=[/\ben\s*(\d{3})\b/,/\bslot\s*(\d{3})\b/,/\bno?\s*(\d{3})\b/,/#(\d{3})\b/];
-  for(const p of pts){const m=t.match(p);if(m){const s=parseInt(m[1]);if(s>=101&&s<=521)return s;}}
+function parseSlotTxt(txt) {
+  const t = normTxt(txt||'');
+  for (const p of [/\ben\s*(\d{3})\b/,/\bslot\s*(\d{3})\b/,/\bno?\s*(\d{3})\b/,/#(\d{3})\b/]) {
+    const m = t.match(p);
+    if (m) { const s=parseInt(m[1]); if (s>=101&&s<=521) return s; }
+  }
   return null;
 }
-function parseSvc(b){
-  const h=parseFloat((b.time||'12:00').replace(':','.'));
-  const sn=((b.shift_slot&&b.shift_slot.shift&&b.shift_slot.shift.name)||'').toLowerCase();
-  if(sn.includes('soir')||sn.includes('diner')||sn.includes('dinner')||h>=17.5) return 'soir';
-  if(h>=14) return 's2';
-  const typeExp=((b.custom_field||{})['quel-type-dexperience']||'').toLowerCase();
-  if(typeExp.includes('transat')) return 'transats';
+
+// ── PARSERS (booking structuré) ───────────────────────────────────
+function parseTrFromBooking(b) {
+  const cf = b.custom_field || {};
+  for (const [k,v] of Object.entries(cf)) {
+    if (/transat/i.test(k) && typeof v === 'string') {
+      const n = parseInt(v); if (!isNaN(n) && n>=1 && n<=10) return n;
+    }
+  }
+  return parseTr(extractAllText(b));
+}
+
+function parseBedFromBooking(b) {
+  const cf = b.custom_field || {};
+  const typeExp = (cf['quel-type-dexperience']||cf['type-experience']||'').toLowerCase();
+  if (/bed|lit double/.test(typeExp)) return true;
+  return parseBed(extractAllText(b));
+}
+
+function parseRowFromBooking(b) {
+  const cf = b.custom_field || {};
+  for (const [k,v] of Object.entries(cf)) {
+    if (/ligne|rangee|row/i.test(k)) { const r=parseRow(String(v)); if (r) return r; }
+  }
+  return parseRow(extractAllText(b));
+}
+
+function parseTableFromBooking(b) {
+  const tid = b.table_id || (b.table && typeof b.table==='object' ? b.table.id : null)
+             || (typeof b.table==='number' ? b.table : null);
+  if (tid) { const n=parseInt(tid); if (n>0&&n<1000) return n; }
+  return parseTable(extractAllText(b));
+}
+
+function parseSvc(b) {
+  const h   = parseFloat((b.time||'12:00').replace(':','.'));
+  const sn  = ((b.shift_slot&&b.shift_slot.shift&&b.shift_slot.shift.name)||'').toLowerCase();
+  const cf  = b.custom_field || {};
+  const typeExp = (cf['quel-type-dexperience']||'').toLowerCase();
+  if (sn.includes('soir')||sn.includes('diner')||sn.includes('dinner')||h>=17.5) return 'soir';
+  if (h>=14) return 's2';
+  if (typeExp.includes('transat')) return 'transats';
   return 's1';
 }
-function capWord(w){return w?w.charAt(0).toUpperCase()+w.slice(1).toLowerCase():'';}
-function normKey(s){return s.toLowerCase().trim();}
 
-// ═══════════════════════════════════════════════════════════════
-//  FETCH
-// ═══════════════════════════════════════════════════════════════
-async function zcFetchPage(page, dateMin, dateMax){
-  let url=ZC_API+'/bookings?limit=250';
-  if(dateMin) url+='&date_min='+dateMin+'&date_max='+(dateMax||dateMin);
-  if(page>1) url+='&page='+page;
-  const r=await fetch(url,{headers:{'auth-token':ZC_TOKEN,'restaurantId':ZC_RESTAURANT_ID,'Content-Type':'application/json'}});
-  if(!r.ok) throw new Error('Zenchef HTTP '+r.status);
-  return r.json();
-}
-
-async function fetchAllHistory(onProgress){
-  const today=new Date().toISOString().split('T')[0];
-  const yearMin=(new Date().getFullYear()-5)+'-01-01';
-  const p1=await zcFetchPage(1,yearMin,today);
-  const total=p1.paginator&&p1.paginator.total||0;
-  const totalPages=Math.max(1,Math.ceil(total/250));
-  const all=[...(p1.data||[])];
-  if(onProgress) onProgress(1,totalPages);
-  const BATCH=12;
-  for(let s=2;s<=totalPages;s+=BATCH){
-    const nums=Array.from({length:Math.min(BATCH,totalPages-s+1)},(_,i)=>s+i);
-    const pages=await Promise.all(nums.map(n=>zcFetchPage(n,yearMin,today).then(r=>r.data||[])));
-    pages.forEach(pg=>all.push(...pg));
-    if(onProgress) onProgress(Math.min(s+BATCH-1,totalPages),totalPages);
-  }
-  return all;
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  PROFILE BUILDER
-// ═══════════════════════════════════════════════════════════════
-function extractComment(b){
-  const cf=b.custom_field||{};
+function buildComment(b) {
+  const cf = b.custom_field || {};
   return [
-    b.comment,b.note,b.internal_note,b.customer_comment,b.extra_comment,
-    b.preparation,b.occasion,b.special_request,b.wishes,b.message,b.remarks,
-    b.allergy,b.dietary,b.restaurant_comment,b.private_comment,
-    b.customer&&b.customer.comment,b.customer&&b.customer.wishes,
-    b.customer&&b.customer.allergy,b.customer&&b.customer.dietary,
-    b.customer&&b.customer.preferences,b.customer&&b.customer.profile_comment,
+    b.comment, b.note, b.internal_note, b.customer_comment, b.extra_comment,
+    b.preparation, b.occasion, b.special_request, b.wishes, b.message, b.remarks,
+    b.allergy, b.dietary, b.restaurant_comment, b.private_comment,
+    b.customer&&b.customer.comment, b.customer&&b.customer.wishes,
+    b.customer&&b.customer.allergy, b.customer&&b.customer.dietary,
+    b.customer&&b.customer.preferences,
     ...Object.entries(cf).filter(([,v])=>typeof v==='string'&&v.trim().length>2&&!/^\d+$/.test(v.trim())).map(([,v])=>v)
   ].filter(Boolean).map(s=>String(s).trim()).filter(s=>s.length>1)
    .filter((v,i,a)=>a.findIndex(x=>x.toLowerCase()===v.toLowerCase())===i).join(' · ');
 }
 
-function buildProfiles(bookings){
-  const map={};            // key → profile
-  const phoneMap={};       // normalised phone → key
-  const emailMap={};       // normalised email → key
+function capWord(w) { return w ? w.charAt(0).toUpperCase()+w.slice(1).toLowerCase() : ''; }
+function normKey(s)  { return s.toLowerCase().trim(); }
 
-  const CANCELLED=new Set(['cancelled','rejected','deleted','no_show_cancelled']);
+// ── FETCH ─────────────────────────────────────────────────────────
+async function zcPage(page, dateMin, dateMax) {
+  let url = ZC_API+'/bookings?limit=250';
+  if (dateMin) url += '&date_min='+dateMin+'&date_max='+(dateMax||dateMin);
+  if (page>1)  url += '&page='+page;
+  const r = await fetch(url, {headers:{'auth-token':ZC_TOKEN,'restaurantId':ZC_RESTAURANT_ID,'Content-Type':'application/json'}});
+  if (!r.ok) throw new Error('Zenchef HTTP '+r.status);
+  return r.json();
+}
 
-  bookings.forEach(b=>{
-    const isCancelled=CANCELLED.has(b.status);
+async function fetchRange(dateMin, dateMax, onProgress) {
+  const p1 = await zcPage(1, dateMin, dateMax);
+  const total = p1.paginator?.total || 0;
+  const totalPages = Math.max(1, Math.ceil(total/250));
+  const all = [...(p1.data||[])];
+  if (onProgress) onProgress(1, totalPages);
+  for (let s=2; s<=totalPages; s+=BATCH) {
+    const nums = Array.from({length:Math.min(BATCH,totalPages-s+1)},(_,i)=>s+i);
+    const pages = await Promise.all(nums.map(n=>zcPage(n,dateMin,dateMax).then(r=>r.data||[])));
+    pages.forEach(pg=>all.push(...pg));
+    if (onProgress) onProgress(Math.min(s+BATCH-1,totalPages), totalPages);
+  }
+  return all;
+}
+
+// ── BUILD PROFILES ────────────────────────────────────────────────
+const CANCELLED = new Set(['cancelled','rejected','deleted','no_show_cancelled']);
+const NOSHOW    = new Set(['noshow','no_show']);
+
+function buildProfiles(bookings) {
+  const map={}, phoneMap={}, emailMap={};
+  bookings.forEach(b => {
     const f=(b.firstname||'').trim(), l=(b.lastname||'').trim();
     const name=[capWord(l),capWord(f)].filter(Boolean).join(' ');
-    if(!name||name.length<2) return;
+    if (!name||name.length<2) return;
     const date=(b.shift_date||b.day||'').substring(0,10);
-    if(!date) return;
+    if (!date) return;
 
-    const phone=(b.phone_number||b.phone||'').trim().replace(/[\s\-\.\(\)]/g,'');
-    const email=(b.email||'').trim().toLowerCase();
-    const pax=parseInt(b.nb_guests||b.num_pers)||2;
-    const comment=extractComment(b);
-    const svc=parseSvc(b);
-    const isNoShow=b.attendance_customer===0||b.status==='noshow';
-    const isWaiting=b.phase==='waiting_list';
+    const isCancelled = CANCELLED.has(b.status);
+    const isNoShow    = b.attendance_customer===0 || NOSHOW.has(b.status);
+    const isWaiting   = b.phase==='waiting_list';
+    const phone = (b.phone_number||b.phone||'').trim().replace(/[\s\-\.\(\)]/g,'');
+    const email = (b.email||'').trim().toLowerCase();
+    const pax   = parseInt(b.nb_guests||b.num_pers)||2;
+    const svc   = parseSvc(b);
+    const allTxt= extractAllText(b);
+    const comment = buildComment(b);
 
-    // Resolve key: phone → email → name
-    let key=normKey(name);
-    if(phone&&phoneMap[phone]) key=phoneMap[phone];
-    else if(email&&emailMap[email]) key=emailMap[email];
+    let key = normKey(name);
+    if (phone && phoneMap[phone]) key = phoneMap[phone];
+    else if (email && emailMap[email]) key = emailMap[email];
 
-    // Create profile if new
-    if(!map[key]){
-      map[key]={key, name, phone:'', email:'', nameVariants:[], visits:[]};
-    }
-    const c=map[key];
+    if (!map[key]) map[key] = {key, name, phone:'', email:'', nameVariants:[], visits:[], cancelCount:0};
+    const c = map[key];
 
-    // Merge name variants
-    if(name!==c.name&&!c.nameVariants.includes(name)) c.nameVariants.push(name);
-    // Merge phone/email
-    if(phone&&!c.phone){c.phone=phone;phoneMap[phone]=key;}
-    if(email&&!c.email){c.email=email;emailMap[email]=key;}
+    if (name!==c.name && !c.nameVariants.includes(name)) c.nameVariants.push(name);
+    if (phone && !c.phone) { c.phone=phone; phoneMap[phone]=key; }
+    if (email && !c.email) { c.email=email; emailMap[email]=key; }
 
-    // Add visit (skip cancelled, avoid duplicate date+pax)
-    if(!isCancelled){
-      const dup=c.visits.find(v=>v.date===date&&v.pax===pax&&v.svc===svc);
-      if(!dup){
-        c.visits.push({
-          date, pax, svc, comment,
-          tr:parseTr(comment),
-          bed:parseBed(comment),
-          row:parseRow(comment),
-          slot:parseSlotTxt(comment),
-          table:parseTable(comment),
-          noshow:isNoShow,
-          waiting:isWaiting,
-        });
-      }
+    if (isCancelled) { c.cancelCount++; return; }
+
+    const dup = c.visits.find(v=>v.date===date&&v.pax===pax&&v.svc===svc);
+    if (!dup) {
+      c.visits.push({date, pax, svc, comment,
+        tr:parseTrFromBooking(b), bed:parseBedFromBooking(b),
+        row:parseRowFromBooking(b), slot:parseSlotTxt(allTxt),
+        table:parseTableFromBooking(b), noshow:isNoShow, waiting:isWaiting});
     }
   });
-
-  // Compute stats for each profile
   Object.values(map).forEach(computeStats);
   return map;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  COMPUTE STATS
-// ═══════════════════════════════════════════════════════════════
-const ROW_LABELS={500:'1ère ligne',400:'2ème ligne',300:'3ème ligne',200:'4ème ligne'};
-const SVC_LABELS={s1:'Midi S1',s2:'Midi S2',transats:'Transats',soir:'Soir'};
-const SVC_COLORS={s1:'#0EA5E9',s2:'#8B5CF6',transats:'#F59E0B',soir:'#334155'};
-const SVC_BG={s1:'#E0F2FE',s2:'#EDE9FE',transats:'#FEF3C7',soir:'#F1F5F9'};
-
-function computeStats(c){
-  c.visits.sort((a,b)=>a.date>b.date?-1:1);
-
-  const realVisits=c.visits.filter(v=>!v.noshow);
-  c.visitCount=realVisits.length;
-  c.noShowCount=c.visits.filter(v=>v.noshow).length;
-  c.lastVisit=c.visits[0]?.date||'';
-  c.firstVisit=c.visits[c.visits.length-1]?.date||'';
-  c.avgPax=c.visits.length?c.visits.reduce((s,v)=>s+(v.pax||2),0)/c.visits.length:2;
-
-  // Transat preferences
-  const rowCounts={}, slotCounts={}, svcCounts={s1:0,s2:0,transats:0,soir:0};
-  let trTotal=0, trN=0, bedN=0;
-  c.visits.forEach(v=>{
-    if(v.row) rowCounts[v.row]=(rowCounts[v.row]||0)+1;
-    if(v.slot) slotCounts[v.slot]=(slotCounts[v.slot]||0)+1;
-    if(v.tr>0){trTotal+=v.tr;trN++;}
-    if(v.bed) bedN++;
-    if(svcCounts[v.svc]!==undefined) svcCounts[v.svc]++;
+function mergeProfiles(existing, newBookings) {
+  const fresh = buildProfiles(newBookings);
+  Object.entries(fresh).forEach(([key, nc]) => {
+    if (!existing[key]) { existing[key]=nc; return; }
+    const c = existing[key];
+    nc.visits.forEach(nv => {
+      if (!c.visits.find(v=>v.date===nv.date&&v.svc===nv.svc&&v.pax===nv.pax)) c.visits.push(nv);
+    });
+    c.cancelCount = (c.cancelCount||0)+(nc.cancelCount||0);
+    if (!c.phone&&nc.phone) c.phone=nc.phone;
+    if (!c.email&&nc.email) c.email=nc.email;
+    nc.nameVariants.forEach(v=>{ if(!c.nameVariants.includes(v)) c.nameVariants.push(v); });
+    computeStats(c);
   });
+  return existing;
+}
 
-  const topRow=Object.entries(rowCounts).sort((a,b)=>b[1]-a[1])[0];
-  const topSlot=Object.entries(slotCounts).sort((a,b)=>b[1]-a[1])[0];
-  const topSvc=Object.entries(svcCounts).sort((a,b)=>b[1]-a[1])[0];
-  const topTable=Object.entries(
-    c.visits.reduce((acc,v)=>{if(v.table)acc[v.table]=(acc[v.table]||0)+1;return acc;},{})
-  ).sort((a,b)=>b[1]-a[1])[0];
+// ── COMPUTE STATS ─────────────────────────────────────────────────
+const ROW_LABELS = {500:'1ère ligne',400:'2ème ligne',300:'3ème ligne',200:'4ème ligne'};
+const SVC_LABELS = {s1:'Midi S1',s2:'Midi S2',transats:'Transats',soir:'Soir'};
+const SVC_COLORS = {s1:'#0EA5E9',s2:'#8B5CF6',transats:'#F59E0B',soir:'#334155'};
+const SVC_BG    = {s1:'#E0F2FE',s2:'#EDE9FE',transats:'#FEF3C7',soir:'#F1F5F9'};
 
-  c.preferredRow=topRow?parseInt(topRow[0]):null;
-  c.preferredSlot=topSlot?parseInt(topSlot[0]):null;
-  c.avgTr=trN>0?Math.round(trTotal/trN):null;
-  c.usesBed=bedN>=2||(bedN>=1&&c.visitCount<=2);
-  c.preferredTable=topTable?parseInt(topTable[0]):null;
-  c.preferredSvc=topSvc?topSvc[0]:'s1';
+function computeStats(c) {
+  c.visits.sort((a,b)=>a.date>b.date?-1:1);
+  const real = c.visits.filter(v=>!v.noshow);
+  c.visitCount  = real.length;
+  c.noShowCount = c.visits.filter(v=>v.noshow).length;
+  c.lastVisit   = c.visits[0]?.date||'';
+  c.firstVisit  = c.visits[c.visits.length-1]?.date||'';
+  c.avgPax      = c.visits.length ? c.visits.reduce((s,v)=>s+(v.pax||2),0)/c.visits.length : 2;
 
-  // Preference tags (from all comments combined)
-  const allTxt=c.visits.map(v=>v.comment||'').join(' ');
-  c.prefs=PREF_TAGS.filter(t=>t.re.test(allTxt));
-  if(c.usesBed&&!c.prefs.find(p=>p.key==='bedtrans'))
-    c.prefs.push(PREF_TAGS.find(p=>p.key==='bedtrans'));
+  const svcC={s1:0,s2:0,transats:0,soir:0}, rowC={}, slotC={};
+  let trTotal=0,trN=0,bedN=0;
+  c.visits.forEach(v=>{
+    if (svcC[v.svc]!==undefined) svcC[v.svc]++;
+    if (v.row)  rowC[v.row]  = (rowC[v.row]||0)+1;
+    if (v.slot) slotC[v.slot]= (slotC[v.slot]||0)+1;
+    if (v.tr>0) { trTotal+=v.tr; trN++; }
+    if (v.bed)  bedN++;
+  });
+  c.svcBreakdown = svcC;
 
-  // Loyalty
+  const topRow   = Object.entries(rowC).sort((a,b)=>b[1]-a[1])[0];
+  const topSlot  = Object.entries(slotC).sort((a,b)=>b[1]-a[1])[0];
+  const topSvc   = Object.entries(svcC).sort((a,b)=>b[1]-a[1])[0];
+  const tblMap   = c.visits.reduce((acc,v)=>{if(v.table)acc[v.table]=(acc[v.table]||0)+1;return acc;},{});
+  const topTable = Object.entries(tblMap).sort((a,b)=>b[1]-a[1])[0];
+
+  c.preferredRow   = topRow  ? parseInt(topRow[0])  : null;
+  c.preferredSlot  = topSlot ? parseInt(topSlot[0]) : null;
+  c.avgTr          = trN>0   ? Math.round(trTotal/trN) : null;
+  c.usesBed        = bedN>=2 || (bedN>=1&&c.visitCount<=2);
+  c.preferredTable = topTable? parseInt(topTable[0]): null;
+  c.preferredSvc   = topSvc  ? topSvc[0] : 's1';
+  c.yearsActive    = [...new Set(c.visits.map(v=>(v.date||'').substring(0,4)).filter(Boolean))].sort();
+
+  if (real.length>=2) {
+    const ds=real.map(v=>new Date(v.date)).sort((a,b)=>a-b);
+    c.avgFreqDays=Math.round((ds[ds.length-1]-ds[0])/(1000*86400)/(real.length-1));
+  } else c.avgFreqDays=null;
+
+  const allTxt = c.visits.map(v=>v.comment||'').join(' ');
+  c.prefs = PREF_TAGS.filter(t=>t.re.test(allTxt));
+  if (c.usesBed&&!c.prefs.find(p=>p.key==='bedtrans')) c.prefs.push(PREF_TAGS.find(p=>p.key==='bedtrans'));
+
   const n=c.visitCount;
-  if(n>=12)     c.loyalty={label:'Légende ⭐⭐', level:'legende', col:'#B45309', bg:'#FEF3C7'};
-  else if(n>=8) c.loyalty={label:'VIP ⭐',       level:'vip',     col:'#7C3AED', bg:'#EDE9FE'};
-  else if(n>=5) c.loyalty={label:'Habitué',      level:'habitue', col:'#0284C7', bg:'#E0F2FE'};
-  else if(n>=3) c.loyalty={label:'Fidèle',       level:'fidele',  col:'#16A34A', bg:'#DCFCE7'};
-  else if(n>=2) c.loyalty={label:'Régulier',     level:'regulier',col:'#64748B', bg:'#F1F5F9'};
-  else          c.loyalty={label:'Nouveau',      level:'nouveau', col:'#94A3B8', bg:'#F8FAFC'};
+  if (n>=12)     c.loyalty={label:'Légende ⭐⭐',level:'legende', col:'#B45309',bg:'#FEF3C7'};
+  else if (n>=8) c.loyalty={label:'VIP ⭐',      level:'vip',     col:'#7C3AED',bg:'#EDE9FE'};
+  else if (n>=5) c.loyalty={label:'Habitué',     level:'habitue', col:'#0284C7',bg:'#E0F2FE'};
+  else if (n>=3) c.loyalty={label:'Fidèle',      level:'fidele',  col:'#16A34A',bg:'#DCFCE7'};
+  else if (n>=2) c.loyalty={label:'Régulier',    level:'regulier',col:'#64748B',bg:'#F1F5F9'};
+  else           c.loyalty={label:'Nouveau',     level:'nouveau', col:'#94A3B8',bg:'#F8FAFC'};
 
-  // Season
   const months=c.visits.map(v=>parseInt((v.date||'').split('-')[1])||0).filter(Boolean);
   const tot=months.length;
   const summer=months.filter(m=>m>=6&&m<=8).length;
   const spring=months.filter(m=>m>=4&&m<=5).length;
-  const fall=months.filter(m=>m>=9&&m<=10).length;
-  if(!tot)                    c.season={label:'—',              col:'#94A3B8'};
-  else if(summer/tot>=0.55)   c.season={label:'Client été',     col:'#F59E0B'};
-  else if(spring/tot>=0.5)    c.season={label:'Client printemps',col:'#22C55E'};
-  else if(fall/tot>=0.4)      c.season={label:'Client automne', col:'#F97316'};
-  else                        c.season={label:'Toute saison',   col:'#0EA5E9'};
+  const fall  =months.filter(m=>m>=9&&m<=10).length;
+  if (!tot)                  c.season={label:'—',               col:'#94A3B8'};
+  else if(summer/tot>=0.55)  c.season={label:'Client été',      col:'#F59E0B'};
+  else if(spring/tot>=0.5)   c.season={label:'Client printemps',col:'#22C55E'};
+  else if(fall/tot>=0.4)     c.season={label:'Client automne',  col:'#F97316'};
+  else                       c.season={label:'Toute saison',    col:'#0EA5E9'};
 
-  // Auto-memo
   const parts=[];
-  const years=[...new Set(c.visits.map(v=>(v.date||'').substring(0,4)).filter(Boolean))].sort();
-  const span=years.length>1?years[0]+'→'+years[years.length-1]:(years[0]||'');
-  if(n>=12)    parts.push('Client légendaire de La Playa'+(span?' ('+span+')':''));
-  else if(n>=8) parts.push('Grand fidèle'+(years[0]?' depuis '+years[0]:''));
-  else if(n>=5) parts.push('Habitué'+(years[0]?' depuis '+years[0]:''));
+  const span=c.yearsActive.length>1?c.yearsActive[0]+'→'+c.yearsActive[c.yearsActive.length-1]:(c.yearsActive[0]||'');
+  if (n>=12)     parts.push('Client légendaire de La Playa'+(span?' ('+span+')':''));
+  else if (n>=8) parts.push('Grand fidèle'+(c.yearsActive[0]?' depuis '+c.yearsActive[0]:''));
+  else if (n>=5) parts.push('Habitué'+(c.yearsActive[0]?' depuis '+c.yearsActive[0]:''));
 
   const pax=Math.round(c.avgPax*10)/10;
-  if(pax<=1.3)       parts.push('Vient seul·e');
-  else if(pax<=2.3)  parts.push('Généralement en couple');
-  else if(pax<=3.8)  parts.push('Table de ~3 personnes');
-  else if(pax<=5.5)  parts.push('En groupe (~'+Math.round(pax)+' pers.)');
+  if (pax<=1.3)      parts.push('Vient seul·e');
+  else if (pax<=2.3) parts.push('Généralement en couple');
+  else if (pax<=3.8) parts.push('Table de ~3 personnes');
+  else if (pax<=5.5) parts.push('En groupe (~'+Math.round(pax)+' pers.)');
   else               parts.push('Grands groupes (~'+Math.round(pax)+' pers.)');
 
-  // Transat summary in memo
-  if(c.usesBed){
+  if (c.usesBed) {
     parts.push('🛏️ Bed double habituel');
-  } else if(c.avgTr){
+  } else if (c.avgTr) {
     let tl='🏖️ '+c.avgTr+' transats';
-    if(c.preferredRow&&ROW_LABELS[c.preferredRow]) tl+=' · '+ROW_LABELS[c.preferredRow]+' préféré';
-    if(c.preferredSlot) tl+=' · slot '+c.preferredSlot+' souvent demandé';
+    if (c.preferredRow&&ROW_LABELS[c.preferredRow]) tl+=' · '+ROW_LABELS[c.preferredRow]+' préféré';
+    if (c.preferredSlot) tl+=' · slot '+c.preferredSlot+' souvent demandé';
     parts.push(tl);
-  } else if(c.preferredRow&&ROW_LABELS[c.preferredRow]){
+  } else if (c.preferredRow&&ROW_LABELS[c.preferredRow]) {
     parts.push('🌊 '+ROW_LABELS[c.preferredRow]+' habituellement');
   }
 
-  // Table
-  if(c.preferredTable) parts.push('📍 Table '+c.preferredTable+' habituelle');
-
-  // Spot prefs
+  if (c.preferredTable) parts.push('📍 Table '+c.preferredTable+' habituelle');
   const spots=c.prefs.filter(p=>['terrasse','calme','vuemer'].includes(p.key));
-  if(spots.length) parts.push(spots.map(p=>p.icon+' '+p.label).join(' · '));
-
-  // Dietary
+  if (spots.length) parts.push(spots.map(p=>p.icon+' '+p.label).join(' · '));
   const diets=c.prefs.filter(p=>['allergie','vegan','vegeta','sansglut','sanslact'].includes(p.key));
-  if(diets.length) parts.push('⚠️ '+diets.map(p=>p.label).join(' + '));
-
-  // Occasions
+  if (diets.length) parts.push('⚠️ '+diets.map(p=>p.label).join(' + '));
   const occs=c.prefs.filter(p=>['anniv','romant','surprise'].includes(p.key));
-  if(occs.length) parts.push(occs.map(p=>p.icon+' '+p.label).join(' · '));
+  if (occs.length) parts.push(occs.map(p=>p.icon+' '+p.label).join(' · '));
+  if (c.prefs.find(p=>p.key==='chien'))   parts.push('🐕 Vient avec son chien');
+  if (c.prefs.find(p=>p.key==='enfants')) parts.push('👶 Chaise haute à prévoir');
+  if (c.prefs.find(p=>p.key==='pmr'))     parts.push('♿ Accès PMR — place accessible');
+  if (c.noShowCount>=2)  parts.push('⚠️ '+c.noShowCount+' no-show(s) enregistré(s)');
+  if (c.cancelCount>=3)  parts.push('📋 '+c.cancelCount+' annulation(s) dans l\'historique');
+  if (c.avgFreqDays&&c.visitCount>=3) parts.push('📅 Revient tous les ~'+Math.round(c.avgFreqDays/30.5)+' mois');
 
-  if(c.prefs.find(p=>p.key==='chien'))   parts.push('🐕 Vient avec son chien');
-  if(c.prefs.find(p=>p.key==='enfants')) parts.push('👶 Chaise haute à prévoir');
-  if(c.prefs.find(p=>p.key==='pmr'))     parts.push('♿ Accès PMR — place accessible');
-  if(c.noShowCount>=2)                   parts.push('⚠️ '+c.noShowCount+' no-show(s) enregistré(s)');
-
-  c.memo=parts.join('\n');
+  c.memo = parts.join('\n');
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  CACHE (localStorage)
-// ═══════════════════════════════════════════════════════════════
-function saveCache(profiles){
-  try{
-    const arr=Object.values(profiles);
-    localStorage.setItem(CACHE_KEY,JSON.stringify(arr));
-    localStorage.setItem(CACHE_TS_KEY,String(Date.now()));
-  }catch(e){
-    // Quota: slim down visits
-    try{
+// ── CACHE ─────────────────────────────────────────────────────────
+function saveCache(profiles) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(Object.values(profiles)));
+    localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+  } catch(e) {
+    try {
       const slim=Object.values(profiles).map(c=>({...c,
         visits:c.visits.map(v=>({date:v.date,pax:v.pax,svc:v.svc,
           comment:(v.comment||'').substring(0,200),tr:v.tr,bed:v.bed,
-          row:v.row,slot:v.slot,table:v.table,noshow:v.noshow}))
-      }));
-      localStorage.setItem(CACHE_KEY,JSON.stringify(slim));
-      localStorage.setItem(CACHE_TS_KEY,String(Date.now()));
-    }catch(e2){console.warn('Guide: quota localStorage');}
+          row:v.row,slot:v.slot,table:v.table,noshow:v.noshow}))}));
+      localStorage.setItem(CACHE_KEY, JSON.stringify(slim));
+      localStorage.setItem(CACHE_TS_KEY, String(Date.now()));
+    } catch(e2) { console.warn('Guide: quota localStorage'); }
   }
 }
-function loadCache(){
-  try{
+function loadCache() {
+  try {
     const ts=parseInt(localStorage.getItem(CACHE_TS_KEY)||'0');
-    if(!ts||Date.now()-ts>CACHE_TTL) return null;
-    const raw=localStorage.getItem(CACHE_KEY);
-    if(!raw) return null;
-    const arr=JSON.parse(raw);
+    if (!ts||Date.now()-ts>CACHE_TTL) return null;
+    const raw=localStorage.getItem(CACHE_KEY); if (!raw) return null;
     const m={};
-    arr.forEach(c=>{m[c.key]=c;});
+    JSON.parse(raw).forEach(c=>{ m[c.key]=c; });
     return m;
-  }catch(e){return null;}
+  } catch(e){ return null; }
 }
-function clearCache(){
-  localStorage.removeItem(CACHE_KEY);
-  localStorage.removeItem(CACHE_TS_KEY);
+function clearCache() {
+  [CACHE_KEY,CACHE_TS_KEY,LAST_SYNC_KEY].forEach(k=>localStorage.removeItem(k));
 }
-function loadNotes(){
-  try{return JSON.parse(localStorage.getItem(NOTES_KEY)||'{}');}catch(e){return{};}
-}
-function saveNote(key,txt){
-  try{const n=loadNotes();n[key]=txt;localStorage.setItem(NOTES_KEY,JSON.stringify(n));}catch(e){}
-}
+function loadNotes()     { try{return JSON.parse(localStorage.getItem(NOTES_KEY)||'{}')}catch(e){return{}} }
+function saveNote(k,txt) { try{const n=loadNotes();n[k]=txt;localStorage.setItem(NOTES_KEY,JSON.stringify(n))}catch(e){} }
+function getLastSync()   { return localStorage.getItem(LAST_SYNC_KEY)||null; }
+function setLastSync(d)  { localStorage.setItem(LAST_SYNC_KEY,d); }
 
-// ═══════════════════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════════════════
-let _profiles={};
-let _filter='all';
-let _search='';
+// ── STATE ─────────────────────────────────────────────────────────
+let _profiles={}, _filter='all', _search='', _sortBy='visits';
 
-// ═══════════════════════════════════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════════════════════════════════
-function fmtD(d){
-  if(!d) return '—';
-  const p=d.split('-');
-  return p[2]+'/'+p[1]+'/'+p[0].slice(2);
+// ── HELPERS ───────────────────────────────────────────────────────
+function fmtD(d) {
+  if(!d) return '—'; const p=d.split('-'); return p[2]+'/'+p[1]+'/'+p[0].slice(2);
 }
-function fmtTs(ts){
+function fmtTs(ts) {
   if(!ts) return 'jamais';
   return new Date(ts).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
 }
-function esc(s){
+function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+function sorted(list) {
+  const cp=[...list];
+  switch(_sortBy){
+    case 'name':  return cp.sort((a,b)=>a.name.localeCompare(b.name,'fr'));
+    case 'last':  return cp.sort((a,b)=>(b.lastVisit||'').localeCompare(a.lastVisit||''));
+    case 'first': return cp.sort((a,b)=>(a.firstVisit||'').localeCompare(b.firstVisit||''));
+    case 'freq':  return cp.sort((a,b)=>(a.avgFreqDays||9999)-(b.avgFreqDays||9999));
+    default:      return cp.sort((a,b)=>b.visitCount-a.visitCount||(b.lastVisit||'').localeCompare(a.lastVisit||''));
+  }
+}
 
-// ═══════════════════════════════════════════════════════════════
-//  RENDER APP SHELL
-// ═══════════════════════════════════════════════════════════════
-function renderApp(){
+function exportCSV() {
+  const cols=['Nom','Visites','1ère visite','Dernière visite','Tél','Email','Fidélité','Service préféré',
+    'Transats moy','Bed','Ligne préférée','Table','Fréquence (jours)','No-shows','Annulations','Préférences','Alertes régime','Memo'];
+  const rows=Object.values(_profiles).map(c=>[
+    c.name, c.visitCount, fmtD(c.firstVisit), fmtD(c.lastVisit), c.phone||'', c.email||'',
+    c.loyalty?.label||'', SVC_LABELS[c.preferredSvc]||'',
+    c.avgTr||'', c.usesBed?'Oui':'',
+    c.preferredRow?ROW_LABELS[c.preferredRow]||c.preferredRow:'',
+    c.preferredTable?'T.'+c.preferredTable:'',
+    c.avgFreqDays||'', c.noShowCount||0, c.cancelCount||0,
+    c.prefs.filter(p=>!['allergie','pmr','vegan','vegeta','sansglut','sanslact'].includes(p.key)).map(p=>p.label).join(', '),
+    c.prefs.filter(p=>['allergie','pmr','vegan','vegeta','sansglut','sanslact'].includes(p.key)).map(p=>p.label).join(', '),
+    (c.memo||'').replace(/\n/g,' | '),
+  ]);
+  const csv=[cols,...rows].map(r=>r.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='guide-clients-laplaya.csv'; a.click();
+}
+
+// ── RENDER SHELL ──────────────────────────────────────────────────
+function renderApp() {
   const app=document.getElementById('app');
   app.innerHTML='';
-
   const ts=parseInt(localStorage.getItem(CACHE_TS_KEY)||'0');
   const count=Object.keys(_profiles).length;
 
-  // Header
   const hdr=document.createElement('div');
   hdr.className='hdr';
   hdr.innerHTML=`
     <div class="hdr-title">📚 Guide Clients · La Playa</div>
-    <div class="hdr-sub" id="hdr-sub">
-      ${ts?'Mis à jour le '+fmtTs(ts)+' · '+count+' profils':'Aucune donnée — lancez une synchronisation'}
-    </div>
+    <div class="hdr-sub" id="hdr-sub">${ts?'Mis à jour le '+fmtTs(ts)+' · '+count+' profils':'Aucune donnée — lancez une synchronisation'}</div>
     <div class="hdr-btns">
       <button class="btn btn-blue"  id="btn-sync">↺ Mettre à jour</button>
-      <button class="btn btn-red"   id="btn-rebuild">🔄 Reconstruire depuis zéro</button>
+      <button class="btn btn-red"   id="btn-rebuild">🔄 Tout reconstruire</button>
+      <button class="btn btn-green" onclick="exportCSV()">📥 Export CSV</button>
       <button class="btn btn-ghost" onclick="window.print()">🖨️ Imprimer</button>
     </div>
-    <div class="prog-wrap" id="prog-wrap">
-      <div class="prog-bar" id="prog-bar"></div>
-    </div>
-    <div class="prog-lbl" id="prog-lbl"></div>
-  `;
+    <div class="prog-wrap" id="prog-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+    <div class="prog-lbl" id="prog-lbl"></div>`;
   app.appendChild(hdr);
 
-  // Body
   const body=document.createElement('div');
-  body.className='body';
-  body.id='guide-body';
+  body.className='body'; body.id='guide-body';
   app.appendChild(body);
 
   document.getElementById('btn-sync').onclick=()=>doSync(false);
   document.getElementById('btn-rebuild').onclick=()=>doSync(true);
-
   renderBody(body);
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  RENDER BODY
-// ═══════════════════════════════════════════════════════════════
-function renderBody(body){
+// ── RENDER BODY ───────────────────────────────────────────────────
+function renderBody(body) {
   body.innerHTML='';
   const clients=Object.values(_profiles);
-
-  if(!clients.length){
-    body.innerHTML=`<div class="empty">
-      <div style="font-size:40px;margin-bottom:14px;">📋</div>
-      <div style="font-weight:700;font-size:15px;margin-bottom:8px;">Aucun profil client</div>
-      <div>Appuyez sur "↺ Mettre à jour" pour importer l'historique depuis Zenchef.</div>
-    </div>`;
+  if (!clients.length) {
+    body.innerHTML=`<div class="empty"><div style="font-size:40px;margin-bottom:14px">📋</div><div style="font-weight:700;font-size:15px;margin-bottom:8px">Aucun profil client</div><div>Appuyez sur "↺ Mettre à jour" pour importer l'historique Zenchef.</div></div>`;
     return;
   }
-
-  // Sort by visit count descending
   clients.sort((a,b)=>b.visitCount-a.visitCount||(b.lastVisit||'').localeCompare(a.lastVisit||''));
-
   renderGlobalStats(body, clients);
-
-  // VIP / Légende section
   const stars=clients.filter(c=>['legende','vip'].includes(c.loyalty?.level||''));
-  if(stars.length){
-    renderVipSection(body, stars);
-  }
-
-  // Filters + list
-  const filters=document.createElement('div');
-  filters.className='filters';
-
-  const inp=document.createElement('input');
-  inp.type='text';
-  inp.className='search';
-  inp.placeholder='🔍 Rechercher par nom, téléphone…';
-  inp.value=_search;
-  inp.oninput=()=>{_search=inp.value;renderList(listEl,clients);};
-
-  const FTABS=[
-    {k:'all',     label:'Tous ('+clients.length+')'},
-    {k:'legende', label:'Légendes ⭐⭐'},
-    {k:'vip',     label:'VIP ⭐'},
-    {k:'habitue', label:'Habitués'},
-    {k:'fidele',  label:'Fidèles'},
-    {k:'transats',label:'🏖️ Transats'},
-    {k:'allergies',label:'⚠️ Allergies'},
-    {k:'noshow',  label:'No-show ⚠️'},
-  ];
-  const frow=document.createElement('div');
-  frow.className='filter-row';
-  FTABS.forEach(f=>{
-    const b=document.createElement('button');
-    b.className='fbtn'+(f.k===_filter?' on':'');
-    b.textContent=f.label;
-    b.onclick=()=>{
-      _filter=f.k;
-      frow.querySelectorAll('.fbtn').forEach(x=>x.classList.remove('on'));
-      b.classList.add('on');
-      renderList(listEl,clients);
-    };
-    frow.appendChild(b);
-  });
-
-  filters.appendChild(inp);
-  filters.appendChild(frow);
-  body.appendChild(filters);
-
-  const listEl=document.createElement('div');
-  listEl.className='cl-list';
-  body.appendChild(listEl);
-  renderList(listEl, clients);
+  if (stars.length) renderVipSection(body, stars);
+  renderFiltersAndList(body, clients);
 }
 
-// ── Global stats ─────────────────────────────────────────────
-function renderGlobalStats(body, clients){
+// ── GLOBAL STATS ──────────────────────────────────────────────────
+function renderGlobalStats(body, clients) {
   const sec=document.createElement('div');
   sec.className='kpi-section';
 
   const totalVisits=clients.reduce((s,c)=>s+c.visitCount,0);
+  const totalNoShow=clients.reduce((s,c)=>s+(c.noShowCount||0),0);
+  const transatClients=clients.filter(c=>c.avgTr>0||c.usesBed).length;
+  const alertClients=clients.filter(c=>c.prefs.some(p=>['allergie','pmr','vegan','vegeta','sansglut','sanslact'].includes(p.key)));
+  const returning=clients.filter(c=>c.visitCount>1);
+  const avgReturning=returning.length ? Math.round(returning.reduce((s,c)=>s+c.visitCount,0)/returning.length*10)/10 : 0;
   const allYears=clients.flatMap(c=>c.visits.map(v=>(v.date||'').substring(0,4))).filter(Boolean);
   const yMin=allYears.length?Math.min(...allYears.map(Number)):new Date().getFullYear();
   const yMax=allYears.length?Math.max(...allYears.map(Number)):new Date().getFullYear();
@@ -627,152 +575,185 @@ function renderGlobalStats(body, clients){
   const kpiGrid=document.createElement('div');
   kpiGrid.className='kpi-grid';
   [
-    {v:clients.length,      l:'Profils clients',  s:totalVisits+' visites',       col:'#0EA5E9'},
+    {v:clients.length,    l:'Profils clients', s:totalVisits+' visites · '+yMin+'→'+yMax, col:'#0EA5E9'},
     {v:clients.filter(c=>['legende','vip'].includes(c.loyalty?.level)).length,
-                            l:'Légendes & VIP',   s:'≥ 8 visites',                col:'#7C3AED'},
-    {v:clients.filter(c=>c.prefs.some(p=>['allergie','pmr','vegan','vegeta','sansglut','sanslact'].includes(p.key))).length,
-                            l:'Alertes régime',   s:'Allergie / PMR / Diet',      col:'#EF4444'},
+                          l:'Légendes & VIP',  s:'≥ 8 visites enregistrées',              col:'#7C3AED'},
+    {v:alertClients.length,
+                          l:'Alertes régime',  s:'Allergie · PMR · Diet',                 col:'#EF4444'},
+    {v:transatClients,    l:'Clients transats',s:'Transat ou bed double',                 col:'#F59E0B'},
+    {v:totalNoShow,       l:'No-shows totaux', s:Math.round(totalNoShow/(totalVisits||1)*100)+'% des réservations',col:'#DC2626'},
+    {v:avgReturning,      l:'Moy. visites',    s:'Clients récurrents ('+returning.length+')',col:'#16A34A'},
   ].forEach(({v,l,s,col})=>{
-    const k=document.createElement('div');
-    k.className='kpi-card';
-    k.innerHTML='<div class="kpi-val" style="color:'+col+'">'+v+'</div>'
-      +'<div class="kpi-lbl">'+l+'</div><div class="kpi-sub">'+s+'</div>';
+    const k=document.createElement('div'); k.className='kpi-card';
+    k.innerHTML='<div class="kpi-val" style="color:'+col+'">'+v+'</div><div class="kpi-lbl">'+l+'</div><div class="kpi-sub">'+s+'</div>';
     kpiGrid.appendChild(k);
   });
   sec.appendChild(kpiGrid);
 
-  const rangeNote=document.createElement('div');
-  rangeNote.style.cssText='font-size:11px;color:var(--tx2);text-align:center;margin-bottom:10px;';
-  rangeNote.textContent='Historique '+yMin+' → '+yMax;
-  sec.appendChild(rangeNote);
+  // Section alertes allergies/PMR
+  if (alertClients.length) {
+    const aEl=document.createElement('div');
+    aEl.className='alert-sect';
+    aEl.innerHTML='<div class="alert-sect-title">⚠️ Clients avec allergie ou PMR ('+alertClients.length+')</div>';
+    alertClients.slice(0,20).forEach(c=>{
+      const ap=c.prefs.filter(p=>['allergie','pmr'].includes(p.key));
+      const row=document.createElement('div'); row.className='alert-row';
+      row.innerHTML='<div class="alert-name">'+esc(c.name)+'</div>'
+        +'<div class="alert-tags">'+ap.map(p=>'<span class="badge" style="background:'+p.col+'22;color:'+p.col+';">'+p.icon+' '+p.label+'</span>').join('')+'</div>'
+        +(c.phone?'<a href="tel:'+esc(c.phone)+'" class="cl-phone" style="font-size:10px;padding:2px 7px;">📞</a>':'');
+      aEl.appendChild(row);
+    });
+    sec.appendChild(aEl);
+  }
 
   // Loyalty bar
   const TIERS=[
-    {k:'legende',  l:'Légende ⭐⭐', col:'#B45309'},
-    {k:'vip',      l:'VIP ⭐',       col:'#7C3AED'},
-    {k:'habitue',  l:'Habitué',      col:'#0284C7'},
-    {k:'fidele',   l:'Fidèle',       col:'#16A34A'},
-    {k:'regulier', l:'Régulier',     col:'#64748B'},
-    {k:'nouveau',  l:'1 visite',     col:'#94A3B8'},
+    {k:'legende', l:'Légende ⭐⭐',col:'#B45309'},{k:'vip',     l:'VIP ⭐',      col:'#7C3AED'},
+    {k:'habitue', l:'Habitué',     col:'#0284C7'},{k:'fidele',  l:'Fidèle',      col:'#16A34A'},
+    {k:'regulier',l:'Régulier',    col:'#64748B'},{k:'nouveau', l:'1 visite',    col:'#94A3B8'},
   ];
   const tc={};
-  TIERS.forEach(t=>{tc[t.k]=clients.filter(c=>c.loyalty?.level===t.k).length;});
-  const loyEl=document.createElement('div');
-  loyEl.className='loy-card';
+  TIERS.forEach(t=>{ tc[t.k]=clients.filter(c=>c.loyalty?.level===t.k).length; });
+  const loyEl=document.createElement('div'); loyEl.className='loy-card';
   loyEl.innerHTML='<div class="sect-lbl">Fidélité clients</div>'
-    +'<div class="loy-track">'+TIERS.map(t=>tc[t.k]?'<div class="loy-seg" style="flex:'+tc[t.k]+';background:'+t.col+';" title="'+t.l+' : '+tc[t.k]+'"></div>':'').join('')+'</div>'
+    +'<div class="loy-track">'+TIERS.map(t=>tc[t.k]?'<div style="flex:'+tc[t.k]+';background:'+t.col+';" title="'+t.l+' : '+tc[t.k]+'"></div>':'').join('')+'</div>'
     +'<div class="loy-legend">'+TIERS.filter(t=>tc[t.k]>0).map(t=>'<span style="font-size:10px;font-weight:600;color:'+t.col+';">'+t.l+' : '+tc[t.k]+'</span>').join('<span style="color:var(--sep);padding:0 3px;">·</span>')+'</div>';
   sec.appendChild(loyEl);
 
-  // Preference heat
+  // Pref heat map
   const prefC={};
-  clients.forEach(c=>c.prefs.forEach(p=>{
-    if(!prefC[p.key]) prefC[p.key]={tag:p,n:0};
-    prefC[p.key].n++;
-  }));
+  clients.forEach(c=>c.prefs.forEach(p=>{ if(!prefC[p.key]) prefC[p.key]={tag:p,n:0}; prefC[p.key].n++; }));
   const topPrefs=Object.values(prefC).sort((a,b)=>b.n-a.n).slice(0,8);
-  if(topPrefs.length){
-    const ph=document.createElement('div');
-    ph.className='prefs-card';
-    ph.innerHTML='<div class="sect-lbl">Habitudes les plus fréquentes</div>'
-      +'<div class="prefs-chips">'
-      +topPrefs.map(({tag,n})=>'<div class="pchip" style="background:'+tag.col+'15;color:'+tag.col+';border:1px solid '+tag.col+'28;">'
-        +tag.icon+' <span>'+tag.label+'</span>'
-        +'<span style="font-size:10px;font-weight:600;opacity:.65;margin-left:3px;">×'+n+'</span>'
-        +'</div>').join('')
+  if (topPrefs.length) {
+    const ph=document.createElement('div'); ph.className='prefs-card';
+    ph.innerHTML='<div class="sect-lbl">Habitudes les plus fréquentes</div><div class="prefs-chips">'
+      +topPrefs.map(({tag,n})=>'<div class="pchip" style="background:'+tag.col+'15;color:'+tag.col+';border:1px solid '+tag.col+'28;">'+tag.icon+' <span>'+tag.label+'</span><span style="font-size:10px;opacity:.65;margin-left:3px;">×'+n+'</span></div>').join('')
       +'</div>';
     sec.appendChild(ph);
   }
-
   body.appendChild(sec);
 }
 
-// ── VIP hero section ─────────────────────────────────────────
-function renderVipSection(body, stars){
-  const wrap=document.createElement('div');
-  wrap.className='vip-wrap';
-  wrap.innerHTML='<div class="sect-title">⭐ Meilleurs clients <span style="font-size:10px;opacity:.45;font-weight:600;">'+stars.length+' clients</span></div>';
-  const scroll=document.createElement('div');
-  scroll.className='vip-scroll';
-  stars.slice(0,25).forEach(c=>{
+// ── VIP SECTION ───────────────────────────────────────────────────
+function renderVipSection(body, stars) {
+  const wrap=document.createElement('div'); wrap.className='vip-wrap';
+  wrap.innerHTML='<div class="sect-title">⭐ Meilleurs clients <span style="font-size:10px;opacity:.45;font-weight:600;">'+stars.length+'</span></div>';
+  const scroll=document.createElement('div'); scroll.className='vip-scroll';
+  stars.slice(0,30).forEach(c=>{
     const L=c.loyalty;
     const init=c.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
     const alertP=c.prefs.find(p=>['allergie','pmr'].includes(p.key));
-    const div=document.createElement('div');
-    div.className='vip-card';
-    div.style.borderColor=L.col+'40';
-    div.innerHTML=`
-      <div style="background:linear-gradient(135deg,${L.col},${L.col}cc);padding:12px 11px 9px;position:relative;overflow:hidden;">
-        <div style="font-size:30px;font-weight:900;color:#fff;opacity:.12;position:absolute;right:5px;top:2px;line-height:1;">${c.visitCount}</div>
-        <div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;margin-bottom:6px;">${init}</div>
-        <div style="font-size:12px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:2px;">${esc(c.name)}</div>
-        <div style="font-size:9px;color:rgba(255,255,255,.8);">${c.visitCount} vis.${c.firstVisit?' · '+c.firstVisit.substring(0,4):''}</div>
+    const div=document.createElement('div'); div.className='vip-card'; div.style.borderColor=L.col+'40';
+    div.innerHTML=`<div style="background:linear-gradient(135deg,${L.col},${L.col}cc);padding:12px 11px 9px;position:relative;overflow:hidden;">
+      <div style="font-size:30px;font-weight:900;color:#fff;opacity:.12;position:absolute;right:5px;top:2px;line-height:1;">${c.visitCount}</div>
+      <div style="width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;margin-bottom:6px;">${init}</div>
+      <div style="font-size:12px;font-weight:800;color:#fff;line-height:1.2;margin-bottom:2px;">${esc(c.name)}</div>
+      <div style="font-size:9px;color:rgba(255,255,255,.8);">${c.visitCount} vis.${c.firstVisit?' · depuis '+c.firstVisit.substring(0,4):''}</div>
+    </div>
+    <div style="padding:8px 10px 9px;">
+      ${alertP?'<div style="font-size:10px;font-weight:700;color:'+alertP.col+';margin-bottom:4px;">'+alertP.icon+' '+alertP.label+'</div>':''}
+      <div style="display:flex;flex-wrap:wrap;gap:3px;">
+        ${c.prefs.filter(p=>!['allergie','pmr'].includes(p.key)).slice(0,3).map(p=>'<span style="font-size:9px;padding:1px 5px;border-radius:5px;background:'+p.col+'18;color:'+p.col+';font-weight:700;">'+p.icon+' '+p.label+'</span>').join('')}
       </div>
-      <div style="padding:8px 10px 9px;">
-        ${alertP?'<div style="font-size:10px;font-weight:700;color:'+alertP.col+';margin-bottom:4px;">'+alertP.icon+' '+alertP.label+'</div>':''}
-        <div style="display:flex;flex-wrap:wrap;gap:3px;">
-          ${c.prefs.filter(p=>!['allergie','pmr'].includes(p.key)).slice(0,3).map(p=>'<span style="font-size:9px;padding:1px 5px;border-radius:5px;background:'+p.col+'18;color:'+p.col+';font-weight:700;">'+p.icon+' '+p.label+'</span>').join('')}
-        </div>
-        ${c.phone?'<a href="tel:'+esc(c.phone)+'" style="display:inline-flex;align-items:center;gap:3px;margin-top:7px;font-size:10px;font-weight:700;color:'+L.col+';text-decoration:none;padding:3px 7px;border-radius:6px;background:'+L.col+'15;">📞 '+esc(c.phone)+'</a>':''}
-      </div>
-    `;
+      <div style="margin-top:5px;font-size:9px;color:#64748B;">${c.usesBed?'🛏️ Bed double':c.avgTr?'🏖️ '+c.avgTr+'T':c.preferredRow?ROW_LABELS[c.preferredRow]||'':''}</div>
+      ${c.phone?'<a href="tel:'+esc(c.phone)+'" style="display:inline-flex;align-items:center;gap:3px;margin-top:6px;font-size:10px;font-weight:700;color:'+L.col+';text-decoration:none;padding:3px 7px;border-radius:6px;background:'+L.col+'15;">📞 '+esc(c.phone)+'</a>':''}
+    </div>`;
     scroll.appendChild(div);
   });
   wrap.appendChild(scroll);
   body.appendChild(wrap);
 }
 
-// ── Client list ──────────────────────────────────────────────
-function renderList(listEl, allClients){
+// ── FILTERS + LIST ────────────────────────────────────────────────
+function renderFiltersAndList(body, clients) {
+  const filters=document.createElement('div'); filters.className='filters';
+
+  const inp=document.createElement('input');
+  inp.type='text'; inp.className='search'; inp.placeholder='🔍 Rechercher par nom, téléphone, email…'; inp.value=_search;
+
+  const FTABS=[
+    {k:'all',      label:'Tous ('+clients.length+')'},
+    {k:'legende',  label:'Légendes ⭐⭐'},
+    {k:'vip',      label:'VIP ⭐'},
+    {k:'habitue',  label:'Habitués'},
+    {k:'fidele',   label:'Fidèles'},
+    {k:'transats', label:'🏖️ Transats'},
+    {k:'allergies',label:'⚠️ Alertes'},
+    {k:'noshow',   label:'No-show'},
+    {k:'soir',     label:'🌙 Soir'},
+  ];
+  const frow=document.createElement('div'); frow.className='filter-row';
+  FTABS.forEach(f=>{
+    const b=document.createElement('button');
+    b.className='fbtn'+(f.k===_filter?' on':''); b.textContent=f.label;
+    b.onclick=()=>{ _filter=f.k; frow.querySelectorAll('.fbtn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderList(listEl,clients); };
+    frow.appendChild(b);
+  });
+
+  const SORTS=[
+    {k:'visits',label:'Nb visites'},{k:'last',label:'Dernière venue'},
+    {k:'first',label:'Client depuis'},{k:'freq',label:'Fréquence'},{k:'name',label:'Alphabétique'},
+  ];
+  const srow=document.createElement('div'); srow.className='sort-row';
+  srow.innerHTML='<span class="sort-lbl">Trier :</span>';
+  SORTS.forEach(s=>{
+    const b=document.createElement('button');
+    b.className='sbtn'+(s.k===_sortBy?' on':''); b.textContent=s.label;
+    b.onclick=()=>{ _sortBy=s.k; srow.querySelectorAll('.sbtn').forEach(x=>x.classList.remove('on')); b.classList.add('on'); renderList(listEl,clients); };
+    srow.appendChild(b);
+  });
+
+  const listEl=document.createElement('div'); listEl.className='cl-list';
+  inp.oninput=()=>{ _search=inp.value; renderList(listEl,clients); };
+
+  filters.appendChild(inp); filters.appendChild(frow); filters.appendChild(srow);
+  body.appendChild(filters); body.appendChild(listEl);
+  renderList(listEl, clients);
+}
+
+function renderList(listEl, allClients) {
   listEl.innerHTML='';
   let list=[...allClients];
+  if (_filter==='legende')    list=list.filter(c=>c.loyalty?.level==='legende');
+  else if (_filter==='vip')   list=list.filter(c=>c.loyalty?.level==='vip');
+  else if (_filter==='habitue') list=list.filter(c=>c.loyalty?.level==='habitue');
+  else if (_filter==='fidele')  list=list.filter(c=>c.loyalty?.level==='fidele');
+  else if (_filter==='transats')  list=list.filter(c=>c.prefs.some(p=>['transats','bedtrans','vuemer'].includes(p.key))||c.avgTr>0||c.usesBed);
+  else if (_filter==='allergies') list=list.filter(c=>c.prefs.some(p=>['allergie','pmr','vegan','vegeta','sansglut','sanslact'].includes(p.key)));
+  else if (_filter==='noshow')    list=list.filter(c=>(c.noShowCount||0)>0);
+  else if (_filter==='soir')      list=list.filter(c=>c.preferredSvc==='soir');
 
-  // Filter
-  if(_filter==='legende')   list=list.filter(c=>c.loyalty?.level==='legende');
-  else if(_filter==='vip')  list=list.filter(c=>c.loyalty?.level==='vip');
-  else if(_filter==='habitue') list=list.filter(c=>c.loyalty?.level==='habitue');
-  else if(_filter==='fidele')  list=list.filter(c=>c.loyalty?.level==='fidele');
-  else if(_filter==='transats') list=list.filter(c=>c.prefs.some(p=>['transats','bedtrans','vuemer'].includes(p.key))||c.avgTr>0||c.usesBed);
-  else if(_filter==='allergies') list=list.filter(c=>c.prefs.some(p=>['allergie','pmr','vegan','vegeta','sansglut','sanslact'].includes(p.key)));
-  else if(_filter==='noshow') list=list.filter(c=>(c.noShowCount||0)>0);
-
-  // Search
-  if(_search.trim()){
+  if (_search.trim()) {
     const q=_search.toLowerCase();
     list=list.filter(c=>c.name.toLowerCase().includes(q)||(c.phone||'').includes(q)||(c.email||'').includes(q)||c.nameVariants.some(n=>n.toLowerCase().includes(q)));
   }
-
-  if(!list.length){
-    listEl.innerHTML='<div class="empty">Aucun client trouvé.</div>';
-    return;
-  }
-
-  const notes=loadNotes();
-  const frag=document.createDocumentFragment();
-  list.forEach(c=>frag.appendChild(makeClientCard(c,notes[c.key]||'')));
+  list=sorted(list);
+  if (!list.length) { listEl.innerHTML='<div class="empty">Aucun client trouvé.</div>'; return; }
+  const notes=loadNotes(), frag=document.createDocumentFragment();
+  list.forEach(c=>frag.appendChild(makeCard(c, notes[c.key]||'')));
   listEl.appendChild(frag);
 }
 
-// ── Single client card ───────────────────────────────────────
-function makeClientCard(c, note){
+// ── CLIENT CARD ───────────────────────────────────────────────────
+function makeCard(c, note) {
   const L=c.loyalty||{col:'#94A3B8',bg:'#F8FAFC',label:'?'};
   const init=c.name.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
   const alertPrefs=c.prefs.filter(p=>['allergie','pmr'].includes(p.key));
   const otherPrefs=c.prefs.filter(p=>!['allergie','pmr'].includes(p.key));
   const avgStr=c.avgPax>1.4?' · ~'+Math.round(c.avgPax)+'p':'';
-  const span=(c.firstVisit&&c.lastVisit&&c.firstVisit!==c.lastVisit)
+  const freqStr=c.avgFreqDays&&c.visitCount>=3?' · ~'+Math.round(c.avgFreqDays/30.5)+'mois':'';
+  const spanStr=(c.firstVisit&&c.lastVisit&&c.firstVisit!==c.lastVisit)
     ?' · '+c.firstVisit.substring(0,4)+'→'+c.lastVisit.substring(0,4)
     :(c.lastVisit?' · '+c.lastVisit.substring(0,4):'');
 
   const svcCol=SVC_COLORS[c.preferredSvc]||'#64748B';
-  const svcLbl=SVC_LABELS[c.preferredSvc]||'';
+  const svcTotal=Object.values(c.svcBreakdown||{}).reduce((s,n)=>s+n,0);
+  const svcBar=svcTotal>0
+    ?'<div class="svc-bar">'+Object.entries(c.svcBreakdown||{}).filter(([,n])=>n>0).map(([k,n])=>'<div style="flex:'+n+';background:'+SVC_COLORS[k]+';" title="'+SVC_LABELS[k]+': '+n+'"></div>').join('')+'</div>'
+    :'';
 
   const card=document.createElement('div');
-  card.className='cl-card';
-  card.style.borderLeftColor=L.col;
-  card.dataset.key=c.key;
-
-  // Head
+  card.className='cl-card'; card.style.borderLeftColor=L.col; card.dataset.key=c.key;
   card.innerHTML=`
     <div class="cl-head">
       <div class="cl-av" style="background:${L.col};">${init}</div>
@@ -782,118 +763,117 @@ function makeClientCard(c, note){
           <span class="cl-loy" style="background:${L.bg};color:${L.col};">${L.label}</span>
           <span class="cl-season" style="background:${c.season?.col||'#94A3B8'}18;color:${c.season?.col||'#94A3B8'};">${c.season?.label||''}</span>
           ${(c.noShowCount||0)>0?'<span class="badge" style="background:#FEF2F2;color:#B91C1C;">⚠ '+c.noShowCount+' NS</span>':''}
+          ${(c.cancelCount||0)>=3?'<span class="badge" style="background:#FFF7ED;color:#C2410C;">✗ '+c.cancelCount+' ann.</span>':''}
         </div>
-        <div class="cl-stat">
-          ${c.visitCount} visite${c.visitCount>1?'s':''}${avgStr}${span} · Dernière : ${fmtD(c.lastVisit)}
-        </div>
+        <div class="cl-stat">${c.visitCount} visite${c.visitCount>1?'s':''}${avgStr}${freqStr}${spanStr} · Dernière : ${fmtD(c.lastVisit)}</div>
+        ${svcBar}
         <div class="cl-badges">
-          <span class="badge" style="background:${svcCol}18;color:${svcCol};">⏰ ${svcLbl}</span>
+          <span class="badge" style="background:${svcCol}18;color:${svcCol};">⏰ ${SVC_LABELS[c.preferredSvc]||''}</span>
           ${c.preferredTable?'<span class="badge" style="background:#8B5CF618;color:#8B5CF6;">📍 T.'+c.preferredTable+'</span>':''}
           ${c.usesBed?'<span class="badge" style="background:#FEF3C7;color:#92400E;">🛏️ Bed double</span>':''}
-          ${!c.usesBed&&c.avgTr?'<span class="badge" style="background:#FEF3C718;color:#D97706;">🏖️ ~'+c.avgTr+' transats</span>':''}
+          ${!c.usesBed&&c.avgTr?'<span class="badge" style="background:#FEF3C718;color:#D97706;">🏖️ ~'+c.avgTr+'T</span>':''}
           ${!c.usesBed&&c.preferredRow===500?'<span class="badge" style="background:#06B6D418;color:#06B6D4;">🌊 1ère ligne</span>':''}
           ${!c.usesBed&&c.preferredRow===400?'<span class="badge" style="background:#0EA5E918;color:#0EA5E9;">🌊 2ème ligne</span>':''}
+          ${!c.usesBed&&c.preferredRow===300?'<span class="badge" style="background:#0EA5E918;color:#0EA5E9;">🌊 3ème ligne</span>':''}
           ${c.preferredSlot?'<span class="badge" style="background:#7C3AED18;color:#7C3AED;">📌 Slot '+c.preferredSlot+'</span>':''}
+          ${c.yearsActive&&c.yearsActive.length>1?'<span class="badge" style="background:#F1F5F9;color:#475569;">📅 '+c.yearsActive.length+' ans</span>':''}
           ${c.phone?'<a href="tel:'+esc(c.phone)+'" class="cl-phone">📞 '+esc(c.phone)+'</a>':''}
         </div>
       </div>
     </div>
     ${[...alertPrefs,...otherPrefs].length?'<div class="cl-prefs">'+[...alertPrefs,...otherPrefs].map(p=>'<span class="cpref" style="background:'+p.col+'18;color:'+p.col+';border:1px solid '+p.col+'28;">'+p.icon+' '+p.label+'</span>').join('')+'</div>':''}
     ${c.memo?'<div class="cl-memo">'+esc(c.memo)+'</div>':''}
-    <div class="cl-note">
-      <textarea placeholder="Note personnelle (sauvegardée localement)…" rows="2">${esc(note)}</textarea>
-    </div>
+    <div class="cl-note"><textarea placeholder="Note personnelle (sauvegardée localement)…" rows="2">${esc(note)}</textarea></div>
     <div class="cl-foot">
-      <button class="hist-btn">▾ Historique (${c.visitCount})</button>
+      <button class="hist-btn">▾ Historique (${c.visits.length})</button>
       ${c.nameVariants.length?'<span style="font-size:9px;color:var(--tx2);opacity:.6;">Aussi : '+c.nameVariants.map(esc).join(', ')+'</span>':''}
     </div>
-    <div class="cl-hist">
-      <div class="cl-hist-inner">
-        ${c.visits.map(v=>`
-          <div class="hist-row">
-            <span class="hist-date">${fmtD(v.date)}</span>
-            <span class="hist-pax">${v.pax}p</span>
-            <span class="hist-svc" style="background:${SVC_BG[v.svc]||'#F1F5F9'};color:${SVC_COLORS[v.svc]||'#475569'};">${SVC_LABELS[v.svc]||v.svc}</span>
-            <span class="hist-icons">${v.tr>0?'<span style="color:#D97706;font-weight:700;">'+v.tr+'T</span> ':''} ${v.bed?'🛏 ':''} ${v.row===500?'🌊':v.row===400?'〰':''}${v.slot?'<span style="color:#7C3AED;font-size:9px;font-weight:700;"> #'+v.slot+'</span>':''}</span>
-            <span class="hist-comment" style="${v.noshow?'color:#EF4444;':''}">${v.noshow?'⚠️ No-show — '+esc(v.comment||''):esc(v.comment||'—')}</span>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
+    <div class="cl-hist"><div class="cl-hist-inner">
+      ${c.visits.map(v=>`<div class="hist-row">
+        <span class="hist-date">${fmtD(v.date)}</span>
+        <span class="hist-pax">${v.pax}p</span>
+        <span class="hist-svc" style="background:${SVC_BG[v.svc]||'#F1F5F9'};color:${SVC_COLORS[v.svc]||'#475569'};">${SVC_LABELS[v.svc]||v.svc}</span>
+        <span class="hist-icons">${v.tr>0?'<b style="color:#D97706;">'+v.tr+'T</b> ':''}${v.bed?'🛏 ':''}${v.row===500?'🌊 ':v.row===400?'〰 ':''}${v.table?'<span style="color:#8B5CF6;font-size:9px;">T'+v.table+'</span> ':''}${v.slot?'<span style="color:#7C3AED;font-size:9px;">#'+v.slot+'</span>':''}</span>
+        <span class="hist-comment" style="${v.noshow?'color:#EF4444;':''}">${v.noshow?'⚠️ No-show — '+esc(v.comment||''):esc(v.comment||'—')}</span>
+      </div>`).join('')}
+    </div></div>`;
 
-  // Toggle history
   card.querySelector('.hist-btn').onclick=function(){
-    const h=card.querySelector('.cl-hist');
-    const open=h.style.display==='block';
+    const h=card.querySelector('.cl-hist'), open=h.style.display==='block';
     h.style.display=open?'none':'block';
-    this.textContent=open?'▾ Historique ('+c.visitCount+')':'▴ Masquer';
+    this.textContent=open?'▾ Historique ('+c.visits.length+')':'▴ Masquer';
   };
-
-  // Save note on change
-  card.querySelector('textarea').onchange=function(){
-    saveNote(c.key,this.value);
-  };
-
+  card.querySelector('textarea').onchange=function(){ saveNote(c.key,this.value); };
   return card;
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  SYNC
-// ═══════════════════════════════════════════════════════════════
-async function doSync(forceRebuild){
+// ── SYNC ──────────────────────────────────────────────────────────
+async function doSync(forceRebuild) {
   const btnS=document.getElementById('btn-sync');
   const btnR=document.getElementById('btn-rebuild');
   const pw=document.getElementById('prog-wrap');
   const pb=document.getElementById('prog-bar');
   const pl=document.getElementById('prog-lbl');
+  if (btnS){btnS.disabled=true;btnS.textContent='⏳ …';}
+  if (btnR) btnR.disabled=true;
+  if (pw)   pw.style.display='block';
+  if (pb)   pb.style.width='2%';
+  if (pl)   pl.textContent='Connexion à Zenchef…';
 
-  if(btnS){btnS.disabled=true;btnS.textContent='⏳ …';}
-  if(btnR){btnR.disabled=true;}
-  if(pw) pw.style.display='block';
-  if(pb) pb.style.width='2%';
-  if(pl) pl.textContent='Connexion à Zenchef…';
+  const today=new Date().toISOString().split('T')[0];
 
-  if(forceRebuild) clearCache();
+  try {
+    if (forceRebuild) {
+      clearCache();
+      const yearMin=(new Date().getFullYear()-5)+'-01-01';
+      if (pl) pl.textContent='Chargement de 5 ans d\'historique…';
+      const bookings=await fetchRange(yearMin, today, (cur,tot)=>{
+        const pct=Math.round(cur/tot*100);
+        if (pb) pb.style.width=pct+'%';
+        if (pl) pl.textContent='Page '+cur+' / '+tot+' — '+pct+'%';
+      });
+      _profiles=buildProfiles(bookings);
+    } else {
+      const lastSync=getLastSync();
+      let sinceDate;
+      if (lastSync) {
+        const d=new Date(lastSync); d.setDate(d.getDate()-7);
+        sinceDate=d.toISOString().split('T')[0];
+      } else {
+        const d=new Date(); d.setDate(d.getDate()-60);
+        sinceDate=d.toISOString().split('T')[0];
+      }
+      const existing=loadCache()||{};
+      if (pl) pl.textContent='Mise à jour depuis le '+fmtD(sinceDate)+'…';
+      const bookings=await fetchRange(sinceDate, today, (cur,tot)=>{
+        const pct=Math.round(cur/tot*100);
+        if (pb) pb.style.width=pct+'%';
+        if (pl) pl.textContent='Page '+cur+' / '+tot+' — '+pct+'%';
+      });
+      _profiles=mergeProfiles(existing, bookings);
+    }
 
-  try{
-    const bookings=await fetchAllHistory((cur,tot)=>{
-      const pct=Math.round(cur/tot*100);
-      if(pb) pb.style.width=pct+'%';
-      if(pl) pl.textContent='Page '+cur+' / '+tot+' · '+Math.round(cur/tot*100)+'%';
-    });
-    _profiles=buildProfiles(bookings);
+    setLastSync(today);
     saveCache(_profiles);
-    if(pb) pb.style.width='100%';
-    const count=Object.keys(_profiles).length;
-    if(pl) pl.textContent='✓ '+count+' profils importés';
-    setTimeout(()=>{
-      if(pw) pw.style.display='none';
-      renderApp();
-    },1400);
-  }catch(err){
-    if(pl) pl.textContent='⚠️ Erreur : '+err.message;
-    if(pw) pw.style.display='none';
-    if(btnS){btnS.disabled=false;btnS.textContent='↺ Mettre à jour';}
-    if(btnR){btnR.disabled=false;}
+    if (pb) pb.style.width='100%';
+    if (pl) pl.textContent='✓ '+Object.keys(_profiles).length+' profils '+(forceRebuild?'construits':'mis à jour');
+    setTimeout(()=>{ if(pw)pw.style.display='none'; renderApp(); }, 1400);
+
+  } catch(err) {
+    if (pl) pl.textContent='⚠️ Erreur : '+err.message;
+    if (pw) pw.style.display='none';
+    if (btnS){btnS.disabled=false;btnS.textContent='↺ Mettre à jour';}
+    if (btnR) btnR.disabled=false;
     console.error(err);
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════════════
-async function init(){
+// ── INIT ──────────────────────────────────────────────────────────
+async function init() {
   const cached=loadCache();
-  if(cached){
-    _profiles=cached;
-    renderApp();
-  } else {
-    renderApp(); // shell first (empty state)
-    doSync(true);
-  }
+  if (cached) { _profiles=cached; renderApp(); }
+  else { renderApp(); doSync(true); }
 }
-
 init();
 </script>
 </body>
