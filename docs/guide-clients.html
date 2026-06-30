@@ -152,8 +152,19 @@ function normTxt(t) {
 }
 
 // ── PARSERS (texte) ───────────────────────────────────────────────
-function parseTr(txt)   { const m=(txt||'').match(/(\d+)\s*transats?/i); return m?parseInt(m[1]):0; }
-function parseBed(txt)  { return /bed\s*double|lit\s*double/i.test(txt||''); }
+function parseTr(txt) {
+  if (!txt) return 0;
+  // "2 transats", "3 transats", "1 transat"
+  let m = txt.match(/(\d+)\s*transats?/i);
+  if (m) return Math.min(parseInt(m[1]), 10);
+  // "transats x2", "transat ×3"
+  m = txt.match(/transats?\s*[x×]\s*(\d+)/i);
+  if (m) return Math.min(parseInt(m[1]), 10);
+  // "un transat", "une chaise transat" → 1
+  if (/\b(un|une)\s*(\w+\s*)?transats?/i.test(txt)) return 1;
+  return 0;
+}
+function parseBed(txt)  { return /bed\s*(double)?|lit\s*double/i.test(txt||''); }
 function parseTable(txt){ const m=(txt||'').match(/\btable[s]?\s*n?[°º]?\s*(\d+)/i); return m?parseInt(m[1]):null; }
 function parseRow(txt) {
   const t = normTxt(txt);
@@ -175,18 +186,43 @@ function parseSlotTxt(txt) {
 // ── PARSERS (booking structuré) ───────────────────────────────────
 function parseTrFromBooking(b) {
   const cf = b.custom_field || {};
+
+  // 1. Champ experience type — source la plus fiable
+  const typeExp = (cf['quel-type-dexperience']||cf['type-experience']||'').toLowerCase().trim();
+  if (typeExp) {
+    if (/\bbed\b/.test(typeExp)) return 0;          // booking bed → les transats ne s'appliquent pas
+    const mNum = typeExp.match(/(\d+)\s*transats?/);
+    if (mNum) return parseInt(mNum[1]);              // "2 transats", "3 transats"
+    if (/\btransat/.test(typeExp)) return 1;         // "repas transat" (singulier sans chiffre) = 1
+  }
+
+  // 2. Champ dédié avec "transat" dans la clé (ex: "nombre-de-transats")
   for (const [k,v] of Object.entries(cf)) {
-    if (/transat/i.test(k) && typeof v === 'string') {
-      const n = parseInt(v); if (!isNaN(n) && n>=1 && n<=10) return n;
+    if (/transat/i.test(k) && /nombre|nb|count|qty|quantit/i.test(k)) {
+      const n = parseInt(v); if (!isNaN(n)&&n>=1&&n<=10) return n;
     }
   }
+  // Clé transat dont la valeur est un chiffre pur
+  for (const [k,v] of Object.entries(cf)) {
+    if (/transat/i.test(k) && typeof v==='string' && /^\d+$/.test(v.trim())) {
+      const n = parseInt(v); if (n>=1&&n<=10) return n;
+    }
+  }
+
+  // 3. Texte libre
   return parseTr(extractAllText(b));
 }
 
 function parseBedFromBooking(b) {
   const cf = b.custom_field || {};
+  // Experience type : "bed", "bed double", "repas en bed", etc.
   const typeExp = (cf['quel-type-dexperience']||cf['type-experience']||'').toLowerCase();
-  if (/bed|lit double/.test(typeExp)) return true;
+  if (/\bbed\b/.test(typeExp)) return true;
+  // Tout champ custom dont la clé ou la valeur contient "bed"
+  for (const [k,v] of Object.entries(cf)) {
+    if (/\bbed\b/i.test(k)) return true;
+    if (typeof v==='string' && /\bbed\b/i.test(v) && !/embed|webbed/i.test(v)) return true;
+  }
   return parseBed(extractAllText(b));
 }
 
@@ -360,19 +396,24 @@ function computeStats(c) {
   c.firstVisit  = c.visits[c.visits.length-1]?.date||'';
   c.avgPax      = c.visits.length ? c.visits.reduce((s,v)=>s+(v.pax||2),0)/c.visits.length : 2;
 
-  const svcC={s1:0,s2:0,transats:0,soir:0}, rowC={}, slotC={};
+  const svcC={s1:0,s2:0,transats:0,soir:0};
   let trTotal=0,trN=0,bedN=0;
+  // Compteurs transat : uniquement sur les visites transats (svc=transats OU tr>0 OU bed)
+  const trRowC={}, trSlotC={};
   c.visits.forEach(v=>{
     if (svcC[v.svc]!==undefined) svcC[v.svc]++;
-    if (v.row)  rowC[v.row]  = (rowC[v.row]||0)+1;
-    if (v.slot) slotC[v.slot]= (slotC[v.slot]||0)+1;
-    if (v.tr>0) { trTotal+=v.tr; trN++; }
-    if (v.bed)  bedN++;
+    const isTrVisit = v.tr>0 || v.bed || v.svc==='transats';
+    if (isTrVisit && v.row)  trRowC[v.row]  = (trRowC[v.row]||0)+1;
+    if (isTrVisit && v.slot) trSlotC[v.slot]= (trSlotC[v.slot]||0)+1;
+    // avgTr : uniquement les visites avec transats SANS bed (bed = booking différent)
+    if (v.tr>0 && !v.bed) { trTotal+=v.tr; trN++; }
+    if (v.bed) bedN++;
   });
   c.svcBreakdown = svcC;
+  c.transatVisitCount = c.visits.filter(v=>v.tr>0||v.bed||v.svc==='transats').length;
 
-  const topRow   = Object.entries(rowC).sort((a,b)=>b[1]-a[1])[0];
-  const topSlot  = Object.entries(slotC).sort((a,b)=>b[1]-a[1])[0];
+  const topRow   = Object.entries(trRowC).sort((a,b)=>b[1]-a[1])[0];
+  const topSlot  = Object.entries(trSlotC).sort((a,b)=>b[1]-a[1])[0];
   const topSvc   = Object.entries(svcC).sort((a,b)=>b[1]-a[1])[0];
   const tblMap   = c.visits.reduce((acc,v)=>{if(v.table)acc[v.table]=(acc[v.table]||0)+1;return acc;},{});
   const tblRank  = Object.entries(tblMap).sort((a,b)=>b[1]-a[1]);
@@ -381,7 +422,8 @@ function computeStats(c) {
   c.preferredRow   = topRow  ? parseInt(topRow[0])  : null;
   c.preferredSlot  = topSlot ? parseInt(topSlot[0]) : null;
   c.avgTr          = trN>0   ? Math.round(trTotal/trN) : null;
-  c.usesBed        = bedN>=2 || (bedN>=1&&c.visitCount<=2);
+  // usesBed : ≥2 visites bed, ou 1 visite bed si client peu fréquent (≤3 visites totales)
+  c.usesBed        = bedN>=2 || (bedN>=1&&c.visitCount<=3);
   c.preferredTable      = topTable ? parseInt(topTable[0]) : null;
   c.preferredTableCount = topTable ? topTable[1] : 0;
   c.allTables           = tblRank.map(([t,n])=>({t:parseInt(t),n}));
@@ -801,8 +843,8 @@ function makeCard(c, note) {
         <div class="cl-badges">
           <span class="badge" style="background:${svcCol}18;color:${svcCol};">⏰ ${SVC_LABELS[c.preferredSvc]||''}</span>
           ${c.preferredTable?'<span class="badge" style="background:#8B5CF618;color:#8B5CF6;">📍 T.'+c.preferredTable+(c.preferredTableCount>=2?' ×'+c.preferredTableCount:'')+'</span>':''}
-          ${c.usesBed?'<span class="badge" style="background:#FEF3C7;color:#92400E;">🛏️ Bed double</span>':''}
-          ${!c.usesBed&&c.avgTr?'<span class="badge" style="background:#FEF3C718;color:#D97706;">🏖️ ~'+c.avgTr+'T</span>':''}
+          ${c.usesBed?'<span class="badge" style="background:#FEF3C7;color:#92400E;">🛏️ Bed double'+(c.transatVisitCount>1?' ×'+c.transatVisitCount:'')+'</span>':''}
+          ${!c.usesBed&&c.avgTr?'<span class="badge" style="background:#FEF3C718;color:#D97706;">🏖️ ~'+c.avgTr+'T'+(c.transatVisitCount>1?' ×'+c.transatVisitCount:'')+'</span>':''}
           ${!c.usesBed&&c.preferredRow===500?'<span class="badge" style="background:#06B6D418;color:#06B6D4;">🌊 1ère ligne</span>':''}
           ${!c.usesBed&&c.preferredRow===400?'<span class="badge" style="background:#0EA5E918;color:#0EA5E9;">🌊 2ème ligne</span>':''}
           ${!c.usesBed&&c.preferredRow===300?'<span class="badge" style="background:#0EA5E918;color:#0EA5E9;">🌊 3ème ligne</span>':''}
