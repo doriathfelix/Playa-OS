@@ -184,50 +184,86 @@ function parseSlotTxt(txt) {
 }
 
 // ── PARSERS (booking structuré) ───────────────────────────────────
+
+// Extrait uniquement les notes/commentaires rédigés (pas les sélections en ligne)
+function extractNotes(b) {
+  const cf = b.custom_field || {};
+  // Champs "notes" manuels — exclus les sélecteurs de type d'expérience
+  const NOTE_KEYS = /comment|note|remarque|message|wish|request|special|allerg|dietary|preparation|occasion|private|internal|restaurant/i;
+  const EXCLUDE_KEYS = /type.exp|experience|transat|nombre|qty|count|bed|ligne|row|slot/i;
+  return [
+    b.comment, b.note, b.internal_note, b.customer_comment, b.extra_comment,
+    b.preparation, b.occasion, b.special_request, b.wishes, b.message, b.remarks,
+    b.allergy, b.dietary, b.restaurant_comment, b.private_comment,
+    b.customer&&b.customer.comment, b.customer&&b.customer.wishes,
+    b.customer&&b.customer.allergy, b.customer&&b.customer.dietary,
+    b.customer&&b.customer.preferences,
+    ...Object.entries(cf)
+      .filter(([k])=>NOTE_KEYS.test(k)&&!EXCLUDE_KEYS.test(k))
+      .map(([,v])=>v),
+  ].filter(Boolean).map(s=>String(s).trim()).filter(s=>s.length>1).join(' · ');
+}
+
 function parseTrFromBooking(b) {
   const cf = b.custom_field || {};
 
-  // 1. Champ experience type — source la plus fiable
-  const typeExp = (cf['quel-type-dexperience']||cf['type-experience']||'').toLowerCase().trim();
-  if (typeExp) {
-    if (/\bbed\b/.test(typeExp)) return 0;          // booking bed → les transats ne s'appliquent pas
-    const mNum = typeExp.match(/(\d+)\s*transats?/);
-    if (mNum) return parseInt(mNum[1]);              // "2 transats", "3 transats"
-    if (/\btransat/.test(typeExp)) return 1;         // "repas transat" (singulier sans chiffre) = 1
+  // 1. PRIORITÉ : notes et commentaires rédigés sur la réservation
+  const notes = extractNotes(b);
+  if (notes) {
+    const n = parseTr(notes);
+    if (n > 0) return n;
+    // Si la note mentionne "transat" sans chiffre → 1
+    if (/\btransat/i.test(notes)) return 1;
+    // Si la note mentionne "bed" → 0 transats (c'est un bed booking)
+    if (/\bbed\b/i.test(notes)) return 0;
   }
 
-  // 2. Champ dédié avec "transat" dans la clé (ex: "nombre-de-transats")
+  // 2. Champ expérience en ligne (sélection lors de la réservation)
+  const typeExp = (cf['quel-type-dexperience']||cf['type-experience']||'').toLowerCase().trim();
+  if (typeExp) {
+    if (/\bbed\b/.test(typeExp)) return 0;
+    const mNum = typeExp.match(/(\d+)\s*transats?/);
+    if (mNum) return parseInt(mNum[1]);
+    if (/\btransat/.test(typeExp)) return 1;
+  }
+
+  // 3. Champ dédié avec "transat" dans la clé (ex: "nombre-de-transats")
   for (const [k,v] of Object.entries(cf)) {
-    if (/transat/i.test(k) && /nombre|nb|count|qty|quantit/i.test(k)) {
+    if (/transat/i.test(k) && (/nombre|nb|count|qty|quantit/i.test(k) || /^\d+$/.test(String(v).trim()))) {
       const n = parseInt(v); if (!isNaN(n)&&n>=1&&n<=10) return n;
     }
   }
-  // Clé transat dont la valeur est un chiffre pur
-  for (const [k,v] of Object.entries(cf)) {
-    if (/transat/i.test(k) && typeof v==='string' && /^\d+$/.test(v.trim())) {
-      const n = parseInt(v); if (n>=1&&n<=10) return n;
-    }
-  }
 
-  // 3. Texte libre
+  // 4. Tout le texte restant en dernier recours
   return parseTr(extractAllText(b));
 }
 
 function parseBedFromBooking(b) {
   const cf = b.custom_field || {};
-  // Experience type : "bed", "bed double", "repas en bed", etc.
+
+  // 1. PRIORITÉ : notes et commentaires rédigés
+  const notes = extractNotes(b);
+  if (notes && /\bbed\b/i.test(notes)) return true;
+
+  // 2. Champ expérience en ligne
   const typeExp = (cf['quel-type-dexperience']||cf['type-experience']||'').toLowerCase();
   if (/\bbed\b/.test(typeExp)) return true;
-  // Tout champ custom dont la clé ou la valeur contient "bed"
+
+  // 3. Autres champs custom avec "bed"
   for (const [k,v] of Object.entries(cf)) {
     if (/\bbed\b/i.test(k)) return true;
     if (typeof v==='string' && /\bbed\b/i.test(v) && !/embed|webbed/i.test(v)) return true;
   }
+
   return parseBed(extractAllText(b));
 }
 
 function parseRowFromBooking(b) {
   const cf = b.custom_field || {};
+  // 1. Notes en priorité
+  const notes = extractNotes(b);
+  if (notes) { const r=parseRow(notes); if (r) return r; }
+  // 2. Champs structurés avec "ligne/row"
   for (const [k,v] of Object.entries(cf)) {
     if (/ligne|rangee|row/i.test(k)) { const r=parseRow(String(v)); if (r) return r; }
   }
