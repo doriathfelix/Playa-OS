@@ -6244,13 +6244,28 @@ function zcToResa(b){
   // (customer.comment, tags[], custom_field, shift_slot.shift.name, etc.)
   const allTextFields = extractAllBookingText(b).join(' | ');
 
-  // Nb transats : tous les champs texte libres prennent le dessus sur le formulaire structuré
-  const nbTransatsText = parseTransatsFromText(allTextFields);
-  const nbTransatsForm = parseInt(cf['de-combien-de-transats-avez-vous-besoin']) || 0;
-  let nbTransats = nbTransatsText > 0 ? nbTransatsText : nbTransatsForm;
+  // ── Notes/commentaires rédigés uniquement (sans les valeurs de formulaire structuré)
+  // Priorité maximale pour le parsing transat/bed : ce que le client ou le staff a écrit
+  const notesOnly = [
+    b.comment, b.note, b.internal_note, b.internal_comment,
+    b.customer_comment, b.extra_comment, b.restaurant_comment, b.private_comment,
+    b.public_comment, b.preparation, b.occasion, b.special_request,
+    b.wishes, b.message, b.remarks, b.allergy, b.dietary,
+    b.customer && b.customer.comment, b.customer && b.customer.note,
+    b.customer && b.customer.wishes, b.customer && b.customer.message,
+  ].filter(Boolean).map(s => String(s).trim()).filter(s => s.length > 1).join(' | ');
 
-  // Beds (lit double) — détectés séparément, ne comptent pas comme transats ordinaires
-  const nbBeds = parseBedFromText(allTextFields);
+  // Priorité : 1) notes rédigées  2) nombre sélectionné en ligne  3) tout le texte restant
+  const nbTransatsNotes = parseTransatsFromText(notesOnly);
+  const nbTransatsForm  = parseInt(cf['de-combien-de-transats-avez-vous-besoin']) || 0;
+  const nbTransatsAll   = parseTransatsFromText(allTextFields);
+  let nbTransats = nbTransatsNotes > 0 ? nbTransatsNotes
+                 : nbTransatsForm  > 0 ? nbTransatsForm
+                 : nbTransatsAll;
+
+  // Beds (lit double) — priorité identique : notes d'abord, puis tout le texte
+  const nbBedsNotes = parseBedFromText(notesOnly);
+  const nbBeds = nbBedsNotes > 0 ? nbBedsNotes : parseBedFromText(allTextFields);
   const isBed  = nbBeds > 0;
 
   // Si type "repas à table + transat" — on N'assigne PAS de transats depuis le type seul.
