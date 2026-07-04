@@ -297,7 +297,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
   border-left:3px solid transparent;
   transition:box-shadow .15s,transform .1s;
   position:relative;
-  touch-action:none;
+  touch-action:pan-y;
 }
 .rc:hover{box-shadow:var(--shadow-md);transform:translateX(1px)}
 .rc.rc-placed{border-radius:0 var(--r) var(--r) 0}
@@ -3644,7 +3644,7 @@ function initTouchDrag(){
     dragId = parseInt(src.id, 10);
     const rect = el.getBoundingClientRect();
     ghost = el.cloneNode(true);
-    ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;opacity:.88;z-index:9999;pointer-events:none;border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.22);transform:scale(1.05) translateY(-4px);transition:none`;
+    ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;opacity:.88;z-index:9999;pointer-events:none;border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.22);transform:scale(1.05) translateY(-4px);transition:none`;
     document.body.appendChild(ghost);
     el.style.opacity = '.3';
   }
@@ -3667,18 +3667,37 @@ function initTouchDrag(){
   }
 
   document.addEventListener('touchstart', e => {
+    // Sidebar reservation card
     const card = e.target.closest('.rc[data-id]');
-    if(!card) return;
-    const id = card.dataset.id;
-    if(!id) return;
-    const t = e.touches[0];
-    src = {
-      id, el: card,
-      startX: t.clientX, startY: t.clientY, dragReady: false,
-      timer: setTimeout(() => {
-        if(src && src.id === id){ src.dragReady = true; }
-      }, 400)
-    };
+    if(card) {
+      const id = card.dataset.id;
+      if(!id) return;
+      const t = e.touches[0];
+      src = {
+        id, el: card,
+        startX: t.clientX, startY: t.clientY, dragReady: false,
+        timer: setTimeout(() => {
+          if(src && src.id === id){ src.dragReady = true; }
+        }, 400)
+      };
+      return;
+    }
+    // Placed table cell on floor plan — drag the reservation placed on it
+    const tbl = e.target.closest('.TBL[data-tid]');
+    if(tbl) {
+      const tid = parseInt(tbl.dataset.tid);
+      const placed = gr().find(r => r.placed && r.tableId === tid && !r.ns);
+      if(!placed) return;
+      const t = e.touches[0];
+      const pid = String(placed.id);
+      src = {
+        id: pid, el: tbl,
+        startX: t.clientX, startY: t.clientY, dragReady: false,
+        timer: setTimeout(() => {
+          if(src && src.id === pid){ src.dragReady = true; }
+        }, 400)
+      };
+    }
   }, {passive:false});
 
   document.addEventListener('touchmove', e => {
