@@ -6915,8 +6915,8 @@ async function syncZenchef(date){
       });
     } catch(e){ fast = null; }
 
-    if(fast !== null && fast.filtered){
-      // Filtre API fonctionnel — résultats en 1-2 requêtes
+    if(fast !== null && fast.filtered && fast.bookings.length > 0){
+      // Filtre API fonctionnel ET résultats non vides — résultats fiables en 1-2 requêtes
       zcSetProgress(100);
       zcCacheSet(date, fast.bookings);
       const { added, dupes, cancelled } = applyBookings(fast.bookings, date);
@@ -6927,43 +6927,14 @@ async function syncZenchef(date){
         (cancelled > 0 ? ' · ' + cancelled + ' annulées' : '') +
         (dupes > 0 ? ' · ' + dupes + ' doublons' : '');
       toast('✓ Zenchef — ' + msg);
-      // Remplir le pool en background pour navigation entre dates — réutiliser p1 existante
-      fetchAllPagesAndCacheAll(null, null, null, fast.filtered ? null : {p1data: fast.p1data, totalPages: fast.totalPages}).catch(()=>{});
-    } else if(fast !== null && !fast.filtered){
-      // Filtre API non supporté → fetch complet avec p1 réutilisée
-      let firstDataShown = false;
-      const bookings = await fetchZcForDate(
-        date,
-        (cur, total) => {
-          zcSetProgress(Math.round(cur/total*100));
-          zcSetLabel('chargement ' + cur + '/' + total + ' pages…');
-        },
-        (d, bkgs) => {
-          if(firstDataShown) return;
-          firstDataShown = true;
-          reservations = {s1:[], s2:[], transats:[], soir:[]};
-          fused = {s1:[],s2:[],transats:[],soir:[]};
-          selectedId = null;
-          applyBookings(bkgs, date);
-          lastSyncAt = new Date();
-          render();
-          zcSetLabel('mise à jour…');
-        }
-      );
-      zcCacheSet(date, bookings);
-      const { added, dupes, cancelled } = applyBookings(bookings, date);
-      lastSyncAt = new Date();
-      updateSyncAge();
-      render();
-      const msg = formatDateFR(date) + ' · ' + added + ' resas' +
-        (cancelled > 0 ? ' · ' + cancelled + ' annulées' : '') +
-        (dupes > 0 ? ' · ' + dupes + ' doublons' : '');
-      toast('✓ Zenchef — ' + msg);
+      // Remplir le pool en background pour navigation entre dates
+      fetchAllPagesAndCacheAll(null, null, null, null).catch(()=>{});
     } else {
-      // Voie classique : fetch complet tout-parallèle avec affichage progressif
+      // Filtre API non supporté, 0 résultats (non fiables), ou erreur → fetch complet groupé par shift_date
+      // (date_min/date_max filtre par date de création, pas de service — le fetch complet est la seule voie fiable)
+      const p1Prefetch = (fast !== null && !fast.filtered) ? {p1data: fast.p1data, totalPages: fast.totalPages} : null;
       let firstDataShown = false;
-      const bookings = await fetchZcForDate(
-        date,
+      const byDate = await fetchAllPagesAndCacheAll(
         (cur, total) => {
           zcSetProgress(Math.round(cur/total*100));
           zcSetLabel('chargement ' + cur + '/' + total + ' pages…');
@@ -6978,9 +6949,16 @@ async function syncZenchef(date){
           lastSyncAt = new Date();
           render();
           zcSetLabel('mise à jour…');
-        }
+        },
+        date,
+        p1Prefetch
       );
+      const bookings = byDate[date] || [];
       zcCacheSet(date, bookings);
+      // Réinitialiser avant l'apply final pour éviter les doublons dus au callback progressif
+      reservations = {s1:[], s2:[], transats:[], soir:[]};
+      fused = {s1:[],s2:[],transats:[],soir:[]};
+      selectedId = null;
       const { added, dupes, cancelled } = applyBookings(bookings, date);
       lastSyncAt = new Date();
       updateSyncAge();
