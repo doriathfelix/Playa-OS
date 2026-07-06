@@ -6877,10 +6877,12 @@ async function syncZenchef(date){
         null, date
       ).then(byDate=>{
         const bkgs = byDate[date] || [];
+        const snap = snapshotPlacements();
         reservations = {s1:[], s2:[], transats:[], soir:[]};
         fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
         applyBookings(bkgs, date);
+        restorePlacements(snap);
         lastSyncAt = new Date();
         updateSyncAge();
         render();
@@ -7013,6 +7015,38 @@ function updateSyncAge(){
 }
 setInterval(updateSyncAge, 30000); // refresh l'affichage toutes les 30s
 
+// ── Helpers : snapshot/restore des placements pendant un sync background
+function snapshotPlacements(){
+  const placements = {};
+  ['s1','s2','transats','soir'].forEach(svc => {
+    (reservations[svc]||[]).forEach(r => {
+      if(r.placed || r.tableId != null || r.slot != null){
+        placements[r.id] = {placed:r.placed, tableId:r.tableId, slot:r.slot, extraSlots:r.extraSlots};
+      }
+    });
+  });
+  const fusedSnap = {};
+  ['s1','s2','transats','soir'].forEach(svc => {
+    fusedSnap[svc] = (fused[svc]||[]).map(g => ({...g, tids:[...g.tids]}));
+  });
+  return {placements, fused:fusedSnap};
+}
+function restorePlacements(snap){
+  if(!snap) return;
+  const p = snap.placements || {};
+  ['s1','s2','transats','soir'].forEach(svc => {
+    (reservations[svc]||[]).forEach(r => {
+      const s = p[r.id];
+      if(s){ r.placed=s.placed; r.tableId=s.tableId; r.slot=s.slot; r.extraSlots=s.extraSlots; }
+    });
+  });
+  ['s1','s2','transats','soir'].forEach(svc => {
+    if(!(fused[svc]||[]).length && snap.fused && (snap.fused[svc]||[]).length){
+      fused[svc] = snap.fused[svc];
+    }
+  });
+}
+
 // ── Auto-sync toutes les 5 min — refetch complet pour aujourd'hui et futur
 function isToday(dateStr){
   return dateStr === new Date().toISOString().split('T')[0];
@@ -7025,10 +7059,12 @@ function startAutoSync(){
     if(currentDate >= today){
       fetchAllPagesAndCacheAll().then(byDate => {
         const bookings = byDate[currentDate] || [];
+        const snap = snapshotPlacements();
         reservations = {s1:[], s2:[], transats:[], soir:[]};
         fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
         applyBookings(bookings, currentDate);
+        restorePlacements(snap);
         lastSyncAt = new Date();
         updateSyncAge();
         render();
