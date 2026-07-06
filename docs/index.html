@@ -6877,6 +6877,8 @@ async function syncZenchef(date){
         null, date
       ).then(byDate=>{
         const bkgs = byDate[date] || [];
+        // Si le fetch revient vide (glitch réseau / API) mais qu'on a déjà des données → ne pas vider
+        if(bkgs.length === 0 && totalResaCount() > 0) return;
         const snap = snapshotPlacements();
         reservations = {s1:[], s2:[], transats:[], soir:[]};
         fused = {s1:[],s2:[],transats:[],soir:[]};
@@ -7017,23 +7019,26 @@ setInterval(updateSyncAge, 30000); // refresh l'affichage toutes les 30s
 
 // ── Helpers : snapshot/restore des placements pendant un sync background
 function snapshotPlacements(){
-  const placements = {};
-  ['s1','s2','transats','soir'].forEach(svc => {
-    (reservations[svc]||[]).forEach(r => {
-      if(r.placed || r.tableId != null || r.slot != null){
-        placements[r.id] = {placed:r.placed, tableId:r.tableId, slot:r.slot, extraSlots:r.extraSlots};
-      }
+  try {
+    const placements = {};
+    ['s1','s2','transats','soir'].forEach(svc => {
+      (reservations[svc]||[]).forEach(r => {
+        if(r.placed || r.tableId != null || r.slot != null){
+          placements[r.id] = {placed:r.placed, tableId:r.tableId, slot:r.slot, extraSlots:r.extraSlots};
+        }
+      });
     });
-  });
-  const fusedSnap = {};
-  ['s1','s2','transats','soir'].forEach(svc => {
-    fusedSnap[svc] = (fused[svc]||[]).map(g => ({...g, tids:[...g.tids]}));
-  });
-  return {placements, fused:fusedSnap};
+    const fusedSnap = {};
+    ['s1','s2','transats','soir'].forEach(svc => {
+      fusedSnap[svc] = (fused[svc]||[]).map(g => ({...g, tids:[...(g.tids||[])]}));
+    });
+    return {placements, fused:fusedSnap};
+  } catch(e){ return {placements:{}, fused:{s1:[],s2:[],transats:[],soir:[]}}; }
 }
 function restorePlacements(snap){
   if(!snap) return;
   const p = snap.placements || {};
+  if(!Object.keys(p).length) return;
   ['s1','s2','transats','soir'].forEach(svc => {
     (reservations[svc]||[]).forEach(r => {
       const s = p[r.id];
@@ -7045,6 +7050,10 @@ function restorePlacements(snap){
       fused[svc] = snap.fused[svc];
     }
   });
+}
+// Retourne le nb total de resas chargées (toutes tabs)
+function totalResaCount(){
+  return ['s1','s2','transats','soir'].reduce((n,k) => n + (reservations[k]||[]).length, 0);
 }
 
 // ── Auto-sync toutes les 5 min — refetch complet pour aujourd'hui et futur
@@ -7059,6 +7068,8 @@ function startAutoSync(){
     if(currentDate >= today){
       fetchAllPagesAndCacheAll().then(byDate => {
         const bookings = byDate[currentDate] || [];
+        // Si le fetch revient vide mais qu'on a déjà des données → ne pas vider (glitch réseau)
+        if(bookings.length === 0 && totalResaCount() > 0) return;
         const snap = snapshotPlacements();
         reservations = {s1:[], s2:[], transats:[], soir:[]};
         fused = {s1:[],s2:[],transats:[],soir:[]};
