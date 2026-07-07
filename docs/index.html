@@ -6442,7 +6442,15 @@ async function fetchZcPage(page, dateFilter){
     }
   });
   if(!res.ok) throw new Error('HTTP ' + res.status);
-  return await res.json();
+  const json = await res.json();
+  // Log de diagnostic page 1 — clés top-level + structure premier booking
+  if(page === 1 && !dateFilter){
+    const b0 = (json.data||[])[0];
+    console.log('[ZC p1] top-level keys:', Object.keys(json).join(', '));
+    console.log('[ZC p1] data.length:', (json.data||[]).length, '| paginator:', JSON.stringify(json.paginator||json.meta||json.pagination||null));
+    if(b0) console.log('[ZC p1] booking[0] keys:', Object.keys(b0).join(', '), '| shift_date:', b0.shift_date, '| day:', b0.day, '| time:', b0.time, '| status:', b0.status);
+  }
+  return json;
 }
 
 // ── Voie rapide : fetch filtré par date (1-2 requêtes si l'API supporte date_min/date_max)
@@ -6495,42 +6503,73 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1P
   if(_fetchAllInProgress) return _fetchAllInProgress;
 
   _fetchAllInProgress = (async () => {
-    let p1data, totalPages;
+    const byDate = {};
+
+    // Essaie tous les champs de date possibles dans la réponse Zenchef
+    const extractDate = (b) => {
+      const raw = b.shift_date || b.day || b.shift_slot?.date
+        || b.shift_slot?.shift?.date || b.booking_date || b.service_date || b.date_service || '';
+      return typeof raw === 'string' ? raw.substring(0, 10) : '';
+    };
+    const addToBD = (rows) => {
+      rows.forEach(b => {
+        const d = extractDate(b);
+        if(d && /^\d{4}-\d{2}-\d{2}$/.test(d)){ if(!byDate[d]) byDate[d]=[]; byDate[d].push(b); }
+      });
+    };
+
+    let p1data, knownTotalPages;
     if(p1Prefetch){
       p1data = p1Prefetch.p1data;
-      totalPages = p1Prefetch.totalPages;
+      knownTotalPages = p1Prefetch.totalPages;
     } else {
       const p1full = await fetchZcPage(1);
       p1data = p1full.data || [];
-      const total = p1full.paginator?.total || 0;
-      totalPages = Math.max(1, Math.ceil(total / 250));
+      // Essaie plusieurs chemins de paginateur — l'API peut changer de structure
+      const pag = p1full.paginator || p1full.meta || p1full.pagination || {};
+      const total = pag.total || pag.total_count || pag.count || p1full.total || 0;
+      const lastPage = pag.last_page || pag.total_pages || pag.pages || 0;
+      knownTotalPages = lastPage > 0 ? lastPage : (total > 0 ? Math.ceil(total / 250) : 0);
     }
-    if(onProgress) onProgress(1, totalPages);
 
-    const byDate = {};
-    const addToBD = (rows) => {
-      rows.forEach(b => {
-        const d = (b.shift_date || b.day || '').substring(0, 10);
-        if(d){ if(!byDate[d]) byDate[d]=[]; byDate[d].push(b); }
-      });
-    };
     addToBD(p1data);
-
-    // Notifier si la date cible est déjà dans la page 1
     if(onDateReady && targetDate && byDate[targetDate])
       onDateReady(targetDate, byDate[targetDate]);
 
-    const BATCH = 12; // batches de 12 — 2× plus rapide que 6 sans saturer l'API
-    for(let start = 2; start <= totalPages; start += BATCH){
-      const pageNums = Array.from(
-        {length: Math.min(BATCH, totalPages - start + 1)},
-        (_, i) => start + i
-      );
-      const results = await Promise.all(pageNums.map(p => fetchZcPage(p).then(r => r.data || [])));
-      results.forEach(rows => addToBD(rows));
-      if(onProgress) onProgress(Math.min(start + BATCH - 1, totalPages), totalPages);
-      if(onDateReady && targetDate && byDate[targetDate])
-        onDateReady(targetDate, byDate[targetDate]);
+    // Si le paginateur donne un total fiable, on utilise les batches rapides
+    // Sinon on pagine séquentiellement jusqu'à une page courte (stratégie safe)
+    if(knownTotalPages > 1){
+      if(onProgress) onProgress(1, knownTotalPages);
+      const BATCH = 8;
+      for(let start = 2; start <= knownTotalPages; start += BATCH){
+        const pageNums = Array.from(
+          {length: Math.min(BATCH, knownTotalPages - start + 1)},
+          (_, i) => start + i
+        );
+        const results = await Promise.all(pageNums.map(p => fetchZcPage(p).then(r => r.data || [])));
+        results.forEach(rows => addToBD(rows));
+        if(onProgress) onProgress(Math.min(start + BATCH - 1, knownTotalPages), knownTotalPages);
+        if(onDateReady && targetDate && byDate[targetDate])
+          onDateReady(targetDate, byDate[targetDate]);
+      }
+    } else if(p1data.length >= 250){
+      // Paginateur absent/vide mais page 1 est pleine → il y a peut-être d'autres pages
+      // On pagine jusqu'à une page courte (< 250 bookings)
+      if(onProgress) onProgress(1, 99);
+      let page = 2;
+      while(page <= 50){ // sécurité max 50 pages
+        const result = await fetchZcPage(page);
+        const rows = result.data || [];
+        if(rows.length === 0) break;
+        addToBD(rows);
+        if(onProgress) onProgress(page, 99);
+        if(onDateReady && targetDate && byDate[targetDate])
+          onDateReady(targetDate, byDate[targetDate]);
+        if(rows.length < 250) break; // dernière page
+        page++;
+      }
+    } else {
+      if(onProgress) onProgress(1, 1);
     }
 
     // Stocker en mémoire
@@ -6545,7 +6584,10 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1P
     });
     if(cacheErrors > 0) console.warn('ZC cache: ' + cacheErrors + ' dates non sauvegardées (localStorage plein)');
     zcMarkFullFetch();
-    console.log('ZC pool: ' + Object.values(byDate).flat().length + ' bookings · ' + totalPages + ' pages · ' + Object.keys(byDate).length + ' dates');
+    const totalBk = Object.values(byDate).flat().length;
+    const allDates = Object.keys(byDate).sort();
+    console.log('[ZC] ' + totalBk + ' bookings · dates: ' + (allDates.join(', ') || 'aucune'));
+    if(totalBk === 0) console.warn('[ZC] ATTENTION: 0 bookings récupérés — vérifier shift_date dans la réponse API');
     return byDate;
   })();
 
@@ -6954,6 +6996,12 @@ async function syncZenchef(date){
         p1Prefetch
       );
       const bookings = byDate[date] || [];
+      // Log diagnostic si toujours 0 après le fetch complet
+      if(bookings.length === 0){
+        const allDates = Object.keys(byDate).sort();
+        const totalBk = Object.values(byDate).flat().length;
+        console.warn('[ZC sync] 0 bookings pour ' + date + ' | total pool: ' + totalBk + ' | dates disponibles: ' + (allDates.join(', ')||'aucune'));
+      }
       zcCacheSet(date, bookings);
       // Réinitialiser avant l'apply final pour éviter les doublons dus au callback progressif
       reservations = {s1:[], s2:[], transats:[], soir:[]};
