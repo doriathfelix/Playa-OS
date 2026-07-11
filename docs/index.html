@@ -5947,7 +5947,7 @@ let syncInterval = null;
 let lastSyncAt = null;
 
 // ── Cache IndexedDB + localStorage fallback
-const ZC_CACHE_TTL_NOW  = 10 * 60 * 1000;  // 10 min pour aujourd'hui et futur
+const ZC_CACHE_TTL_NOW  = 15 * 60 * 1000;  // 15 min pour aujourd'hui et futur
 const ZC_CACHE_TTL_PAST = 24 * 60 * 60 * 1000; // 24h pour les dates passées
 const ZC_FULL_FETCH_KEY = 'playa_zc_pool_ts';
 let _zcDb = null; // IndexedDB connection
@@ -7050,7 +7050,9 @@ function snapshotPlacements(){
     ['s1','s2','transats','soir'].forEach(svc => {
       (reservations[svc]||[]).forEach(r => {
         if(r.placed || r.tableId != null || r.slot != null){
-          placements[r.id] = {placed:r.placed, tableId:r.tableId, slot:r.slot, extraSlots:r.extraSlots};
+          // Clé stable = zenchef_id (survit au re-fetch) ; fallback r.id pour les resas manuelles
+          const key = r.zenchef_id || r.id;
+          placements[key] = {placed:r.placed, tableId:r.tableId, slot:r.slot, extraSlots:r.extraSlots};
         }
       });
     });
@@ -7067,7 +7069,9 @@ function restorePlacements(snap){
   if(!Object.keys(p).length) return;
   ['s1','s2','transats','soir'].forEach(svc => {
     (reservations[svc]||[]).forEach(r => {
-      const s = p[r.id];
+      // Même clé que dans snapshotPlacements : zenchef_id en priorité
+      const key = r.zenchef_id || r.id;
+      const s = p[key];
       if(s){ r.placed=s.placed; r.tableId=s.tableId; r.slot=s.slot; r.extraSlots=s.extraSlots; }
     });
   });
@@ -7107,7 +7111,7 @@ function startAutoSync(){
         render();
       }).catch(() => {});
     }
-  }, 5 * 60 * 1000);
+  }, 15 * 60 * 1000);
 }
 
 // Ferme avec Escape
