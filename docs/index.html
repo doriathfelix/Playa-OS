@@ -5306,10 +5306,13 @@ function printTransats(){
 
   const nbTransats = tableResas.reduce((s,r) => s+(r.tr||0), 0)
                    + rtResas.reduce((s,r) => s+(r.tr||r.pax||0), 0);
-  const nbBeds     = bedResas.length;
-  // 1ère ligne = préférence row_transats===500 (front de mer)
+  const nbBeds     = bedResas.reduce((s,r) => s+(r.tr||1), 0); // nb de lits (pas d'emplacements)
+  // Grand total emplacements transats : transats ordinaires + beds×2 (1 lit = 2 places)
+  const trGrandTotal = nbTransats + nbBeds * 2;
+  // 1ère ligne = préférence row_transats===500 (front de mer) — inclut les beds en 1ère ligne
   const nbLigne1   = tableResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||0), 0)
-                   + rtResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||r.pax||0), 0);
+                   + rtResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||r.pax||0), 0)
+                   + bedResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||1)*2, 0);
   // Ventilation service — mutuellement exclusive, somme = nbTransats
   const nbS1   = tableResas.filter(r => r.svc==='s1').reduce((s,r) => s+(r.tr||0), 0);
   const nbS2   = tableResas.filter(r => r.svc==='s2').reduce((s,r) => s+(r.tr||0), 0);
@@ -5496,10 +5499,10 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;he
   </div>
   <div style="display:flex;align-items:center;gap:2.5mm;flex-wrap:wrap">
     <div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center">
-      <div style="font-size:11pt;font-weight:700;line-height:1">${nbTransats}</div>
+      <div style="font-size:11pt;font-weight:700;line-height:1">${trGrandTotal}</div>
       <div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">transats</div>
     </div>
-    ${nbBeds?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbBeds}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">beds</div></div>`:''}
+    ${nbBeds?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbBeds}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">beds (×2)</div></div>`:''}
     ${nbLigne1?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbLigne1}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">1ère ligne</div></div>`:''}
     <div style="display:flex;gap:1.5mm;align-items:center;flex-wrap:wrap">
       ${nbS1?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #166534;color:#166534">S1 · ${nbS1}</span>`:''}
@@ -5557,11 +5560,10 @@ function printServiceSheet() {
       const fg = !entry.tranat && (fusedGroups||[]).find(f => f.tids.includes(id));
       if (fg && !done.has(fg.tids[0])) {
         const r = fg.tids.map(t => map[t]).find(x => x) || null;
-        const tbadge = (r && r.tr > 0) ? `<span class="t-badge">T</span>` : '';
-        const bbadge = (r && r.bed) ? `<span class="t-badge" style="background:#ede9fe;border-color:#7c3aed;color:#7c3aed">B</span>` : '';
+        const tbadge = (r && (r.tr > 0 || r.bed)) ? `<span class="t-badge">T</span>` : '';
         // Première table : hachures + réservation + bordure haute encadrante
         rows += r
-          ? `<tr class="occ fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}${bbadge}</td></tr>`
+          ? `<tr class="occ fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`
           : `<tr class="fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
         // Tables suivantes : hachures + ligne vide (modifiable à la main)
         // Dernière ligne du groupe : bordure basse épaisse pour séparer visuellement des autres groupes
@@ -5586,9 +5588,8 @@ function printServiceSheet() {
 
   function dataRow(lbl, r, isLong) {
     if (!r) return `<tr><td class="d-tbl">${lbl}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
-    const tbadge = (r.tr > 0) ? `<span class="t-badge">T</span>` : '';
-    const bbadge = r.bed ? `<span class="t-badge" style="background:#ede9fe;border-color:#7c3aed;color:#7c3aed">B</span>` : '';
-    return `<tr class="occ"><td class="d-tbl">${lbl}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}${bbadge}</td></tr>`;
+    const tbadge = (r.tr > 0 || r.bed) ? `<span class="t-badge">T</span>` : '';
+    return `<tr class="occ"><td class="d-tbl">${lbl}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`;
   }
 
   const mapS1 = buildResaMap('s1');
@@ -5686,9 +5687,8 @@ function printSoirSheet() {
 
   function dataRow(lbl, r) {
     if (!r) return `<tr><td class="d-tbl">${lbl}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
-    const tbadge = (r.tr > 0) ? `<span class="t-badge">T</span>` : '';
-    const bbadge = r.bed ? `<span class="t-badge" style="background:#ede9fe;border-color:#7c3aed;color:#7c3aed">B</span>` : '';
-    return `<tr class="occ"><td class="d-tbl">${lbl}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}${bbadge}</td></tr>`;
+    const tbadge = (r.tr > 0 || r.bed) ? `<span class="t-badge">T</span>` : '';
+    return `<tr class="occ"><td class="d-tbl">${lbl}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`;
   }
 
   let rows = '';
@@ -5699,10 +5699,9 @@ function printSoirSheet() {
     const fg = !entry.tranat && [...(fused.soir||[])].find(f => f.tids.includes(id));
     if (fg && !done.has(fg.tids[0])) {
       const r = fg.tids.map(t => mapSoir[t]).find(x => x) || null;
-      const tbadge = (r && r.tr > 0) ? `<span class="t-badge">T</span>` : '';
-      const bbadge = (r && r.bed) ? `<span class="t-badge" style="background:#ede9fe;border-color:#7c3aed;color:#7c3aed">B</span>` : '';
+      const tbadge = (r && (r.tr > 0 || r.bed)) ? `<span class="t-badge">T</span>` : '';
       rows += r
-        ? `<tr class="occ fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}${bbadge}</td></tr>`
+        ? `<tr class="occ fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`
         : `<tr class="fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
       fg.tids.slice(1).forEach((tid, idx, arr) => {
         const isLast = idx === arr.length - 1;
@@ -6683,8 +6682,8 @@ function applyBookings(bookings, date){
         ns: conv.resa.ns,
         zenchef_status: conv.resa.zenchef_status,
         placed: false, slot: null,
-        row_transats: null,
-        pref_extremite: false,
+        row_transats: conv._preferredRow,
+        pref_extremite: conv._preferExtremite,
       });
       reservations.transats.push(bedResa);
     }
@@ -6767,8 +6766,9 @@ function reAnalyzeAllResas(){
       if(nbT > 0) r.tr = nbT;
     }
 
-    // Bed si non encore détecté (toutes sources)
-    if(!r.bed && parseBedFromText(raw) > 0) r.bed = true;
+    // Bed si non encore détecté — exclure les sous-resas _tr/_bed pour éviter les doublons
+    const isZcSub = r.zenchef_id && (String(r.zenchef_id).endsWith('_tr') || String(r.zenchef_id).endsWith('_bed'));
+    if(!r.bed && !isZcSub && parseBedFromText(raw) > 0) r.bed = true;
   });
 
   // ── Déduplication complète : élimine les doublons Zenchef (booking modifié → 2 IDs différents)
