@@ -1559,7 +1559,7 @@ function renderSidebar(){
   const q = (document.getElementById('search-input').value||'').toLowerCase().trim();
   const list = document.getElementById('resa-list');
   list.innerHTML='';
-  const rows = sortByBookedAt(gr()).filter(r => {
+  const rows = sortByTime(gr()).filter(r => {
     if(q && !r.name.toLowerCase().includes(q)
          && !(r.phone||'').replace(/\s/g,'').includes(q.replace(/\s/g,''))
          && !(r.comment||'').toLowerCase().includes(q)) return false;
