@@ -855,7 +855,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
       <button onclick="printTransats()" title="Imprimer le plan de transats" style="height:34px;padding:0 11px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--card);font-size:11px;font-weight:700;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;white-space:nowrap;transition:all .15s" onmouseenter="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseleave="this.style.borderColor='var(--sep)';this.style.color='var(--t2)'">⛱ Transats</button>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
-      <div id="sync-btn" onclick="syncZenchef()" title="Synchroniser avec Zenchef" style="background:var(--bg);border:1px solid var(--sep);color:var(--t2);font-size:12px;font-weight:500;width:auto;padding:0 13px;height:36px;display:flex;align-items:center;gap:6px;border-radius:var(--r-sm);cursor:pointer;flex-shrink:0;transition:all .15s;letter-spacing:.01em" onmouseenter="this.style.borderColor='var(--t3)';this.style.background='var(--card)'" onmouseleave="this.style.borderColor='var(--sep)';this.style.background='var(--bg)'"><span id="sync-icon">⟳</span> Zenchef</div>
+      <div id="sync-btn" onclick="syncZenchef(currentDate, true)" title="Synchroniser avec Zenchef (force rechargement)" style="background:var(--bg);border:1px solid var(--sep);color:var(--t2);font-size:12px;font-weight:500;width:auto;padding:0 13px;height:36px;display:flex;align-items:center;gap:6px;border-radius:var(--r-sm);cursor:pointer;flex-shrink:0;transition:all .15s;letter-spacing:.01em" onmouseenter="this.style.borderColor='var(--t3)';this.style.background='var(--card)'" onmouseleave="this.style.borderColor='var(--sep)';this.style.background='var(--bg)'"><span id="sync-icon">⟳</span> Zenchef</div>
       <div id="sync-age" class="sync-age">jamais synced</div>
     </div>
   </div>
@@ -1569,6 +1569,10 @@ function renderSidebar(){
     else if(fuseMode&&fuseTargets.includes(r.id)) cls+=' rc-fuse';
     else if(r.urgent) cls+=' rc-urgent';
     else if(r.placed) cls+=' rc-placed';
+    const hasIncoherence = !r.ns && (
+      (r.repas_transat && (!r.tr || r.tr === 0)) ||
+      (r.bed && (!r.tr || r.tr === 0))
+    );
     if(!r.ns && !fuseMode){
       if(r.repas_transat || r.svc==='transats') cls+=' svc-rt';
       else if(r.svc==='s1') cls+=' svc-s1';
@@ -1576,6 +1580,7 @@ function renderSidebar(){
       else if(r.svc==='soir') cls+=' svc-soir';
     }
     d.className=cls; d.draggable=!r.ns; d.dataset.id=r.id;
+    if(hasIncoherence) { d.style.borderColor='#FF5555'; d.style.borderLeftWidth='3px'; }
     const ptag = r.placed
       ? (currentTab===2
           ? (r.slot >= 1000
@@ -1621,6 +1626,11 @@ function renderSidebar(){
       ? `<span class="rc-att-badge">⏳ En attente</span>`
       : '';
 
+    // Badge incohérence (transat sans nombre, bed sans nombre…)
+    const incoherenceBadge = hasIncoherence
+      ? `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FFEAEA;border:0.5px solid #FF5555;color:#CC0000">⚠ Nb transats manquant</span>`
+      : '';
+
     // Placement
     const placedLine = r.placed
       ? (currentTab===2
@@ -1649,6 +1659,7 @@ function renderSidebar(){
           <div class="rc-name">${r.urgent?'<span class="urgent-dot"></span>':''}${r.name}</div>
           ${!r.repas_transat?`<div style="font-size:11px;font-weight:600;color:var(--t2);margin-top:3px">${r.time}</div>`:''}
           ${attBadge}
+          ${incoherenceBadge}
           ${alertLine}
           ${commentLine}
           ${placedLine}
@@ -6292,7 +6303,7 @@ function zcToResa(b){
   const is13h00 = (b.time || '').startsWith('13:00');
   // Transat mentionné dans les notes (même sans nombre précis) → équivaut à avoir des transats
   const mentionsTransatsInText = nbTransats > 0 || /\btransats?\b/i.test(allTextFields);
-  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || (is13h00 && mentionsTransatsInText);
+  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || is13h00;
 
   // Heure : "13:00" -> "13h00"
   const timeRaw = b.time || '12:00';
@@ -6792,11 +6803,11 @@ function zcSetSpinner(on){
 }
 
 // ── Sync principale
-async function syncZenchef(date){
+async function syncZenchef(date, force){
   if(!date) date = currentDate;
 
   // ── ÉTAPE 1 : cache (IndexedDB/localStorage) valide → retour immédiat
-  const cached = await zcCacheGet(date);
+  const cached = !force ? await zcCacheGet(date) : null;
   if(cached){
     reservations = {s1:[], s2:[], transats:[], soir:[]};
     fused = {s1:[],s2:[],transats:[],soir:[]};
