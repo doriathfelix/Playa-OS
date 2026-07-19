@@ -1274,7 +1274,7 @@ const SALON_SLOTS = [
 
 // ── BEDs spéciaux — rangée 100 (101-103) + rangée 200 positions 19-21 (219-221)
 // Transats lit/cabane, style ambré/ocre distinct — capacité 2 PAX par slot
-const BED_SLOTS = [101, 102, 103, 220, 221, 222];
+const BED_SLOTS = [101, 102, 103, 219, 220, 221];
 // Slot 219 est maintenant un transat ordinaire (label "218") entre le 217 et les BEDs
 
 
@@ -1363,6 +1363,7 @@ function mkResa(fields){
     tr_fallback: fields.tr_fallback ?? null, // nb transats de secours si bed impossible
     tr_fallback_row: fields.tr_fallback_row ?? null, // rangée fallback (500=1ère ligne)
     _typeTransatAmbiguous: fields._typeTransatAmbiguous ?? false, // typeExp dit table+transat mais sans nb → warning UI
+    monteeTable: fields.monteeTable ?? null, // tableId S2 quand le client est monté manger (reste en transat après)
   };
 }
 
@@ -1626,6 +1627,11 @@ function renderSidebar(){
       ? `<span class="rc-att-badge">⏳ En attente</span>`
       : '';
 
+    // Badge montée à table
+    const monteeBadge = r.monteeTable
+      ? `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--s2bg,#FFF3E0);border:0.5px solid var(--s2bd,#E8870A);color:var(--s2t,#E8870A)">⬆ T${r.monteeTable}</span>`
+      : '';
+
     // Badge incohérence (transat sans nombre, bed sans nombre…)
     const incoherenceBadge = hasIncoherence
       ? `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FFEAEA;border:0.5px solid #FF5555;color:#CC0000">⚠ Nb transats manquant</span>`
@@ -1659,6 +1665,7 @@ function renderSidebar(){
           <div class="rc-name">${r.urgent?'<span class="urgent-dot"></span>':''}${r.name}</div>
           ${!r.repas_transat?`<div style="font-size:11px;font-weight:600;color:var(--t2);margin-top:3px">${r.time}</div>`:''}
           ${attBadge}
+          ${monteeBadge}
           ${incoherenceBadge}
           ${alertLine}
           ${commentLine}
@@ -2282,7 +2289,8 @@ function makeCell(id, tMap){
   const disp = d.lbl || id;
   cell.title=`${disp} · ${capStr(d)}${d.note?' · '+d.note:''}`;
   if(r){
-    cell.innerHTML=`<div class="tbl-num">${disp}</div><div class="tbl-name">${r.name}</div><div class="pax-bubble${r.urgent?' urg':''}">${r.pax}</div>`;
+    const nameDisp=(r.monteeTable?'⛱ ':'')+r.name;
+    cell.innerHTML=`<div class="tbl-num">${disp}</div><div class="tbl-name">${nameDisp}</div><div class="pax-bubble${r.urgent?' urg':''}">${r.pax}</div>`;
   } else {
     cell.innerHTML=`<div class="tbl-num">${disp}</div><div class="tbl-cap">${capStr(d)}</div>`;
   }
@@ -2337,6 +2345,10 @@ function renderTablesDefaultLayout(){
   // Chaque onglet voit son propre plan — autoplace S1 n'affecte pas S2
   const tMap={};
   gr().forEach(r=>{if(r.placed&&r.tableId&&!r.ns)tMap[r.tableId]=r;});
+  // Transats "montés à table" visibles dans le plan S2
+  if(currentTab===1){
+    reservations.transats.forEach(rt=>{if(rt.monteeTable&&!rt.ns&&!tMap[rt.monteeTable])tMap[rt.monteeTable]=rt;});
+  }
 
   const card=document.createElement('div'); card.className='floor-card';
 
@@ -3340,6 +3352,9 @@ function showDetail(id){
     statusHTML=`<div class="rp-status" style="background:var(--rbg);border-color:var(--rbd);color:var(--rt)"><div class="rp-status-dot" style="background:var(--red)"></div>No-show</div>`;
   } else if(r.urgent){
     statusHTML=`<div class="rp-status" style="background:var(--rbg);border-color:var(--rbd);color:var(--rt)"><div class="rp-status-dot" style="background:var(--red)"></div>Arrivée imminente</div>`;
+  } else if(r.monteeTable){
+    const loc=r.placed?(r.slot>=1000?'Transat extra':`Transat ${r.slot}`):'';
+    statusHTML=`<div class="rp-status" style="background:var(--rtbg);border-color:var(--rtbd);color:var(--rtt)"><div class="rp-status-dot" style="background:var(--teal,#169B8A)"></div>⛱ En salle · T${r.monteeTable}${loc?' · '+loc:''}</div>`;
   } else if(r.placed){
     const loc=currentTab===2?(r.slot>=1000?'Transat extra':`Transats ${r.slot}`):`T${r.tableId}`;
     statusHTML=`<div class="rp-status" style="background:var(--s1bg);border-color:var(--s1bd);color:var(--s1t)"><div class="rp-status-dot" style="background:var(--green)"></div>Placé · ${loc}</div>`;
@@ -3390,8 +3405,16 @@ function showDetail(id){
     }
     // No-show
     addRpBtn(rpA,'✗ No-show','rp-btn-noshow',()=>{
-      saveUndo();r.ns=true;r.placed=false;r.tableId=null;r.slot=null;render();
+      saveUndo();r.ns=true;r.placed=false;r.tableId=null;r.slot=null;r.monteeTable=null;render();
     });
+    // Montée à table (transats uniquement)
+    if(r.svc==='transats'||r.repas_transat){
+      if(!r.monteeTable){
+        addRpBtn(rpA,'⬆ Monter à table','rp-btn-montee',()=>monteeTablePicker(r));
+      } else {
+        addRpBtn(rpA,`↩ Retour transat`,'rp-btn-retour-transat',()=>retourTransat(r.id));
+      }
+    }
   }
 
   // Récap jour + Fiche client
@@ -3421,6 +3444,48 @@ function addRpBtn(container, label, cls, onclick){
   b.textContent=label;
   b.onclick=onclick;
   container.appendChild(b);
+}
+
+function monteeTablePicker(r){
+  // Tables S2 libres (non occupées par une resa S2 placée)
+  const occupiedS2=new Set(reservations.s2.filter(x=>x.placed&&!x.ns).map(x=>x.tableId));
+  // Aussi exclure les tables déjà prises par d'autres montées
+  reservations.transats.forEach(rt=>{if(rt.id!==r.id&&rt.monteeTable)occupiedS2.add(rt.monteeTable);});
+  const freeTables=Object.keys(TABLE_DATA).map(Number)
+    .filter(id=>!occupiedS2.has(id))
+    .sort((a,b)=>(TABLE_DATA[a].prio||99)-(TABLE_DATA[b].prio||99));
+  openOverlay((box,close)=>{
+    box.innerHTML=`
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:800;color:var(--t1)">⬆ Monter à table — ${r.name}</div>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3);line-height:1">✕</button>
+      </div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Tables S2 libres — choisissez où installer le client</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${freeTables.map(id=>{
+          const d=TABLE_DATA[id];
+          const lbl=d.lbl||`T${id}`;
+          return `<button onclick="assignMonteeTable(${r.id},${id});this.closest('[style*=fixed]').remove()" style="padding:10px 14px;border-radius:10px;border:1px solid var(--sep);background:var(--bg);font-size:13px;font-weight:700;cursor:pointer;color:var(--t1);min-width:64px">${lbl}<br><span style="font-size:10px;font-weight:500;color:var(--t3)">${d.lo}–${d.hi} pax</span></button>`;
+        }).join('')}
+        ${freeTables.length===0?'<div style="color:var(--t4);font-size:13px;padding:8px 0">Toutes les tables S2 sont occupées</div>':''}
+      </div>`;
+  });
+}
+
+function assignMonteeTable(resaId, tableId){
+  saveUndo();
+  const r=Object.values(reservations).flat().find(x=>x.id===resaId);
+  if(r){ r.monteeTable=tableId; }
+  render();
+  if(selectedId===resaId) showDetail(resaId);
+}
+
+function retourTransat(resaId){
+  saveUndo();
+  const r=Object.values(reservations).flat().find(x=>x.id===resaId);
+  if(r){ r.monteeTable=null; }
+  render();
+  if(selectedId===resaId) showDetail(resaId);
 }
 
 // ── Modal overlay générique
@@ -3475,16 +3540,34 @@ function showClientModal(r){
 
     // Scan async (setTimeout pour laisser le modal s'afficher)
     setTimeout(()=>{
+      // Source principale : CRM persistant (5 ans d'historique)
       const history=[];
-      const keys=Object.keys(localStorage).filter(k=>k.startsWith('playa_zc_'));
-      for(const key of keys){
+      const normName=(r.name||'').toLowerCase().trim();
+      const crmMap=_crmLoadMap()||{};
+      const crmEntry=crmMap[normName]
+        || Object.values(crmMap).find(c=>r.phone&&c.phone&&c.phone===r.phone)
+        || null;
+      if(crmEntry){
+        (crmEntry.visits||[]).forEach(v=>{
+          history.push({date:v.date||'',time:'',pax:v.pax||2,status:'confirmed'});
+        });
+      }
+      // Complément : cache brut Zenchef (time + no-shows pour les dates récentes)
+      const zcKeys=Object.keys(localStorage).filter(k=>k.startsWith('playa_zc_')&&!k.startsWith('playa_zc_pool'));
+      const zcDates=new Set(history.map(h=>h.date));
+      for(const key of zcKeys){
         try{
           const parsed=JSON.parse(localStorage.getItem(key));
           const data=parsed.data||[];
           data.forEach(b=>{
             const match=(r.phone&&b.phone_number===r.phone)||(r.email&&b.email===r.email&&r.email)||
               (!r.phone&&!r.email&&b.lastname&&r.name.toLowerCase().includes(b.lastname.toLowerCase())&&b.lastname.length>2);
-            if(match) history.push({date:b.shift_date||b.day||key.replace('playa_zc_',''),time:(b.time||'').substring(0,5),pax:b.nb_guests||1,status:b.status||''});
+            if(!match) return;
+            const d=b.shift_date||b.day||key.replace('playa_zc_','');
+            const st=b.status||'';
+            const existing=history.find(h=>h.date===d);
+            if(existing){ existing.time=(b.time||'').substring(0,5); existing.status=st; }
+            else if(!zcDates.has(d)) history.push({date:d,time:(b.time||'').substring(0,5),pax:b.nb_guests||1,status:st});
           });
         }catch(e){}
       }
@@ -11237,12 +11320,12 @@ function buildClientPrefsCache(){
     cache[c.normKey]={
       tableId:tm?parseInt(tm[1]):null,
       wantTerrasse:!!p.find(x=>x.key==='terrasse'),
-      wantInterieur:false,
+      wantInterieur:/\b(int[eé]rieur|dedans|indoor)\b/i.test(allComments),
       wantOmbre:!!p.find(x=>x.key==='calme'),
-      wantSoleil:false,
+      wantSoleil:/\b(soleil|ensoleill[eé]|sun)\b/i.test(allComments),
       bedDouble:!!p.find(x=>x.key==='bedtrans'),
       firstRow:!!p.find(x=>x.key==='vuemer'),
-      extremite:false
+      extremite:/\b(c[oô]t[eé]|bout|extr[eé]mit[eé])\b/i.test(allComments)
     };
   });
   try{localStorage.setItem('playa-client-prefs-cache',JSON.stringify(cache));}catch(e){}
@@ -11755,15 +11838,6 @@ function renderGroupes(c) {
 // ══════════════════════════
 // INIT
 // ══════════════════════════
-// Reset FORCÉ de tout ce qui concerne le layout des tables
-// (nettoie les corruptions de localStorage)
-(function(){
-  try{ localStorage.removeItem('playa_table_order'); }catch(e){}
-  try{ localStorage.removeItem('playa_table_pos'); }catch(e){}
-  tableOrder = null;
-  tablePositions = {};
-  console.log('Plan de salle réinitialisé proprement');
-})();
 
 // Initialiser le date picker avec aujourd'hui
 updateDateDisplay(currentDate);
