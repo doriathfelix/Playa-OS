@@ -1364,6 +1364,7 @@ function mkResa(fields){
     tr_fallback_row: fields.tr_fallback_row ?? null, // rangée fallback (500=1ère ligne)
     _typeTransatAmbiguous: fields._typeTransatAmbiguous ?? false, // typeExp dit table+transat mais sans nb → warning UI
     monteeTable: fields.monteeTable ?? null, // tableId S2 quand le client est monté manger (reste en transat après)
+    transatDesistement: fields.transatDesistement ?? false, // transat/bed en liste d'attente si annulation libère un emplacement
   };
 }
 
@@ -1637,6 +1638,11 @@ function renderSidebar(){
       ? `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FFEAEA;border:0.5px solid #FF5555;color:#CC0000">⚠ Nb transats manquant</span>`
       : '';
 
+    // Badge "si désistement" — transat/bed en liste d'attente si annulation
+    const desistementBadge = r.transatDesistement
+      ? `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:#F0FDF4;border:0.5px solid #BBF7D0;color:#15803D">🔄 Si désistement</span>`
+      : '';
+
     // Placement
     const placedLine = r.placed
       ? (currentTab===2
@@ -1666,6 +1672,7 @@ function renderSidebar(){
           ${!r.repas_transat?`<div style="font-size:11px;font-weight:600;color:var(--t2);margin-top:3px">${r.time}</div>`:''}
           ${attBadge}
           ${monteeBadge}
+          ${desistementBadge}
           ${incoherenceBadge}
           ${alertLine}
           ${commentLine}
@@ -1715,15 +1722,15 @@ function renderStats(){
   const paxRT = reservations.transats.filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+x.pax,0);
 
   // Total transats : somme des tr sur les resas table (pas sous-resas pour éviter doublon)
-  // + tr des repas transats purs
+  // + tr des repas transats purs — les resas "si désistement" sont exclues (non garanties)
   const trFromTables = [...reservations.s1,...reservations.s2,...reservations.soir]
-    .filter(x=>!x.ns && x.tr>0 && !isSubResa(x)).reduce((s,x)=>s+(x.tr||0),0);
+    .filter(x=>!x.ns && x.tr>0 && !isSubResa(x) && !x.transatDesistement).reduce((s,x)=>s+(x.tr||0),0);
   const trFromRT = reservations.transats
-    .filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+(x.tr||x.pax||0),0);
+    .filter(x=>x.repas_transat&&!x.ns&&!x.transatDesistement).reduce((s,x)=>s+(x.tr||x.pax||0),0);
   const trTotal = trFromTables + trFromRT;
-  // Beds (lits doubles) — chaque lit = 2 transats dans le total
+  // Beds (lits doubles) — chaque lit = 2 transats dans le total (hors désistement)
   const trBeds = reservations.transats
-    .filter(x=>x.bed&&!x.ns&&isSubResa(x)).reduce((s,x)=>s+(x.tr||1),0);
+    .filter(x=>x.bed&&!x.ns&&isSubResa(x)&&!x.transatDesistement).reduce((s,x)=>s+(x.tr||1),0);
   // Grand total transats journée : transats normaux + beds×2
   const trGrandTotal = trTotal + trBeds * 2;
 
@@ -3379,6 +3386,7 @@ function showDetail(id){
       else if(r.row_transats===300) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--rtbg);border:0.5px solid var(--rtbd);color:var(--rtt)">🌊 Milieu</span>`);
       if(r.pref_extremite) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--gdbg);border:0.5px solid var(--gdb);color:var(--gdt)">⟺ Extrémité</span>`);
       if(r.bed) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FFF8E1;border:0.5px solid #FFD54F;color:#8A6200">🛏 Lit double</span>`);
+      if(r.transatDesistement) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F0FDF4;border:0.5px solid #BBF7D0;color:#15803D">🔄 Si désistement</span>`);
       return tags.length?`<div class="det-row"><div class="det-label">Détecté</div><div class="det-val" style="display:flex;flex-wrap:wrap;gap:4px">${tags.join('')}</div></div>`:'';
     })()}
     ${r.repas_transat?`<div class="det-row"><div class="det-label">Type</div><div class="det-val"><span style="background:var(--rtbg);color:var(--rtt);border:0.5px solid var(--rtbd);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">⛱ Repas transat</span></div></div>`:''}
@@ -4046,9 +4054,9 @@ function autoPlaceFor(svcKey){
   currentTab = TAB_KEYS.indexOf(svcKey);
   const all = reservations[svcKey];
   const resas = svcKey === 'transats'
-    ? all.filter(r => !r.placed && !r.ns && !r.waiting)
+    ? all.filter(r => !r.placed && !r.ns && !r.waiting && !r.transatDesistement)
     : all.filter(r => !r.placed && !r.ns && !r.waiting && r.svc === svcKey);
-  const skipped = all.filter(r => !r.ns && r.waiting).length;
+  const skipped = all.filter(r => !r.ns && (r.waiting || r.transatDesistement)).length;
   svcKey === 'transats' ? autoTransats(resas, skipped) : autoTables(resas, skipped);
   currentTab = prevTab;
   render();
@@ -4064,7 +4072,7 @@ function autoPlace(){
   // Évite que des resas mal classées (svc !== svcKey) soient placées par erreur.
   // Exception : onglet Transats → toutes les resas de reservations.transats sont valides.
   const resas = currentTab === 2
-    ? all.filter(r => !r.placed && !r.ns && !r.waiting)
+    ? all.filter(r => !r.placed && !r.ns && !r.waiting && !r.transatDesistement)
     : all.filter(r => !r.placed && !r.ns && !r.waiting && r.svc === svcKey);
 
   const skipped = all.filter(r => !r.ns && r.waiting).length;
@@ -6260,6 +6268,20 @@ function parseBedOrTransatFromText(txt){
   return null;
 }
 
+// Détecte "si désistement", "en cas d'annulation", "si ça se libère", etc.
+// Retourne true si le client veut des transats UNIQUEMENT si une place se libère
+function parseDesistementFromText(txt){
+  if(!txt) return false;
+  const n = txt.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/'/g,' ');
+  return /\bdesistement\b/.test(n)
+    || /\bsi\s+desiste\b/.test(n)
+    || /\bannulation\b/.test(n)
+    || /\bsi\s+(?:ca\s+se|il\s+se|place\s+se|)\s*libere\b/.test(n)
+    || /\bsi\s+(?:une?\s+)?place\s+(?:se\s+)?libere\b/.test(n)
+    || /\bsi\s+dispo(?:nible)?\b/.test(n)
+    || /\ben\s+cas\s+(?:de\s+)?(?:annulation|desistement|liberation)\b/.test(n);
+}
+
 // "en 501", "slot 501", "n°315", "#412" → numéro de slot → rangée = Math.floor(slot/100)*100
 // Couvre les notes comme "2T en 501" ou "transats n°315"
 function parseSlotFromText(txt){
@@ -6347,8 +6369,12 @@ function zcToResa(b){
   const typeTransatAmbiguous = isTablePlusTransat && nbTransats === 0 && !isBed;
   // (pas de fallback pax : trop de faux positifs — cf. Rambaud Philippe)
 
+  // Désistement : client veut des transats UNIQUEMENT si une annulation libère une place
+  // → pas de tr_fallback (les sous-resas seront créées et marquées transatDesistement)
+  const _isDesistement = parseDesistementFromText(allTextFields);
   // "N transats si ça libère / 1 bed" : bed prioritaire, transats 1ère ligne en secours
-  const conditionalBedTransat = parseBedOrTransatFromText(allTextFields);
+  // Ignoré si désistement détecté (logique différente)
+  const conditionalBedTransat = _isDesistement ? null : parseBedOrTransatFromText(allTextFields);
 
   // Rangée préférentielle : scan de tous les champs texte
   const preferredRow = parsePreferredRowFromText(allTextFields)
@@ -6444,6 +6470,7 @@ function zcToResa(b){
     _preferredRow: preferredRow,
     _preferExtremite: preferExtremite,
     _svc: svcFinal,
+    _desistement: _isDesistement,
     resa: mkResa({
       zenchef_id: String(b.id),
       source: 'zenchef',
@@ -6467,7 +6494,7 @@ function zcToResa(b){
       slot: null,
       booked_at: b.date || b.created_at || null,
       time_transats: heureTransats || null,
-      row_transats: conditionalBedTransat ? conditionalBedTransat.fallbackRow : preferredRow,
+      row_transats: _isDesistement ? null : (conditionalBedTransat ? conditionalBedTransat.fallbackRow : preferredRow),
       pref_extremite: preferExtremite,
       requested_table_id: requestedTableId,
       requested_slot: requestedSlot,
@@ -6663,8 +6690,9 @@ function applyBookings(bookings, date){
         ns: conv.resa.ns,
         zenchef_status: conv.resa.zenchef_status,
         placed: false, slot: null,
-        row_transats: conv._preferredRow,
+        row_transats: conv._desistement ? null : conv._preferredRow,
         pref_extremite: conv._preferExtremite,
+        transatDesistement: conv._desistement || false,
       });
       reservations.transats.push(trResa);
     }
@@ -6687,8 +6715,9 @@ function applyBookings(bookings, date){
         ns: conv.resa.ns,
         zenchef_status: conv.resa.zenchef_status,
         placed: false, slot: null,
-        row_transats: null,
+        row_transats: conv._desistement ? null : null,
         pref_extremite: false,
+        transatDesistement: conv._desistement || false,
       });
       reservations.transats.push(bedResa);
     }
@@ -6723,8 +6752,15 @@ function reAnalyzeAllResas(){
         || /\blateral[e]?\b/.test(norm) || /\bon\s*the\s*side\b/.test(raw.toLowerCase());
     }
 
-    // Rangée préférentielle non encore détectée
-    if(!r.row_transats && (r.tr > 0 || r.bed)){
+    // Désistement : client veut transats/bed uniquement si une annulation libère une place
+    // Limité aux resas du tableau transats — la resa "table" principale du client ne doit pas être marquée
+    if(reservations.transats.includes(r) && (r.tr > 0 || r.bed) && parseDesistementFromText(r.comment || '')){
+      r.transatDesistement = true;
+      r.row_transats = null; // efface tout faux L1 hérité d'un import précédent
+    }
+
+    // Rangée préférentielle non encore détectée (skip pour les resas désistement — évite faux L1)
+    if(!r.transatDesistement && !r.row_transats && (r.tr > 0 || r.bed)){
       const row = parsePreferredRowFromText(raw);
       if(row) r.row_transats = row;
       else {
