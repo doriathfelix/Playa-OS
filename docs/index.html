@@ -3423,6 +3423,12 @@ function showDetail(id){
         addRpBtn(rpA,`↩ Retour transat`,'rp-btn-retour-transat',()=>retourTransat(r.id));
       }
     }
+    // Confirmer transats désistement (une place s'est libérée)
+    if(r.transatDesistement){
+      addRpBtn(rpA,'✓ Confirmer transats','rp-btn-confirmer-transats',()=>{
+        saveUndo(); r.transatDesistement=false; render(); showDetail(r.id);
+      });
+    }
   }
 
   // Récap jour + Fiche client
