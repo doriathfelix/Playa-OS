@@ -864,6 +864,10 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 
 <div id="rush-banner" onclick="toggleRushMode()">⚡ MODE RUSH ACTIF — Tap pour revenir à la vue normale</div>
 
+<!-- CRM Drawer flottant — accessible depuis n'importe quel module -->
+<div id="crm-panel-backdrop" onclick="closeCrmPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1999"></div>
+<div id="crm-panel" data-open="0" style="display:none;position:fixed;top:0;right:0;height:100%;width:360px;max-width:100vw;background:var(--card);z-index:2000;box-shadow:-4px 0 24px rgba(0,0,0,.18);flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)"></div>
+
 <div id="os-shell">
 
 <!-- NAV OS LATÉRALE -->
@@ -943,7 +947,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
     <!-- ══════ GESTION ══════ -->
     <div class="osn-sec-label">Gestion</div>
 
-    <button class="osni" id="osni-clients" onclick="goModule('clients')">
+    <button class="osni" id="osni-clients" onclick="openCrmPanel()">
       <div class="osni-icon" style="background:#FFF0F5">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="7" r="3.2" fill="#FDA4C2" fill-opacity=".4" stroke="#DB2777" stroke-width="1.3"/><path d="M4 18.5C4 15.19 7.13 12.5 11 12.5C14.87 12.5 18 15.19 18 18.5" stroke="#DB2777" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M15 3.5L15.8 5.5L18 6L15.8 6.5L15 8.5L14.2 6.5L12 6L14.2 5.5L15 3.5Z" fill="#DB2777" fill-opacity=".7"/></svg>
       </div>
@@ -11240,7 +11244,7 @@ function crmMergeDay(date,rawBookings){
     if(!ex){map[key].visits.push({date,pax,comment});changed=true;}
     else if(comment&&!ex.comment){ex.comment=comment;changed=true;}
   });
-  if(changed){_crmSaveMap(map);_clientPrefsCache=null;}
+  if(changed){_crmSaveMap(map);crmInvalidate();}
   return changed;
 }
 
@@ -11295,7 +11299,7 @@ async function crmImportHistory(onProgress,onDone){
     }
     if(changed) _crmSaveMap(map);
     localStorage.setItem(CRM_HISTORY_TS_KEY,String(Date.now()));
-    _clientPrefsCache=null;
+    crmInvalidate();
     const cc=Object.keys(map).length,bc=Object.values(map).reduce((s,c)=>s+c.visits.length,0);
     if(onDone) onDone(cc,bc);
     return map;
@@ -11312,6 +11316,7 @@ async function crmEnsureHistory(){
 
 // ── Data collection ────────────────────────────────────────────────────────
 function clientsCollect(){
+  if(_clientsList) return _clientsList;
   const map={};
   function upsert(name,phone,email,date,pax,comment){
     const key=name.toLowerCase().trim();
@@ -11348,11 +11353,13 @@ function clientsCollect(){
     result.push(c);
   });
   result.sort((a,b)=>b.visitCount-a.visitCount||b.lastVisit.localeCompare(a.lastVisit));
+  _clientsList=result;
   return result;
 }
 
 // ── Client preferences cache (for auto-placement in placement.js) ──────────
 let _clientPrefsCache=null;
+let _clientsList=null; // cache mémoire de clientsCollect() — invalidé par crmInvalidate()
 function buildClientPrefsCache(){
   const clients=clientsCollect(),cache={};
   clients.forEach(c=>{
@@ -11381,6 +11388,12 @@ function getClientHistPrefs(name){
   return _clientPrefsCache[name.toLowerCase().trim()]||null;
 }
 function invalidateClientPrefsCache(){ _clientPrefsCache=null; }
+function crmInvalidate(){
+  _clientsList=null;
+  _clientPrefsCache=null;
+  const panel=document.getElementById('crm-panel');
+  if(panel&&panel.dataset.open==='1') _renderCrmList();
+}
 function clientSaveNote(normKey,text){
   try{const n=JSON.parse(localStorage.getItem(CLIENT_NOTES_KEY)||'{}');n[normKey]=text;localStorage.setItem(CLIENT_NOTES_KEY,JSON.stringify(n));}catch(e){}
 }
@@ -11898,6 +11911,128 @@ setTimeout(()=>{ if(typeof crmEnsureHistory==='function') crmEnsureHistory(); },
 // Drag tactile : long press sur carte sidebar → poser sur table/transat
 initTouchDrag();
 
+
+// ── CRM Panel flottant ────────────────────────────────────────────────────
+
+let _crmPanelFilter='all', _crmPanelSearch='', _crmPanelView='list', _crmPanelClient=null;
+
+function openCrmPanel(){
+  crmInitFromSeed();
+  const panel=document.getElementById('crm-panel');
+  const backdrop=document.getElementById('crm-panel-backdrop');
+  panel.style.display='flex';
+  backdrop.style.display='block';
+  requestAnimationFrame(()=>{
+    panel.style.transform='translateX(0)';
+    panel.dataset.open='1';
+  });
+  _crmPanelView='list';
+  _crmPanelClient=null;
+  _buildCrmPanelShell();
+  _renderCrmList();
+  setTimeout(()=>{const s=document.getElementById('crm-panel-search');if(s)s.focus();},300);
+}
+
+function closeCrmPanel(){
+  const panel=document.getElementById('crm-panel');
+  const backdrop=document.getElementById('crm-panel-backdrop');
+  panel.style.transform='translateX(100%)';
+  panel.dataset.open='0';
+  setTimeout(()=>{panel.style.display='none';backdrop.style.display='none';},250);
+}
+
+function _buildCrmPanelShell(){
+  const panel=document.getElementById('crm-panel');
+  panel.innerHTML=`
+    <div style="padding:16px 16px 0;flex-shrink:0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:16px;font-weight:800;color:var(--t1)">👥 Clients</div>
+        <button onclick="closeCrmPanel()" style="width:32px;height:32px;border:none;background:var(--bg);border-radius:50%;cursor:pointer;font-size:18px;color:var(--t3);display:flex;align-items:center;justify-content:center">×</button>
+      </div>
+      <input id="crm-panel-search" type="search" placeholder="🔍 Rechercher…" autocomplete="off"
+        style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--bg);font-size:13px;color:var(--t1);font-family:inherit;outline:none;margin-bottom:10px"
+        oninput="_crmPanelSearch=this.value;_renderCrmList()">
+      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+        ${['all','vip','habitu'].map(f=>`<button onclick="_crmPanelFilter='${f}';_renderCrmList();document.querySelectorAll('.crm-pill').forEach(b=>b.style.background=(b.dataset.f==='${f}'?'var(--blue)':'var(--bg)'));document.querySelectorAll('.crm-pill').forEach(b=>b.style.color=(b.dataset.f==='${f}'?'#fff':'var(--t2)'))" data-f="${f}" class="crm-pill" style="padding:5px 12px;border:1px solid var(--sep);border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:${f==='all'?'var(--blue)':'var(--bg)'};color:${f==='all'?'#fff':'var(--t2)'};font-family:inherit">${f==='all'?'Tous':f==='vip'?'Légendes & VIP':'Habitués+'}</button>`).join('')}
+      </div>
+    </div>
+    <div id="crm-panel-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 8px"></div>
+    <div style="padding:12px 16px;border-top:1px solid var(--sep);flex-shrink:0">
+      <button onclick="closeCrmPanel();goModule('clients')" style="width:100%;padding:10px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--bg);font-size:12px;font-weight:700;color:var(--t2);cursor:pointer;font-family:inherit">📊 CRM complet →</button>
+    </div>`;
+}
+
+function _renderCrmList(){
+  const el=document.getElementById('crm-panel-list');
+  if(!el) return;
+  if(_crmPanelView==='detail'&&_crmPanelClient){
+    // Rafraîchir le client depuis le cache (données à jour après sync)
+    const fresh=clientsCollect().find(x=>x.normKey===_crmPanelClient.normKey)||_crmPanelClient;
+    _renderCrmDetail(fresh);
+    return;
+  }
+  const all=clientsCollect();
+  const q=(_crmPanelSearch||'').toLowerCase().trim();
+  const filtered=all.filter(c=>{
+    if(q&&!c.name.toLowerCase().includes(q)&&!(c.phone&&c.phone.includes(q))) return false;
+    if(_crmPanelFilter==='vip') return c.visitCount>=5;
+    if(_crmPanelFilter==='habitu') return c.visitCount>=3;
+    return true;
+  });
+  const LOYALTY_LABEL={nouveau:'Nouveau',regulier:'Régulier',fidele:'Fidèle',habitue:'Habitué',vip:'VIP',legende:'Légende'};
+  const LOYALTY_COL={nouveau:'#9CA3AF',regulier:'#6B7280',fidele:'#2563EB',habitue:'#7C3AED',vip:'#DB2777',legende:'#D97706'};
+  if(!filtered.length){
+    el.innerHTML=`<div style="padding:32px;text-align:center;color:var(--t4);font-size:13px">Aucun client trouvé</div>`;
+    return;
+  }
+  el.innerHTML=filtered.slice(0,80).map(c=>{
+    const lbl=LOYALTY_LABEL[c.loyalty?.label?.toLowerCase().replace(/[é]/g,'e').replace(/\s/g,'')]||c.loyalty?.label||'';
+    const col=LOYALTY_COL[c.loyalty?.label?.toLowerCase().replace(/[é]/g,'e').replace(/\s/g,'')]||'var(--t3)';
+    const prefs=(c.prefs||[]).slice(0,2).map(p=>p.label).join(' · ');
+    const lastD=c.lastVisit?c.lastVisit.split('-').reverse().join('/'):'';
+    const safeKey=c.normKey.replace(/'/g,"\\'");
+    return `<div onclick="_crmOpenDetail('${safeKey}')" style="padding:11px 0;border-bottom:1px solid var(--sep);cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="font-size:13px;font-weight:700;color:var(--t1)">${c.name}</div>
+        <div style="font-size:10px;font-weight:700;color:${col};background:${col}18;padding:2px 8px;border-radius:20px;flex-shrink:0;margin-left:8px">${lbl}</div>
+      </div>
+      <div style="font-size:11px;color:var(--t3);margin-top:3px">${c.visitCount} visite${c.visitCount>1?'s':''}${lastD?' · '+lastD:''}${prefs?' · <span style="color:var(--t4)">'+prefs+'</span>':''}</div>
+    </div>`;
+  }).join('');
+}
+
+function _crmOpenDetail(normKey){
+  const c=clientsCollect().find(x=>x.normKey===normKey);
+  if(!c) return;
+  _crmPanelView='detail';
+  _crmPanelClient=c;
+  _renderCrmList();
+}
+
+function _renderCrmDetail(c){
+  const el=document.getElementById('crm-panel-list');
+  if(!el) return;
+  // Relire la note depuis le storage
+  const notes=(()=>{try{return JSON.parse(localStorage.getItem('playa-client-notes-v1')||'{}');}catch(e){return {};}})();
+  const note=notes[c.normKey]||'';
+  const visits=(c.visits||[]).slice(0,20);
+  el.innerHTML=`
+    <div style="padding:8px 0 12px;border-bottom:1px solid var(--sep);margin-bottom:12px">
+      <button onclick="_crmPanelView='list';_renderCrmList()" style="border:none;background:none;font-size:13px;font-weight:700;color:var(--blue);cursor:pointer;padding:0;font-family:inherit">← Retour</button>
+    </div>
+    <div style="font-size:17px;font-weight:800;color:var(--t1);margin-bottom:4px">${c.name}</div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">${c.visitCount} visite${c.visitCount>1?'s':''}${c.phone?' · '+c.phone:''}${c.avgPax?' · moy '+c.avgPax.toFixed(1)+' PAX':''}</div>
+    ${(c.prefs||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px">${(c.prefs||[]).map(p=>`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--bg);border:0.5px solid var(--sep2);color:var(--t2)">${p.icon||''} ${p.label}</span>`).join('')}</div>`:''}
+    <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Note staff</div>
+    <textarea id="crm-note-${c.normKey}" placeholder="Ajouter une note…" rows="3"
+      style="width:100%;box-sizing:border-box;padding:8px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--bg);font-size:12px;color:var(--t1);font-family:inherit;resize:none;outline:none;margin-bottom:14px"
+      oninput="clientSaveNote('${c.normKey}',this.value)">${note}</textarea>
+    <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Historique</div>
+    ${visits.map(v=>`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--sep)">
+      <div style="font-size:12px;color:var(--t2)">${v.date?v.date.split('-').reverse().join('/'):'?'}</div>
+      <div style="font-size:11px;color:var(--t3)">${v.pax} PAX${v.comment?` · <em>${v.comment}</em>`:''}</div>
+    </div>`).join('')}`;
+}
 
 </script>
 </body>
