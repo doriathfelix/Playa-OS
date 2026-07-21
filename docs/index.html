@@ -11943,11 +11943,29 @@ function closeCrmPanel(){
 
 function _buildCrmPanelShell(){
   const panel=document.getElementById('crm-panel');
+  const clients=clientsCollect();
+  const total=clients.length;
+  const legends=clients.filter(c=>c.visitCount>=8).length;
+  const alerts=clients.filter(c=>(c.prefs||[]).some(p=>p.key==='allergie'||p.key==='pmr')).length;
   panel.innerHTML=`
     <div style="padding:16px 16px 0;flex-shrink:0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <div style="font-size:16px;font-weight:800;color:var(--t1)">👥 Clients</div>
         <button onclick="closeCrmPanel()" style="width:32px;height:32px;border:none;background:var(--bg);border-radius:50%;cursor:pointer;font-size:18px;color:var(--t3);display:flex;align-items:center;justify-content:center">×</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div style="flex:1;background:var(--bg);border:0.5px solid var(--sep2);border-radius:var(--r-sm);padding:8px 10px;text-align:center">
+          <div style="font-size:18px;font-weight:800;color:var(--t1)">${total}</div>
+          <div style="font-size:10px;font-weight:600;color:var(--t3)">Clients</div>
+        </div>
+        <div style="flex:1;background:#FFF7ED;border:0.5px solid #FED7AA;border-radius:var(--r-sm);padding:8px 10px;text-align:center">
+          <div style="font-size:18px;font-weight:800;color:#EA580C">${legends}</div>
+          <div style="font-size:10px;font-weight:600;color:#EA580C">Légendes & VIP</div>
+        </div>
+        <div style="flex:1;background:#FFF0F5;border:0.5px solid #FDA4C2;border-radius:var(--r-sm);padding:8px 10px;text-align:center">
+          <div style="font-size:18px;font-weight:800;color:#DB2777">${alerts}</div>
+          <div style="font-size:10px;font-weight:600;color:#DB2777">Alertes régime</div>
+        </div>
       </div>
       <input id="crm-panel-search" type="search" placeholder="🔍 Rechercher…" autocomplete="off"
         style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--bg);font-size:13px;color:var(--t1);font-family:inherit;outline:none;margin-bottom:10px"
