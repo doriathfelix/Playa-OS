@@ -6922,7 +6922,7 @@ function reAnalyzeAllResas(){
         reservations[svc]||[],
         r => !(String(r.zenchef_id||'').endsWith('_tr')||String(r.zenchef_id||'').endsWith('_bed'))
              ? (r.name||'')+'|'+(r.date||'').substring(0,10) : null,
-        byTrPax
+        (a,b) => !a.zenchef_id && b.zenchef_id ? true : (a.zenchef_id && !b.zenchef_id ? false : byTrPax(a,b))
       );
     });
 
