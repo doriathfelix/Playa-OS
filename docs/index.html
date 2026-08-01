@@ -6879,7 +6879,7 @@ function reAnalyzeAllResas(){
     }
 
     // Bed si non encore détecté (toutes sources)
-    if(!r.bed && parseBedFromText(raw) > 0) r.bed = true;
+    if(!r.bed && !String(r.zenchef_id||'').endsWith('_tr') && parseBedFromText(raw) > 0) r.bed = true;
   });
 
   // ── Déduplication complète : élimine les doublons Zenchef (booking modifié → 2 IDs différents)
@@ -6920,7 +6920,7 @@ function reAnalyzeAllResas(){
     ['s1','s2','soir'].forEach(svc => {
       reservations[svc] = dedupe(
         reservations[svc]||[],
-        r => r.zenchef_id && !(String(r.zenchef_id).endsWith('_tr')||String(r.zenchef_id).endsWith('_bed'))
+        r => !(String(r.zenchef_id||'').endsWith('_tr')||String(r.zenchef_id||'').endsWith('_bed'))
              ? (r.name||'')+'|'+(r.date||'').substring(0,10) : null,
         byTrPax
       );
