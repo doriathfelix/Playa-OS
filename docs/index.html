@@ -6133,7 +6133,10 @@ async function zcDbInit(){
 
 function zcCacheTTL(date){
   const today = new Date().toISOString().split('T')[0];
-  return date < today ? ZC_CACHE_TTL_PAST : ZC_CACHE_TTL_NOW;
+  if(date >= today) return ZC_CACHE_TTL_NOW;
+  // Passé récent (≤7 jours) : même TTL que aujourd'hui pour capter les suppressions
+  const cutoff = new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0];
+  return date >= cutoff ? ZC_CACHE_TTL_NOW : ZC_CACHE_TTL_PAST;
 }
 
 async function zcCacheGet(date){
@@ -6701,8 +6704,13 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1P
     // Stocker en mémoire
     _memoryPool = { ts: Date.now(), byDate };
 
-    // Persister dans localStorage
+    // Persister dans localStorage — nettoyer les entrées orphelines (resas supprimées de Zenchef)
     const ts = Date.now();
+    const freshDates = new Set(Object.keys(byDate));
+    try{
+      Object.keys(localStorage).filter(k => k.startsWith('playa_zc_') && !k.startsWith('playa_zc_pool'))
+        .forEach(k => { if(!freshDates.has(k.replace('playa_zc_',''))) localStorage.removeItem(k); });
+    }catch(e){}
     let cacheErrors = 0;
     Object.entries(byDate).forEach(([d, bk]) => {
       try{ localStorage.setItem('playa_zc_' + d, JSON.stringify({ts, data:bk})); }
@@ -6750,7 +6758,7 @@ function applyBookings(bookings, date){
   }
   bookings.forEach(b => {
     const bDate = (b.shift_date||b.day||'').substring(0,10);
-    if(date && bDate && bDate !== date){ return; }
+    if(date && bDate !== date){ return; }
     const conv = zcToResa(b);
     if(conv._cancelled){ cancelled++; return; }
     if(isDupe(String(b.id))){ dupes++; return; }
