@@ -1437,6 +1437,7 @@ function mkResa(fields){
     booked_at: fields.booked_at ?? null,
     time_transats: fields.time_transats ?? null,
     row_transats: fields.row_transats ?? null, // rangée préférentielle (500=1ere ligne mer, 400=2eme…)
+    tr_by_row: fields.tr_by_row ?? null, // [{tr:6,row:400},{tr:6,row:300}] placement multi-rangée
     pref_extremite: fields.pref_extremite ?? false, // préfère un slot en extrémité (col 1 ou 20)
     requested_table_id: fields.requested_table_id ?? null, // table demandée explicitement ("table 5")
     bed: fields.bed ?? false, // lit double → BED_SLOTS
@@ -4524,6 +4525,27 @@ function findVertical(sm, needed){
 // Cette fonction est appelée par autoTransats qui gère l'ordre global
 function placeTransat(r, sm, opts){
   opts = opts || {};
+
+  // ─── Multi-rangée explicite (ex: "6 en 2ème ligne + 6 en 3ème ligne") ───
+  if(r.tr_by_row && r.tr_by_row.length >= 2){
+    const allSlots = [];
+    for(const entry of r.tr_by_row){
+      let toPlace = entry.tr;
+      for(; toPlace >= 1; toPlace--){
+        const h = findHorizontal(sm, toPlace, false, false, entry.row);
+        if(h){ h.slots.forEach(s => { sm[s] = r; allSlots.push(s); }); break; }
+      }
+    }
+    if(allSlots.length > 0){
+      r.placed = true;
+      r.slot = allSlots[0];
+      r.extraSlots = allSlots;
+      r.tr = allSlots.length;
+      return true;
+    }
+    // Aucun slot dispo dans les rangées demandées → fall-through vers placement normal
+  }
+
   const needed = r.tr || r.pax || 1;
   const forceRow = r.row_transats || null;
 
@@ -6226,8 +6248,9 @@ function parseTransatsFromText(txt){
     /(\d+)\s*x?\s*sdraio/i,               // sdraio (italien)
   ];
   for(const p of patterns){
-    const m = txt.match(p);
-    if(m) return parseInt(m[1]);
+    const gp = new RegExp(p.source, p.flags.replace('g','') + 'g');
+    const matches = [...txt.matchAll(gp)];
+    if(matches.length > 0) return matches.reduce((sum, m) => sum + parseInt(m[1]), 0);
   }
   // Formes sans nombre : "sunbed", "transat", "chaise longue" → 1 (si présent seul)
   if(/\b(?:sunbed|deck\s*chair|beach\s*chair|lounge\s*chair|lettino|sdraio)\b/i.test(txt)) return 1;
@@ -6303,6 +6326,26 @@ function parsePreferredRowFromText(txt){
   const p5 = [/\b5\s*(?:eme?)?\s*(?:ligne|rang(?:ee?)?|row)\b/, /(?:ligne|rang(?:ee?)?|row)\s*(?:n[o°]?\s*)?5\b/];
   if(p5.some(p=>p.test(t))) return 100;
   return null;
+}
+
+// Parse "N transats en Xème ligne et M transats en Yème ligne" → [{tr, row}, …] ou null
+function parseMultiRowSplitFromText(txt){
+  if(!txt) return null;
+  const ROW_IDS = {1:500, 2:400, 3:300, 4:200, 5:100};
+  const n = txt.toLowerCase()
+    .replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u').replace(/[îï]/g,'i').replace(/[ôö]/g,'o')
+    .replace(/\b(1ere?|premiere?)\b/g,'1eme')
+    .replace(/\b(2e(?!\w)|deuxieme?)\b/g,'2eme')
+    .replace(/\b(3e(?!\w)|troisieme?)\b/g,'3eme')
+    .replace(/\b(4e(?!\w)|quatrieme?)\b/g,'4eme')
+    .replace(/\b(5e(?!\w)|cinquieme?)\b/g,'5eme');
+  const pat = /(\d+)\s*(?:transats?|t)\s+en\s+(\d)eme?\s+(?:ligne|rang(?:ee?)?|row)/g;
+  const entries = [];
+  for(const m of n.matchAll(pat)){
+    const row = ROW_IDS[parseInt(m[2])];
+    if(row) entries.push({tr: parseInt(m[1]), row});
+  }
+  return entries.length >= 2 ? entries : null;
 }
 
 // Détecte si le client veut un transat "en extrémité" (col 1 ou col 20, bouts de rangée)
@@ -6476,6 +6519,7 @@ function zcToResa(b){
   const preferExtremite = parseExtremiteFromText(allTextFields);
   // Table spécifique demandée : "table 5", "T3" → stocké pour le placement
   const requestedTableId = typeof parseTableRequest === 'function' ? parseTableRequest(allTextFields) : null;
+  const _trByRow = _isDesistement ? null : parseMultiRowSplitFromText(allTextFields);
 
   const heureTransats = cf['horaire-souhaite-pour-les-transats-entre-10h-et-14h30'] || null;
 
@@ -6562,6 +6606,7 @@ function zcToResa(b){
     _preferExtremite: preferExtremite,
     _svc: svcFinal,
     _desistement: _isDesistement,
+    _trByRow,
     resa: mkResa({
       zenchef_id: String(b.id),
       source: 'zenchef',
@@ -6586,6 +6631,7 @@ function zcToResa(b){
       booked_at: b.date || b.created_at || null,
       time_transats: heureTransats || null,
       row_transats: _isDesistement ? null : (conditionalBedTransat ? conditionalBedTransat.fallbackRow : preferredRow),
+      tr_by_row: _isDesistement ? null : _trByRow,
       pref_extremite: preferExtremite,
       requested_table_id: requestedTableId,
       requested_slot: requestedSlot,
@@ -6789,6 +6835,7 @@ function applyBookings(bookings, date){
         zenchef_status: conv.resa.zenchef_status,
         placed: false, slot: null,
         row_transats: conv._desistement ? null : conv._preferredRow,
+        tr_by_row: conv._desistement ? null : (conv._trByRow || null),
         pref_extremite: conv._preferExtremite,
         transatDesistement: conv._desistement || false,
       });
@@ -6886,6 +6933,12 @@ function reAnalyzeAllResas(){
     if(r.source !== 'zenchef' && !r.tr && !r.bed){
       const nbT = parseTransatsFromText(raw);
       if(nbT > 0) r.tr = nbT;
+    }
+
+    // Multi-rangée : detecter sur toutes les resas (Zenchef + manuelles) si pas encore fixé
+    if(!r.tr_by_row && (r.tr > 0 || r.bed)){
+      const split = parseMultiRowSplitFromText(raw);
+      if(split){ r.tr_by_row = split; r.tr = split.reduce((s,e) => s + e.tr, 0); }
     }
 
     // Bed si non encore détecté (toutes sources)
