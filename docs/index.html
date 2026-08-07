@@ -298,7 +298,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
   border-left:3px solid transparent;
   transition:box-shadow .15s,transform .1s;
   position:relative;
-  touch-action:none;
+  touch-action:pan-y;
 }
 .rc:hover{box-shadow:var(--shadow-md);transform:translateX(1px)}
 .rc.rc-placed{border-radius:0 var(--r) var(--r) 0}
@@ -1014,6 +1014,13 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
       <span class="osni-name">Clients</span>
     </button>
 
+    <button class="osni" id="osni-guide" onclick="window.open('guide-clients.html','_blank')">
+      <div class="osni-icon" style="background:#FFF0F5">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="4" y="3" width="11" height="16" rx="1.5" fill="#FDA4C2" fill-opacity=".3" stroke="#DB2777" stroke-width="1.3"/><path d="M4 6H15" stroke="#DB2777" stroke-width="1" stroke-opacity=".4"/><path d="M7 9H12M7 12H12M7 15H10" stroke="#DB2777" stroke-width="1.2" stroke-linecap="round"/><circle cx="16.5" cy="16.5" r="3.5" fill="#FFF0F5" stroke="#DB2777" stroke-width="1.2"/><path d="M15.5 16.5H17.5M16.5 15.5V17.5" stroke="#DB2777" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </div>
+      <span class="osni-name">Guide ↗</span>
+    </button>
+
     <button class="osni" id="osni-groupes" onclick="goModule('groupes')">
       <div class="osni-icon" style="background:#FFF7ED">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="4" width="16" height="15" rx="2" fill="#FED7AA" fill-opacity=".4" stroke="#EA580C" stroke-width="1.3"/><path d="M7 2V5M15 2V5M3 8H19" stroke="#EA580C" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="13" r="1.2" fill="#EA580C" fill-opacity=".7"/><circle cx="11" cy="13" r="1.2" fill="#EA580C" fill-opacity=".4"/><circle cx="14" cy="13" r="1.2" fill="#EA580C" fill-opacity=".4"/></svg>
@@ -1636,7 +1643,7 @@ function renderSidebar(){
   const q = (document.getElementById('search-input').value||'').toLowerCase().trim();
   const list = document.getElementById('resa-list');
   list.innerHTML='';
-  const rows = sortByBookedAt(gr()).filter(r => {
+  const rows = sortByTime(gr()).filter(r => {
     if(q && !r.name.toLowerCase().includes(q)
          && !(r.phone||'').replace(/\s/g,'').includes(q.replace(/\s/g,''))
          && !(r.comment||'').toLowerCase().includes(q)) return false;
@@ -3827,7 +3834,7 @@ function initTouchDrag(){
     dragId = parseInt(src.id, 10);
     const rect = el.getBoundingClientRect();
     ghost = el.cloneNode(true);
-    ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;opacity:.88;z-index:9999;pointer-events:none;border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.22);transform:scale(1.05) translateY(-4px);transition:none`;
+    ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;opacity:.88;z-index:9999;pointer-events:none;border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.22);transform:scale(1.05) translateY(-4px);transition:none`;
     document.body.appendChild(ghost);
     el.style.opacity = '.3';
   }
@@ -3850,18 +3857,37 @@ function initTouchDrag(){
   }
 
   document.addEventListener('touchstart', e => {
+    // Sidebar reservation card
     const card = e.target.closest('.rc[data-id]');
-    if(!card) return;
-    const id = card.dataset.id;
-    if(!id) return;
-    const t = e.touches[0];
-    src = {
-      id, el: card,
-      startX: t.clientX, startY: t.clientY, dragReady: false,
-      timer: setTimeout(() => {
-        if(src && src.id === id){ src.dragReady = true; }
-      }, 400)
-    };
+    if(card) {
+      const id = card.dataset.id;
+      if(!id) return;
+      const t = e.touches[0];
+      src = {
+        id, el: card,
+        startX: t.clientX, startY: t.clientY, dragReady: false,
+        timer: setTimeout(() => {
+          if(src && src.id === id){ src.dragReady = true; }
+        }, 400)
+      };
+      return;
+    }
+    // Placed table cell on floor plan — drag the reservation placed on it
+    const tbl = e.target.closest('.TBL[data-tid]');
+    if(tbl) {
+      const tid = parseInt(tbl.dataset.tid);
+      const placed = gr().find(r => r.placed && r.tableId === tid && !r.ns);
+      if(!placed) return;
+      const t = e.touches[0];
+      const pid = String(placed.id);
+      src = {
+        id: pid, el: tbl,
+        startX: t.clientX, startY: t.clientY, dragReady: false,
+        timer: setTimeout(() => {
+          if(src && src.id === pid){ src.dragReady = true; }
+        }, 400)
+      };
+    }
   }, {passive:false});
 
   document.addEventListener('touchmove', e => {
@@ -4557,7 +4583,7 @@ function placeTransat(r, sm, opts){
     const start = r.requested_slot;
     // Vérifier que les N slots consécutifs sont libres (même rangée)
     const rowBase = Math.floor(start / 100) * 100;
-    const rowEnd = rowBase + 20; // fin de rangée (max slot = rowBase+20)
+    const rowEnd = rowBase + 21; // fin de rangée (max slot = rowBase+21, ex: 521 pour rangée 500)
     const slots = [];
     for(let i = 0; i < needed && (start + i) <= rowEnd; i++){
       if(sm[start + i]) break;
@@ -5495,10 +5521,13 @@ function printTransats(){
 
   const nbTransats = tableResas.reduce((s,r) => s+(r.tr||0), 0)
                    + rtResas.reduce((s,r) => s+(r.tr||r.pax||0), 0);
-  const nbBeds     = bedResas.length;
-  // 1ère ligne = préférence row_transats===500 (front de mer)
+  const nbBeds     = bedResas.reduce((s,r) => s+(r.tr||1), 0); // nb de lits (pas d'emplacements)
+  // Grand total emplacements transats : transats ordinaires + beds×2 (1 lit = 2 places)
+  const trGrandTotal = nbTransats + nbBeds * 2;
+  // 1ère ligne = préférence row_transats===500 (front de mer) — inclut les beds en 1ère ligne
   const nbLigne1   = tableResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||0), 0)
-                   + rtResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||r.pax||0), 0);
+                   + rtResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||r.pax||0), 0)
+                   + bedResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||1)*2, 0);
   // Ventilation service — mutuellement exclusive, somme = nbTransats
   const nbS1   = tableResas.filter(r => r.svc==='s1').reduce((s,r) => s+(r.tr||0), 0);
   const nbS2   = tableResas.filter(r => r.svc==='s2').reduce((s,r) => s+(r.tr||0), 0);
@@ -5685,10 +5714,10 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;he
   </div>
   <div style="display:flex;align-items:center;gap:2.5mm;flex-wrap:wrap">
     <div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center">
-      <div style="font-size:11pt;font-weight:700;line-height:1">${nbTransats}</div>
+      <div style="font-size:11pt;font-weight:700;line-height:1">${trGrandTotal}</div>
       <div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">transats</div>
     </div>
-    ${nbBeds?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbBeds}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">beds</div></div>`:''}
+    ${nbBeds?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbBeds}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">beds (×2)</div></div>`:''}
     ${nbLigne1?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbLigne1}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">1ère ligne</div></div>`:''}
     <div style="display:flex;gap:1.5mm;align-items:center;flex-wrap:wrap">
       ${nbS1?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #166534;color:#166534">S1 · ${nbS1}</span>`:''}
@@ -5746,7 +5775,7 @@ function printServiceSheet() {
       const fg = !entry.tranat && (fusedGroups||[]).find(f => f.tids.includes(id));
       if (fg && !done.has(fg.tids[0])) {
         const r = fg.tids.map(t => map[t]).find(x => x) || null;
-        const tbadge = (r && r.tr > 0) ? `<span class="t-badge">T</span>` : '';
+        const tbadge = (r && (r.tr > 0 || r.bed)) ? `<span class="t-badge">T</span>` : '';
         // Première table : hachures + réservation + bordure haute encadrante
         rows += r
           ? `<tr class="occ fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`
@@ -5774,7 +5803,7 @@ function printServiceSheet() {
 
   function dataRow(lbl, r, isLong) {
     if (!r) return `<tr><td class="d-tbl">${lbl}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
-    const tbadge = (r.tr > 0) ? `<span class="t-badge">T</span>` : '';
+    const tbadge = (r.tr > 0 || r.bed) ? `<span class="t-badge">T</span>` : '';
     return `<tr class="occ"><td class="d-tbl">${lbl}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`;
   }
 
@@ -5873,7 +5902,7 @@ function printSoirSheet() {
 
   function dataRow(lbl, r) {
     if (!r) return `<tr><td class="d-tbl">${lbl}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
-    const tbadge = (r.tr > 0) ? `<span class="t-badge">T</span>` : '';
+    const tbadge = (r.tr > 0 || r.bed) ? `<span class="t-badge">T</span>` : '';
     return `<tr class="occ"><td class="d-tbl">${lbl}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`;
   }
 
@@ -5885,7 +5914,7 @@ function printSoirSheet() {
     const fg = !entry.tranat && [...(fused.soir||[])].find(f => f.tids.includes(id));
     if (fg && !done.has(fg.tids[0])) {
       const r = fg.tids.map(t => mapSoir[t]).find(x => x) || null;
-      const tbadge = (r && r.tr > 0) ? `<span class="t-badge">T</span>` : '';
+      const tbadge = (r && (r.tr > 0 || r.bed)) ? `<span class="t-badge">T</span>` : '';
       rows += r
         ? `<tr class="occ fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`
         : `<tr class="fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
@@ -6136,7 +6165,7 @@ let syncInterval = null;
 let lastSyncAt = null;
 
 // ── Cache IndexedDB + localStorage fallback
-const ZC_CACHE_TTL_NOW  = 10 * 60 * 1000;  // 10 min pour aujourd'hui et futur
+const ZC_CACHE_TTL_NOW  = 15 * 60 * 1000;  // 15 min pour aujourd'hui et futur
 const ZC_CACHE_TTL_PAST = 24 * 60 * 60 * 1000; // 24h pour les dates passées
 const ZC_FULL_FETCH_KEY = 'playa_zc_pool_ts';
 let _zcDb = null; // IndexedDB connection
@@ -6490,13 +6519,28 @@ function zcToResa(b){
   // (customer.comment, tags[], custom_field, shift_slot.shift.name, etc.)
   const allTextFields = extractAllBookingText(b).join(' | ');
 
-  // Nb transats : tous les champs texte libres prennent le dessus sur le formulaire structuré
-  const nbTransatsText = parseTransatsFromText(allTextFields);
-  const nbTransatsForm = parseInt(cf['de-combien-de-transats-avez-vous-besoin']) || 0;
-  let nbTransats = nbTransatsText > 0 ? nbTransatsText : nbTransatsForm;
+  // ── Notes/commentaires rédigés uniquement (sans les valeurs de formulaire structuré)
+  // Priorité maximale pour le parsing transat/bed : ce que le client ou le staff a écrit
+  const notesOnly = [
+    b.comment, b.note, b.internal_note, b.internal_comment,
+    b.customer_comment, b.extra_comment, b.restaurant_comment, b.private_comment,
+    b.public_comment, b.preparation, b.occasion, b.special_request,
+    b.wishes, b.message, b.remarks, b.allergy, b.dietary,
+    b.customer && b.customer.comment, b.customer && b.customer.note,
+    b.customer && b.customer.wishes, b.customer && b.customer.message,
+  ].filter(Boolean).map(s => String(s).trim()).filter(s => s.length > 1).join(' | ');
 
-  // Beds (lit double) — détectés séparément, ne comptent pas comme transats ordinaires
-  const nbBeds = parseBedFromText(allTextFields);
+  // Priorité : 1) notes rédigées  2) nombre sélectionné en ligne  3) tout le texte restant
+  const nbTransatsNotes = parseTransatsFromText(notesOnly);
+  const nbTransatsForm  = parseInt(cf['de-combien-de-transats-avez-vous-besoin']) || 0;
+  const nbTransatsAll   = parseTransatsFromText(allTextFields);
+  let nbTransats = nbTransatsNotes > 0 ? nbTransatsNotes
+                 : nbTransatsForm  > 0 ? nbTransatsForm
+                 : nbTransatsAll;
+
+  // Beds (lit double) — priorité identique : notes d'abord, puis tout le texte
+  const nbBedsNotes = parseBedFromText(notesOnly);
+  const nbBeds = nbBedsNotes > 0 ? nbBedsNotes : parseBedFromText(allTextFields);
   const isBed  = nbBeds > 0;
 
   // Si type "repas à table + transat" — on N'assigne PAS de transats depuis le type seul.
@@ -6550,7 +6594,8 @@ function zcToResa(b){
   const is13h00 = (b.time || '').startsWith('13:00');
   // Transat mentionné dans les notes (même sans nombre précis) → équivaut à avoir des transats
   const mentionsTransatsInText = nbTransats > 0 || /\btransats?\b/i.test(allTextFields);
-  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || is13h00;
+  // Exclure explicitement "table + transats" des deux conditions : la règle Rambaud s'applique partout
+  const isRepasTransatFinal = !isTablePlusTransat && (isRepasTransat || (is13h00 && mentionsTransatsInText));
 
   // Heure : "13:00" -> "13h00"
   const timeRaw = b.time || '12:00';
@@ -6597,7 +6642,9 @@ function zcToResa(b){
 
   // Si pattern conditionnel bed/transat : bed comme resa principale, transats en fallback
   const finalIsBed = isBed || (conditionalBedTransat ? true : false);
-  const finalNbTransats = (!finalIsBed || isBed) ? nbTransats : 0;
+  // Si pattern conditionnel détecté ("bed / N transats") : les transats sont le fallback, pas la demande principale
+  // → finalNbTransats = 0 pour éviter que parseTransatsFromText compte les transats du fallback comme directs
+  const finalNbTransats = conditionalBedTransat ? 0 : ((!finalIsBed || isBed) ? nbTransats : 0);
 
   return {
     _cancelled: isCancelled,
@@ -6659,7 +6706,15 @@ async function fetchZcPage(page, dateFilter){
     }
   });
   if(!res.ok) throw new Error('HTTP ' + res.status);
-  return await res.json();
+  const json = await res.json();
+  // Log de diagnostic page 1 — clés top-level + structure premier booking
+  if(page === 1 && !dateFilter){
+    const b0 = (json.data||[])[0];
+    console.log('[ZC p1] top-level keys:', Object.keys(json).join(', '));
+    console.log('[ZC p1] data.length:', (json.data||[]).length, '| paginator:', JSON.stringify(json.paginator||json.meta||json.pagination||null));
+    if(b0) console.log('[ZC p1] booking[0] keys:', Object.keys(b0).join(', '), '| shift_date:', b0.shift_date, '| day:', b0.day, '| time:', b0.time, '| status:', b0.status);
+  }
+  return json;
 }
 
 // ── Voie rapide : fetch filtré par date (1-2 requêtes si l'API supporte date_min/date_max)
@@ -6712,42 +6767,73 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1P
   if(_fetchAllInProgress) return _fetchAllInProgress;
 
   _fetchAllInProgress = (async () => {
-    let p1data, totalPages;
+    const byDate = {};
+
+    // Essaie tous les champs de date possibles dans la réponse Zenchef
+    const extractDate = (b) => {
+      const raw = b.shift_date || b.day || b.shift_slot?.date
+        || b.shift_slot?.shift?.date || b.booking_date || b.service_date || b.date_service || '';
+      return typeof raw === 'string' ? raw.substring(0, 10) : '';
+    };
+    const addToBD = (rows) => {
+      rows.forEach(b => {
+        const d = extractDate(b);
+        if(d && /^\d{4}-\d{2}-\d{2}$/.test(d)){ if(!byDate[d]) byDate[d]=[]; byDate[d].push(b); }
+      });
+    };
+
+    let p1data, knownTotalPages;
     if(p1Prefetch){
       p1data = p1Prefetch.p1data;
-      totalPages = p1Prefetch.totalPages;
+      knownTotalPages = p1Prefetch.totalPages;
     } else {
       const p1full = await fetchZcPage(1);
       p1data = p1full.data || [];
-      const total = p1full.paginator?.total || 0;
-      totalPages = Math.max(1, Math.ceil(total / 250));
+      // Essaie plusieurs chemins de paginateur — l'API peut changer de structure
+      const pag = p1full.paginator || p1full.meta || p1full.pagination || {};
+      const total = pag.total || pag.total_count || pag.count || p1full.total || 0;
+      const lastPage = pag.last_page || pag.total_pages || pag.pages || 0;
+      knownTotalPages = lastPage > 0 ? lastPage : (total > 0 ? Math.ceil(total / 250) : 0);
     }
-    if(onProgress) onProgress(1, totalPages);
 
-    const byDate = {};
-    const addToBD = (rows) => {
-      rows.forEach(b => {
-        const d = (b.shift_date || b.day || '').substring(0, 10);
-        if(d){ if(!byDate[d]) byDate[d]=[]; byDate[d].push(b); }
-      });
-    };
     addToBD(p1data);
-
-    // Notifier si la date cible est déjà dans la page 1
     if(onDateReady && targetDate && byDate[targetDate])
       onDateReady(targetDate, byDate[targetDate]);
 
-    const BATCH = 12; // batches de 12 — 2× plus rapide que 6 sans saturer l'API
-    for(let start = 2; start <= totalPages; start += BATCH){
-      const pageNums = Array.from(
-        {length: Math.min(BATCH, totalPages - start + 1)},
-        (_, i) => start + i
-      );
-      const results = await Promise.all(pageNums.map(p => fetchZcPage(p).then(r => r.data || [])));
-      results.forEach(rows => addToBD(rows));
-      if(onProgress) onProgress(Math.min(start + BATCH - 1, totalPages), totalPages);
-      if(onDateReady && targetDate && byDate[targetDate])
-        onDateReady(targetDate, byDate[targetDate]);
+    // Si le paginateur donne un total fiable, on utilise les batches rapides
+    // Sinon on pagine séquentiellement jusqu'à une page courte (stratégie safe)
+    if(knownTotalPages > 1){
+      if(onProgress) onProgress(1, knownTotalPages);
+      const BATCH = 8;
+      for(let start = 2; start <= knownTotalPages; start += BATCH){
+        const pageNums = Array.from(
+          {length: Math.min(BATCH, knownTotalPages - start + 1)},
+          (_, i) => start + i
+        );
+        const results = await Promise.all(pageNums.map(p => fetchZcPage(p).then(r => r.data || [])));
+        results.forEach(rows => addToBD(rows));
+        if(onProgress) onProgress(Math.min(start + BATCH - 1, knownTotalPages), knownTotalPages);
+        if(onDateReady && targetDate && byDate[targetDate])
+          onDateReady(targetDate, byDate[targetDate]);
+      }
+    } else if(p1data.length >= 250){
+      // Paginateur absent/vide mais page 1 est pleine → il y a peut-être d'autres pages
+      // On pagine jusqu'à une page courte (< 250 bookings)
+      if(onProgress) onProgress(1, 99);
+      let page = 2;
+      while(page <= 50){ // sécurité max 50 pages
+        const result = await fetchZcPage(page);
+        const rows = result.data || [];
+        if(rows.length === 0) break;
+        addToBD(rows);
+        if(onProgress) onProgress(page, 99);
+        if(onDateReady && targetDate && byDate[targetDate])
+          onDateReady(targetDate, byDate[targetDate]);
+        if(rows.length < 250) break; // dernière page
+        page++;
+      }
+    } else {
+      if(onProgress) onProgress(1, 1);
     }
 
     // Stocker en mémoire
@@ -6767,7 +6853,10 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1P
     });
     if(cacheErrors > 0) console.warn('ZC cache: ' + cacheErrors + ' dates non sauvegardées (localStorage plein)');
     zcMarkFullFetch();
-    console.log('ZC pool: ' + Object.values(byDate).flat().length + ' bookings · ' + totalPages + ' pages · ' + Object.keys(byDate).length + ' dates');
+    const totalBk = Object.values(byDate).flat().length;
+    const allDates = Object.keys(byDate).sort();
+    console.log('[ZC] ' + totalBk + ' bookings · dates: ' + (allDates.join(', ') || 'aucune'));
+    if(totalBk === 0) console.warn('[ZC] ATTENTION: 0 bookings récupérés — vérifier shift_date dans la réponse API');
     return byDate;
   })();
 
@@ -6864,7 +6953,7 @@ function applyBookings(bookings, date){
         zenchef_status: conv.resa.zenchef_status,
         placed: false, slot: null,
         row_transats: conv._desistement ? null : null,
-        pref_extremite: false,
+        pref_extremite: conv._preferExtremite,
         transatDesistement: conv._desistement || false,
       });
       reservations.transats.push(bedResa);
@@ -6926,9 +7015,26 @@ function reAnalyzeAllResas(){
       const cond = parseBedOrTransatFromText(raw);
       if(cond && !r.bed){
         r.bed = true;
+        r.tr = null;  // les transats sont le fallback, pas la demande principale
         r.tr_fallback = cond.fallbackTr;
         r.tr_fallback_row = cond.fallbackRow;
         r.row_transats = cond.fallbackRow;
+      }
+    }
+
+    // ── CRM enrichment : combler les préférences manquantes depuis l'historique client
+    // Règle : l'historique ne s'applique QUE si le champ n'est pas déjà renseigné
+    // (commentaire du jour est prioritaire), et uniquement si la resa a déjà des transats/bed.
+    if(r.tr > 0 || r.bed){
+      const hist = (typeof getClientHistPrefs === 'function') ? getClientHistPrefs(r.name) : null;
+      if(hist){
+        if(!r.row_transats && hist.preferredRow) r.row_transats = hist.preferredRow;
+        if(!r.requested_slot && hist.preferredSlot) r.requested_slot = hist.preferredSlot;
+        if(!r.pref_extremite && hist.extremite) r.pref_extremite = true;
+        // Badge CRM pour indiquer que le placement vient de l'historique
+        if((!r.row_transats || !r.requested_slot) && (hist.preferredRow || hist.preferredSlot)){
+          if(!r._crmHint) r._crmHint = true;
+        }
       }
     }
 
@@ -6944,8 +7050,9 @@ function reAnalyzeAllResas(){
       if(split){ r.tr_by_row = split; r.tr = split.reduce((s,e) => s + e.tr, 0); }
     }
 
-    // Bed si non encore détecté (toutes sources)
-    if(!r.bed && !String(r.zenchef_id||'').endsWith('_tr') && parseBedFromText(raw) > 0) r.bed = true;
+    // Bed si non encore détecté — exclure les sous-resas _tr/_bed pour éviter les doublons
+    const isZcSub = r.zenchef_id && (String(r.zenchef_id).endsWith('_tr') || String(r.zenchef_id).endsWith('_bed'));
+    if(!r.bed && !isZcSub && parseBedFromText(raw) > 0) r.bed = true;
   });
 
   // ── Déduplication complète : élimine les doublons Zenchef (booking modifié → 2 IDs différents)
@@ -7081,7 +7188,7 @@ async function syncZenchef(date, force){
 
   // ── ÉTAPE 1 : cache (IndexedDB/localStorage) valide → retour immédiat
   const cached = !force ? await zcCacheGet(date) : null;
-  if(cached){
+  if(cached && cached.length > 0){
     reservations = {s1:[], s2:[], transats:[], soir:[]};
     fused = {s1:[],s2:[],transats:[],soir:[]};
     selectedId = null;
@@ -7100,10 +7207,14 @@ async function syncZenchef(date, force){
         null, date
       ).then(byDate=>{
         const bkgs = byDate[date] || [];
+        // Si le fetch revient vide (glitch réseau / API) mais qu'on a déjà des données → ne pas vider
+        if(bkgs.length === 0 && totalResaCount() > 0) return;
+        const snap = snapshotPlacements();
         reservations = {s1:[], s2:[], transats:[], soir:[]};
         fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
         applyBookings(bkgs, date);
+        restorePlacements(snap);
         lastSyncAt = new Date();
         updateSyncAge();
         render();
@@ -7134,8 +7245,8 @@ async function syncZenchef(date, force){
       });
     } catch(e){ fast = null; }
 
-    if(fast !== null && fast.filtered){
-      // Filtre API fonctionnel — résultats en 1-2 requêtes
+    if(fast !== null && fast.filtered && fast.bookings.length > 0){
+      // Filtre API fonctionnel ET résultats non vides — résultats fiables en 1-2 requêtes
       zcSetProgress(100);
       zcCacheSet(date, fast.bookings);
       const { added, dupes, cancelled } = applyBookings(fast.bookings, date);
@@ -7146,43 +7257,14 @@ async function syncZenchef(date, force){
         (cancelled > 0 ? ' · ' + cancelled + ' annulées' : '') +
         (dupes > 0 ? ' · ' + dupes + ' doublons' : '');
       toast('✓ Zenchef — ' + msg);
-      // Remplir le pool en background pour navigation entre dates — réutiliser p1 existante
-      fetchAllPagesAndCacheAll(null, null, null, fast.filtered ? null : {p1data: fast.p1data, totalPages: fast.totalPages}).catch(()=>{});
-    } else if(fast !== null && !fast.filtered){
-      // Filtre API non supporté → fetch complet avec p1 réutilisée
-      let firstDataShown = false;
-      const bookings = await fetchZcForDate(
-        date,
-        (cur, total) => {
-          zcSetProgress(Math.round(cur/total*100));
-          zcSetLabel('chargement ' + cur + '/' + total + ' pages…');
-        },
-        (d, bkgs) => {
-          if(firstDataShown) return;
-          firstDataShown = true;
-          reservations = {s1:[], s2:[], transats:[], soir:[]};
-          fused = {s1:[],s2:[],transats:[],soir:[]};
-          selectedId = null;
-          applyBookings(bkgs, date);
-          lastSyncAt = new Date();
-          render();
-          zcSetLabel('mise à jour…');
-        }
-      );
-      zcCacheSet(date, bookings);
-      const { added, dupes, cancelled } = applyBookings(bookings, date);
-      lastSyncAt = new Date();
-      updateSyncAge();
-      render();
-      const msg = formatDateFR(date) + ' · ' + added + ' resas' +
-        (cancelled > 0 ? ' · ' + cancelled + ' annulées' : '') +
-        (dupes > 0 ? ' · ' + dupes + ' doublons' : '');
-      toast('✓ Zenchef — ' + msg);
+      // Remplir le pool en background pour navigation entre dates
+      fetchAllPagesAndCacheAll(null, null, null, null).catch(()=>{});
     } else {
-      // Voie classique : fetch complet tout-parallèle avec affichage progressif
+      // Filtre API non supporté, 0 résultats (non fiables), ou erreur → fetch complet groupé par shift_date
+      // (date_min/date_max filtre par date de création, pas de service — le fetch complet est la seule voie fiable)
+      const p1Prefetch = (fast !== null && !fast.filtered) ? {p1data: fast.p1data, totalPages: fast.totalPages} : null;
       let firstDataShown = false;
-      const bookings = await fetchZcForDate(
-        date,
+      const byDate = await fetchAllPagesAndCacheAll(
         (cur, total) => {
           zcSetProgress(Math.round(cur/total*100));
           zcSetLabel('chargement ' + cur + '/' + total + ' pages…');
@@ -7197,9 +7279,22 @@ async function syncZenchef(date, force){
           lastSyncAt = new Date();
           render();
           zcSetLabel('mise à jour…');
-        }
+        },
+        date,
+        p1Prefetch
       );
+      const bookings = byDate[date] || [];
+      // Log diagnostic si toujours 0 après le fetch complet
+      if(bookings.length === 0){
+        const allDates = Object.keys(byDate).sort();
+        const totalBk = Object.values(byDate).flat().length;
+        console.warn('[ZC sync] 0 bookings pour ' + date + ' | total pool: ' + totalBk + ' | dates disponibles: ' + (allDates.join(', ')||'aucune'));
+      }
       zcCacheSet(date, bookings);
+      // Réinitialiser avant l'apply final pour éviter les doublons dus au callback progressif
+      reservations = {s1:[], s2:[], transats:[], soir:[]};
+      fused = {s1:[],s2:[],transats:[],soir:[]};
+      selectedId = null;
       const { added, dupes, cancelled } = applyBookings(bookings, date);
       lastSyncAt = new Date();
       updateSyncAge();
@@ -7236,6 +7331,49 @@ function updateSyncAge(){
 }
 setInterval(updateSyncAge, 30000); // refresh l'affichage toutes les 30s
 
+// ── Helpers : snapshot/restore des placements pendant un sync background
+function snapshotPlacements(){
+  try {
+    const placements = {};
+    ['s1','s2','transats','soir'].forEach(svc => {
+      (reservations[svc]||[]).forEach(r => {
+        if(r.placed || r.tableId != null || r.slot != null){
+          // Clé stable = zenchef_id (survit au re-fetch) ; fallback r.id pour les resas manuelles
+          const key = r.zenchef_id || r.id;
+          placements[key] = {placed:r.placed, tableId:r.tableId, slot:r.slot, extraSlots:r.extraSlots};
+        }
+      });
+    });
+    const fusedSnap = {};
+    ['s1','s2','transats','soir'].forEach(svc => {
+      fusedSnap[svc] = (fused[svc]||[]).map(g => ({...g, tids:[...(g.tids||[])]}));
+    });
+    return {placements, fused:fusedSnap};
+  } catch(e){ return {placements:{}, fused:{s1:[],s2:[],transats:[],soir:[]}}; }
+}
+function restorePlacements(snap){
+  if(!snap) return;
+  const p = snap.placements || {};
+  if(!Object.keys(p).length) return;
+  ['s1','s2','transats','soir'].forEach(svc => {
+    (reservations[svc]||[]).forEach(r => {
+      // Même clé que dans snapshotPlacements : zenchef_id en priorité
+      const key = r.zenchef_id || r.id;
+      const s = p[key];
+      if(s){ r.placed=s.placed; r.tableId=s.tableId; r.slot=s.slot; r.extraSlots=s.extraSlots; }
+    });
+  });
+  ['s1','s2','transats','soir'].forEach(svc => {
+    if(!(fused[svc]||[]).length && snap.fused && (snap.fused[svc]||[]).length){
+      fused[svc] = snap.fused[svc];
+    }
+  });
+}
+// Retourne le nb total de resas chargées (toutes tabs)
+function totalResaCount(){
+  return ['s1','s2','transats','soir'].reduce((n,k) => n + (reservations[k]||[]).length, 0);
+}
+
 // ── Auto-sync toutes les 5 min — refetch complet pour aujourd'hui et futur
 function isToday(dateStr){
   return dateStr === new Date().toISOString().split('T')[0];
@@ -7248,16 +7386,20 @@ function startAutoSync(){
     if(currentDate >= today){
       fetchAllPagesAndCacheAll().then(byDate => {
         const bookings = byDate[currentDate] || [];
+        // Si le fetch revient vide mais qu'on a déjà des données → ne pas vider (glitch réseau)
+        if(bookings.length === 0 && totalResaCount() > 0) return;
+        const snap = snapshotPlacements();
         reservations = {s1:[], s2:[], transats:[], soir:[]};
         fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
         applyBookings(bookings, currentDate);
+        restorePlacements(snap);
         lastSyncAt = new Date();
         updateSyncAge();
         render();
       }).catch(() => {});
     }
-  }, 5 * 60 * 1000);
+  }, 15 * 60 * 1000);
 }
 
 // Ferme avec Escape
@@ -11310,8 +11452,25 @@ function _buildAutoMemo(visits, prefs, avgPax, visitCount) {
   else if(pax<=3.8) parts.push('Table de 3 personnes');
   else if(pax<=5.5) parts.push('En groupe ('+Math.round(pax)+' pers.)');
   else parts.push('Grands groupes (~'+Math.round(pax)+' pers.)');
-  const spots=prefs.filter(p=>['terrasse','vuemer','calme','table','transats','bedtrans'].includes(p.key));
+  const spots=prefs.filter(p=>['terrasse','vuemer','calme','table'].includes(p.key));
+  const transatPrefs=prefs.filter(p=>['transats','bedtrans'].includes(p.key));
   if(spots.length) parts.push(spots.map(p=>p.icon+' '+p.label).join(' · '));
+  // Transat detail: extract specific preferences from visit comments
+  if(transatPrefs.length){
+    const trComments=(visits||[]).map(v=>v.comment||'').filter(Boolean);
+    const rows=trComments.map(t=>parsePreferredRowFromText(t)).filter(Boolean);
+    const trNums=trComments.map(t=>parseTransatsFromText(t)).filter(n=>n>0);
+    const bedMentions=trComments.filter(t=>parseBedFromText(t)>0).length;
+    const rowLabels={500:'1ère ligne',400:'2ème ligne',300:'3ème ligne',200:'4ème ligne'};
+    const topRow=rows.length?rows.reduce((acc,r)=>{acc[r]=(acc[r]||0)+1;return acc;},{}):null;
+    const topRowId=topRow?parseInt(Object.entries(topRow).sort((a,b)=>b[1]-a[1])[0][0]):null;
+    const avgTr=trNums.length?Math.round(trNums.reduce((a,b)=>a+b,0)/trNums.length):null;
+    let transatLine='🏖️';
+    if(bedMentions>=2) transatLine+=' Bed double';
+    else if(avgTr) transatLine+=' '+avgTr+' transats';
+    if(topRowId&&rowLabels[topRowId]) transatLine+=' · '+rowLabels[topRowId]+' préféré';
+    parts.push(transatLine);
+  }
   const diets=prefs.filter(p=>['allergie','vegan','vegeta','sansglut','sanslact'].includes(p.key));
   if(diets.length) parts.push('⚠️ '+diets.map(p=>p.label).join(' + '));
   const occs=prefs.filter(p=>['anniv','romant','surprise','repaspro'].includes(p.key));
@@ -11410,7 +11569,10 @@ async function crmImportHistory(onProgress,onDone){
     const p1=await _crmFetchPage(1,yearMin,today);
     const total=p1.paginator&&p1.paginator.total||0;
     const totalPages=Math.max(1,Math.ceil(total/250));
-    const map=_crmLoadMap()||{};
+    // Premier import : partir d'un slate vierge pour éviter que le seed data fictif persiste
+    // Imports suivants (refresh) : merger dans les données existantes pour préserver les vraies visites
+    const isFirstImport=!localStorage.getItem(CRM_HISTORY_TS_KEY);
+    const map=isFirstImport?{}:(_crmLoadMap()||{});
     let changed=false;
     function addBookings(bookings){
       (bookings||[]).forEach(b=>{
@@ -11510,15 +11672,49 @@ function buildClientPrefsCache(){
     const p=c.prefs;
     const allComments=c.visits.map(v=>v.comment||'').join(' ');
     const tm=allComments.match(/\btable[s]?\s*n?[°º]?\s*(\d+)/i);
+
+    // Extract transat/bed preferences from all visit comments
+    const rowCounts={};
+    const slotCounts={};
+    let trTotal=0, trN=0, bedN=0;
+    c.visits.forEach(v=>{
+      const txt=v.comment||'';
+      const row=parsePreferredRowFromText(txt);
+      if(row) rowCounts[row]=(rowCounts[row]||0)+1;
+      const slot=parseSlotFromText(txt);
+      if(slot) slotCounts[slot]=(slotCounts[slot]||0)+1;
+      const nbTr=parseTransatsFromText(txt);
+      if(nbTr>0){trTotal+=nbTr;trN++;}
+      if(parseBedFromText(txt)>0) bedN++;
+    });
+    // Most frequently mentioned row and slot
+    const topRowEntry=Object.entries(rowCounts).sort((a,b)=>b[1]-a[1])[0];
+    const topSlotEntry=Object.entries(slotCounts).sort((a,b)=>b[1]-a[1])[0];
+    const preferredRow=topRowEntry?parseInt(topRowEntry[0]):null;
+    const preferredSlot=topSlotEntry?parseInt(topSlotEntry[0]):null;
+    const avgTr=trN>0?Math.round(trTotal/trN):null;
+    // bedDouble: >1 bed mention OR existing bedtrans pref tag
+    const usesBed=bedN>=2||!!p.find(x=>x.key==='bedtrans');
+    // firstRow from vuemer pref OR preferredRow=500
+    const firstRow=!!p.find(x=>x.key==='vuemer')||preferredRow===500;
+    // extremite: more than 1 extremity mention in history
+    let extN=0;
+    c.visits.forEach(v=>{if(parseExtremiteFromText(v.comment||''))extN++;});
+    const hasExtremite=extN>=2;
+
     cache[c.normKey]={
       tableId:tm?parseInt(tm[1]):null,
       wantTerrasse:!!p.find(x=>x.key==='terrasse'),
       wantInterieur:/\b(int[eé]rieur|dedans|indoor)\b/i.test(allComments),
       wantOmbre:!!p.find(x=>x.key==='calme'),
       wantSoleil:/\b(soleil|ensoleill[eé]|sun)\b/i.test(allComments),
-      bedDouble:!!p.find(x=>x.key==='bedtrans'),
-      firstRow:!!p.find(x=>x.key==='vuemer'),
-      extremite:/\b(c[oô]t[eé]|bout|extr[eé]mit[eé])\b/i.test(allComments)
+      bedDouble:usesBed,
+      firstRow,
+      extremite:hasExtremite,
+      preferredRow,
+      preferredSlot,
+      avgTr,
+      usesBed,
     };
   });
   try{localStorage.setItem('playa-client-prefs-cache',JSON.stringify(cache));}catch(e){}
