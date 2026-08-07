@@ -3871,12 +3871,15 @@ function initTouchDrag(){
     const dist = Math.hypot(dx, dy);
 
     if(!touchDragActive){
-      if(src.dragReady && dist > 12){
-        // Long press done + finger moving → start drag
-        e.preventDefault();
-        startGhost(src.el, t.clientX, t.clientY);
-        // fall through to ghost movement below
-      } else if(!src.dragReady && dist > 14){
+      if(src.dragReady){
+        e.preventDefault(); // bloquer le scroll dès que le long-press est prêt
+        if(dist > 12){
+          startGhost(src.el, t.clientX, t.clientY);
+          // fall through to ghost movement below
+        } else {
+          return; // prêt mais pas assez bougé — attendre
+        }
+      } else if(dist > 14){
         // Moved too early → cancel (let scroll happen)
         clearTimeout(src.timer);
         src = null;
