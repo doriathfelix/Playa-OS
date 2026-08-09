@@ -6895,8 +6895,8 @@ function applyBookings(bookings, date){
     return Object.values(reservations).flat().some(r => r.zenchef_id === zcId);
   }
   bookings.forEach(b => {
-    const bDate = (b.shift_date||b.day||'').substring(0,10);
-    if(date && bDate !== date){ return; }
+    const bDate = (b.shift_date||b.day||b.shift_slot?.date||b.shift_slot?.shift?.date||b.booking_date||b.service_date||b.date_service||'').substring(0,10);
+    if(date && bDate && bDate !== date){ return; }
     const conv = zcToResa(b);
     if(conv._cancelled){ cancelled++; return; }
     if(isDupe(String(b.id))){ dupes++; return; }
