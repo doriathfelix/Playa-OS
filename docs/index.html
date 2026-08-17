@@ -6595,7 +6595,7 @@ function zcToResa(b){
   // Transat mentionné dans les notes (même sans nombre précis) → équivaut à avoir des transats
   const mentionsTransatsInText = nbTransats > 0 || /\btransats?\b/i.test(allTextFields);
   // Exclure explicitement "table + transats" des deux conditions : la règle Rambaud s'applique partout
-  const isRepasTransatFinal = !isTablePlusTransat && (isRepasTransat || (is13h00 && mentionsTransatsInText));
+  const isRepasTransatFinal = !isTablePlusTransat && (isRepasTransat || is13h00);
 
   // Heure : "13:00" -> "13h00"
   const timeRaw = b.time || '12:00';
@@ -7245,6 +7245,12 @@ async function syncZenchef(date, force){
       });
     } catch(e){ fast = null; }
 
+    // Certaines versions Zenchef filtrent par date de création et non de service → vérifier chaque booking
+    if(fast !== null && fast.filtered){
+      fast.bookings = fast.bookings.filter(b =>
+        (b.shift_date||b.day||b.shift_slot?.date||b.shift_slot?.shift?.date||'').startsWith(date)
+      );
+    }
     if(fast !== null && fast.filtered && fast.bookings.length > 0){
       // Filtre API fonctionnel ET résultats non vides — résultats fiables en 1-2 requêtes
       zcSetProgress(100);
