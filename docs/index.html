@@ -177,8 +177,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 #module-container{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 /* Dashboard */
 .dash-page{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;background:var(--bg)}
-.dash-kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.dash-section-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.dash-kpi-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .dkpi{background:var(--card);border:0.5px solid var(--sep);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
 .dkpi-l{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
 .dkpi-v{font-size:26px;font-weight:800;line-height:1;color:var(--t1)}
@@ -298,7 +297,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
   border-left:3px solid transparent;
   transition:box-shadow .15s,transform .1s;
   position:relative;
-  touch-action:pan-y;
+  touch-action:none;
 }
 .rc:hover{box-shadow:var(--shadow-md);transform:translateX(1px)}
 .rc.rc-placed{border-radius:0 var(--r) var(--r) 0}
@@ -314,7 +313,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .rc-waiting-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:800;padding:1px 6px;border-radius:20px;background:var(--obg);border:0.5px solid var(--obd);color:var(--ot);flex-shrink:0}
 .rc.rc-fuse{border:2px solid var(--gold);background:var(--gdbg)}
 .rc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px;margin-bottom:2px}
-.rc-name{font-size:13px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;max-width:100%}
+.rc-name{font-size:13px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;max-width:165px}
 .rc-pax{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;border:0.5px solid;flex-shrink:0;white-space:nowrap}
 .svc-s1 .rc-pax{background:var(--s1bg);border-color:var(--s1bd);color:var(--s1t)}
 .svc-s2 .rc-pax{background:var(--s2bg);border-color:var(--s2bd);color:var(--s2t)}
@@ -421,22 +420,21 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .TBL.dropping{background:var(--bbg);border-color:var(--blue);border-style:dashed;border-width:2px}
 .TBL.prio{border-color:var(--gdb)}
 .TBL.fuse-sel{border:3px solid var(--gold);background:var(--gdbg);box-shadow:0 0 0 3px rgba(245,158,11,0.2)}
-.TBL.fused-entity{background:#FFFBEB;border-color:#F59E0B;border-width:2px;border-top:4px solid #F59E0B;padding:3px 0 4px}
-.TBL.fused-entity.occ{background:#FFF3CD;border-color:#D97706;border-top:4px solid #D97706}
+.TBL.fused-entity{background:var(--pbg);border-color:var(--pb);border-width:2px;padding:4px 0 5px}
+.TBL.fused-entity.occ{background:var(--pbg);border-color:var(--pb)}
 .fuse-nums{display:flex;align-items:stretch;justify-content:center;width:100%;margin-bottom:2px}
-.fuse-tnum{flex:1;font-size:15px;font-weight:900;color:#92400E;font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;line-height:1}
-.TBL.fused-entity.occ .fuse-tnum{color:#92400E}
-.fuse-sep{position:relative;width:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.fuse-sep::before{content:'';position:absolute;left:50%;top:0;bottom:0;border-left:2px solid #F59E0B;transform:translateX(-50%)}
-.fuse-sep-badge{position:relative;z-index:1;font-size:10px;font-weight:900;color:#92400E;background:#FFFBEB;border:2px solid #D97706;border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;line-height:1}.tbl-num{font-size:26px;font-weight:600;color:var(--t5);line-height:1;letter-spacing:-.5px;font-family:'DM Mono',monospace}
+.fuse-tnum{flex:1;font-size:13px;font-weight:800;color:var(--pt);font-family:'DM Mono',monospace;display:flex;align-items:center;justify-content:center;line-height:1}
+.TBL.fused-entity.occ .fuse-tnum{color:var(--gt)}
+.fuse-sep{position:relative;width:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fuse-sep::before{content:'';position:absolute;left:50%;top:0;bottom:0;border-left:1.5px dashed var(--sep2);transform:translateX(-50%)}
+.fuse-sep-badge{position:relative;z-index:1;font-size:7px;font-weight:900;color:var(--purple);background:var(--pbg);border:1.5px solid var(--pb);border-radius:50%;width:13px;height:13px;display:flex;align-items:center;justify-content:center;line-height:1}.tbl-num{font-size:26px;font-weight:600;color:var(--t5);line-height:1;letter-spacing:-.5px;font-family:'DM Mono',monospace}
 .TBL.occ .tbl-num{font-size:21px;color:var(--gt)}
 .TBL.urg .tbl-num{font-size:21px;color:var(--rt)}
 .tbl-name{font-size:10px;font-weight:600;color:var(--t2);max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
 .tbl-time{font-size:9px;font-weight:600;color:var(--gt);margin-top:1px}
 .tbl-time.urg{color:var(--rt)}
 .tbl-cap{font-size:9px;font-weight:600;color:var(--t5)}
-.tbl-fuse-tag{font-size:8px;font-weight:700;color:#92400E;background:#FEF3C7;border:1px solid #D97706;border-radius:20px;padding:1px 6px;margin-top:2px}
-.fuse-corner-tag{position:absolute;top:2px;right:3px;font-size:6px;font-weight:900;letter-spacing:.05em;color:#92400E;line-height:1;text-transform:uppercase}
+.tbl-fuse-tag{font-size:8px;font-weight:700;color:var(--pt);background:var(--pbg);border:0.5px solid var(--pb);border-radius:20px;padding:1px 6px;margin-top:2px}
 .pax-bubble{
   position:absolute;top:-7px;right:-7px;
   background:var(--s1);color:#fff;
@@ -446,7 +444,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
   font-family:'DM Mono',monospace;
 }
 .pax-bubble.urg{background:var(--red)}
-.pax-bubble.fused{background:#D97706}
+.pax-bubble.fused{background:var(--purple)}
 .prio-star{position:absolute;top:4px;left:6px;font-size:10px;color:var(--gold);pointer-events:none;line-height:1}
 /* Indicateur service sur table occupée — bandeau bas */
 .TBL.tbl-s1::after,.TBL.tbl-s2::after,.TBL.tbl-soir::after,.TBL.tbl-rt::after{
@@ -712,7 +710,6 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
   left:0;right:0;bottom:0;
   height:56px;background:var(--card);
   border-top:0.5px solid var(--sep);z-index:80;
-  padding-bottom:env(safe-area-inset-bottom,0px);
 }
 .bttab{
   flex:1;border:none;background:none;
@@ -728,16 +725,6 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .bttab.t1.bttab-on{color:var(--s2)}
 .bttab.t2.bttab-on{color:var(--teal)}
 .bttab.t3.bttab-on{color:var(--so)}
-.btmenu{
-  flex:1;border:none;background:none;
-  font-family:inherit;font-size:13px;font-weight:700;
-  color:var(--t3);cursor:pointer;
-  display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:2px;
-  transition:color .13s;padding:4px 0;
-  -webkit-tap-highlight-color:transparent;
-}
-.btmenu>span{font-size:9px;font-weight:600;letter-spacing:.03em;opacity:.8}
 
 /* ── FAB toggle liste / plan (mobile) */
 #mobile-toggle-fab{
@@ -772,16 +759,6 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
   }
   #right-panel.open{transform:translateX(0)}
   #rp-close-btn{display:flex}
-  /* Stats-bar : wrap sur tablette */
-  .stats-bar{flex-wrap:wrap;gap:6px}
-  /* Planning grid : colonne nom réduite */
-  .pg-grid{grid-template-columns:80px repeat(7,1fr)}
-  /* Module container : scrollable */
-  #module-container{overflow-y:auto}
-  /* AI side panel : plus étroit */
-  .ai-side{width:200px}
-  /* Topbar : cacher les boutons d'impression (dupliqués dans le canvas) */
-  #service-top-btns .ib:nth-child(n+3){display:none!important}
 }
 
 /* ── MOBILE — ≤767px ── */
@@ -841,44 +818,6 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
   .toolbar{gap:5px;flex-wrap:wrap}
   .tbtn{padding:7px 10px;font-size:11px}
   .stats-bar{gap:6px;flex-wrap:wrap}
-  #toast{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
-
-  /* ── Rush overlay : empilé verticalement ── */
-  #rush-overlay .ro-body{flex-direction:column-reverse;overflow-y:auto}
-  .ro-right{width:100%!important;height:auto!important;border-left:none!important;border-top:1px solid var(--sep);display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;padding:10px!important}
-  .ro-tbl{width:64px!important;height:64px!important}
-  .ro-left{overflow-y:auto}
-
-  /* ── Planning grid : scroll horizontal ── */
-  .pg-grid-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .pg-grid{grid-template-columns:80px repeat(7,minmax(72px,1fr));min-width:580px}
-
-  /* ── AI side panel : empilé ── */
-  .ai-wrap{flex-direction:column!important}
-  .ai-side{width:100%!important;border-left:none!important;border-top:1px solid var(--sep);max-height:40dvh;overflow-y:auto}
-
-  /* ── Dashboard sections : 2 colonnes ── */
-  .dash-section-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-
-  /* ── Module container : scroll vertical ── */
-  #module-container{overflow-y:auto!important}
-
-  /* ── Stat cards et pax compacts ── */
-  .pax-circle{width:44px!important;height:44px!important;font-size:14px!important}
-  .stat-card{padding:6px 10px!important}
-}
-
-/* ── TRÈS PETIT TÉLÉPHONE — ≤400px ── */
-@media (max-width:400px){
-  #topbar{padding:0 6px;gap:3px}
-  .logo{font-size:12px}
-  #date-btn-label{font-size:11px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  /* Labels tab bar masqués : icônes seules */
-  .bttab>span:last-child,.btmenu>span:last-child{display:none}
-  .bttab,.btmenu{gap:0;padding:6px 2px}
-  /* Grids encore plus compactes */
-  .dash-kpi-row{grid-template-columns:1fr 1fr}
-  .dash-section-grid{grid-template-columns:1fr!important}
 }
 
 /* PRINT */
@@ -915,7 +854,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
       <button onclick="printTransats()" title="Imprimer le plan de transats" style="height:34px;padding:0 11px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--card);font-size:11px;font-weight:700;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;white-space:nowrap;transition:all .15s" onmouseenter="this.style.borderColor='var(--teal)';this.style.color='var(--teal)'" onmouseleave="this.style.borderColor='var(--sep)';this.style.color='var(--t2)'">⛱ Transats</button>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
-      <div id="sync-btn" onclick="syncZenchef(currentDate, true)" title="Synchroniser avec Zenchef (force rechargement)" style="background:var(--bg);border:1px solid var(--sep);color:var(--t2);font-size:12px;font-weight:500;width:auto;padding:0 13px;height:36px;display:flex;align-items:center;gap:6px;border-radius:var(--r-sm);cursor:pointer;flex-shrink:0;transition:all .15s;letter-spacing:.01em" onmouseenter="this.style.borderColor='var(--t3)';this.style.background='var(--card)'" onmouseleave="this.style.borderColor='var(--sep)';this.style.background='var(--bg)'"><span id="sync-icon">⟳</span> Zenchef</div>
+      <div id="sync-btn" onclick="syncZenchef()" title="Synchroniser avec Zenchef" style="background:var(--bg);border:1px solid var(--sep);color:var(--t2);font-size:12px;font-weight:500;width:auto;padding:0 13px;height:36px;display:flex;align-items:center;gap:6px;border-radius:var(--r-sm);cursor:pointer;flex-shrink:0;transition:all .15s;letter-spacing:.01em" onmouseenter="this.style.borderColor='var(--t3)';this.style.background='var(--card)'" onmouseleave="this.style.borderColor='var(--sep)';this.style.background='var(--bg)'"><span id="sync-icon">⟳</span> Zenchef</div>
       <div id="sync-age" class="sync-age">jamais synced</div>
     </div>
   </div>
@@ -923,10 +862,6 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 </div>
 
 <div id="rush-banner" onclick="toggleRushMode()">⚡ MODE RUSH ACTIF — Tap pour revenir à la vue normale</div>
-
-<!-- CRM Drawer flottant — accessible depuis n'importe quel module -->
-<div id="crm-panel-backdrop" onclick="closeCrmPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1999"></div>
-<div id="crm-panel" data-open="0" style="display:none;position:fixed;top:0;right:0;height:100%;width:360px;max-width:100vw;background:var(--card);z-index:2000;box-shadow:-4px 0 24px rgba(0,0,0,.18);flex-direction:column;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)"></div>
 
 <div id="os-shell">
 
@@ -1007,25 +942,11 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
     <!-- ══════ GESTION ══════ -->
     <div class="osn-sec-label">Gestion</div>
 
-    <button class="osni" id="osni-clients" onclick="openCrmPanel()">
+    <button class="osni" id="osni-clients" onclick="goModule('clients')">
       <div class="osni-icon" style="background:#FFF0F5">
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="7" r="3.2" fill="#FDA4C2" fill-opacity=".4" stroke="#DB2777" stroke-width="1.3"/><path d="M4 18.5C4 15.19 7.13 12.5 11 12.5C14.87 12.5 18 15.19 18 18.5" stroke="#DB2777" stroke-width="1.3" stroke-linecap="round" fill="none"/><path d="M15 3.5L15.8 5.5L18 6L15.8 6.5L15 8.5L14.2 6.5L12 6L14.2 5.5L15 3.5Z" fill="#DB2777" fill-opacity=".7"/></svg>
       </div>
       <span class="osni-name">Clients</span>
-    </button>
-
-    <button class="osni" id="osni-guide" onclick="window.open('guide-clients.html','_blank')">
-      <div class="osni-icon" style="background:#FFF0F5">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="4" y="3" width="11" height="16" rx="1.5" fill="#FDA4C2" fill-opacity=".3" stroke="#DB2777" stroke-width="1.3"/><path d="M4 6H15" stroke="#DB2777" stroke-width="1" stroke-opacity=".4"/><path d="M7 9H12M7 12H12M7 15H10" stroke="#DB2777" stroke-width="1.2" stroke-linecap="round"/><circle cx="16.5" cy="16.5" r="3.5" fill="#FFF0F5" stroke="#DB2777" stroke-width="1.2"/><path d="M15.5 16.5H17.5M16.5 15.5V17.5" stroke="#DB2777" stroke-width="1.2" stroke-linecap="round"/></svg>
-      </div>
-      <span class="osni-name">Guide ↗</span>
-    </button>
-
-    <button class="osni" id="osni-groupes" onclick="goModule('groupes')">
-      <div class="osni-icon" style="background:#FFF7ED">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="4" width="16" height="15" rx="2" fill="#FED7AA" fill-opacity=".4" stroke="#EA580C" stroke-width="1.3"/><path d="M7 2V5M15 2V5M3 8H19" stroke="#EA580C" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="13" r="1.2" fill="#EA580C" fill-opacity=".7"/><circle cx="11" cy="13" r="1.2" fill="#EA580C" fill-opacity=".4"/><circle cx="14" cy="13" r="1.2" fill="#EA580C" fill-opacity=".4"/></svg>
-      </div>
-      <span class="osni-name">Groupes</span>
     </button>
 
     <button class="osni" id="osni-prestataires" onclick="goModule('prestataires')">
@@ -1260,23 +1181,6 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 </div>
 
 </div><!-- /os-shell -->
-
-<!-- ▸ Mobile bottom tab bar -->
-<div id="bottom-tab-bar">
-  <button class="bttab t0 bttab-on" onclick="mobileSwitchTab(0)"><span style="font-size:18px;line-height:1">🍽</span><span>S1</span></button>
-  <button class="bttab t1"          onclick="mobileSwitchTab(1)"><span style="font-size:18px;line-height:1">☀️</span><span>S2</span></button>
-  <button class="bttab t2"          onclick="mobileSwitchTab(2)"><span style="font-size:18px;line-height:1">⛱</span><span>Transats</span></button>
-  <button class="bttab t3"          onclick="mobileSwitchTab(3)"><span style="font-size:18px;line-height:1">🌙</span><span>Soir</span></button>
-  <button class="btmenu"            onclick="openMobileMenu()">  <span style="font-size:18px;line-height:1">☰</span><span>Menu</span></button>
-</div>
-
-<!-- ▸ FAB liste / plan -->
-<button id="mobile-toggle-fab" onclick="mobileToggleView()" aria-label="Basculer vue">⊞</button>
-
-<!-- ▸ Menu mobile slide-up -->
-<div id="mob-menu-bd" onclick="closeMobileMenu()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2500"></div>
-<div id="mob-menu" style="display:none;position:fixed;left:0;right:0;bottom:0;background:var(--card);z-index:2501;border-radius:20px 20px 0 0;padding:20px 16px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(100%);transition:transform .25s cubic-bezier(.4,0,.2,1)"></div>
-
 <script>
 // ══════════════════════════════════════════
 // CONFIG TABLES
@@ -1360,9 +1264,12 @@ const SALON_SLOTS = [
   {id:1004, lbl:'Salon 4', gridCol:'19 / 21', gridRow:1},  // remplace 115-116 (décalé par 12bis)
 ];
 
+// ── Constante salons — IDs 1001-1004 (utiliser cette constante, pas le magic number)
+const SALON_ID_MIN = 1001;
+
 // ── BEDs spéciaux — rangée 100 (101-103) + rangée 200 positions 19-21 (219-221)
 // Transats lit/cabane, style ambré/ocre distinct — capacité 2 PAX par slot
-const BED_SLOTS = [101, 102, 103, 219, 220, 221];
+const BED_SLOTS = [101, 102, 103, 220, 221, 222];
 // Slot 219 est maintenant un transat ordinaire (label "218") entre le 217 et les BEDs
 
 
@@ -1404,7 +1311,7 @@ let extraTransats = loadExtra();
 //   date          : string|null (ISO, ex: '2026-04-11') — pour import multi-jours
 //   comment       : string — notes internes
 //   tags          : string[] — labels Zenchef (ex: ['VIP','Anniversaire'])
-//   svc           : 's1'|'s2'|'transats'|'soir'|'soir'
+//   svc           : 's1'|'s2'|'transats'|'soir'
 //   repas_transat : boolean
 //   tr            : number|null — nb transats (onglet transats)
 //   placed        : boolean
@@ -1444,16 +1351,9 @@ function mkResa(fields){
     booked_at: fields.booked_at ?? null,
     time_transats: fields.time_transats ?? null,
     row_transats: fields.row_transats ?? null, // rangée préférentielle (500=1ere ligne mer, 400=2eme…)
-    tr_by_row: fields.tr_by_row ?? null, // [{tr:6,row:400},{tr:6,row:300}] placement multi-rangée
     pref_extremite: fields.pref_extremite ?? false, // préfère un slot en extrémité (col 1 ou 20)
     requested_table_id: fields.requested_table_id ?? null, // table demandée explicitement ("table 5")
     bed: fields.bed ?? false, // lit double → BED_SLOTS
-    requested_slot: fields.requested_slot ?? null, // slot précis demandé ("en 501") → placement exact
-    tr_fallback: fields.tr_fallback ?? null, // nb transats de secours si bed impossible
-    tr_fallback_row: fields.tr_fallback_row ?? null, // rangée fallback (500=1ère ligne)
-    _typeTransatAmbiguous: fields._typeTransatAmbiguous ?? false, // typeExp dit table+transat mais sans nb → warning UI
-    monteeTable: fields.monteeTable ?? null, // tableId S2 quand le client est monté manger (reste en transat après)
-    transatDesistement: fields.transatDesistement ?? false, // transat/bed en liste d'attente si annulation libère un emplacement
   };
 }
 
@@ -1579,10 +1479,16 @@ function toast(msg){
   t._tid = setTimeout(()=>t.style.opacity='0', 2500);
 }
 
-// ══════════════════════════════════════════
-// RUSH TIMELINE
-// ══════════════════════════════════════════
-function renderRush(){ /* supprime - jauge retire */ }
+// Mapping service → couleurs CSS (bg/border/texte)
+function svcColors(svc){
+  const map = {
+    s1:      {bg:'var(--s1bg)', bd:'var(--s1bd)', tx:'var(--s1t)'},
+    s2:      {bg:'var(--s2bg)', bd:'var(--s2bd)', tx:'var(--s2t)'},
+    transats:{bg:'var(--rtbg)', bd:'var(--rtbd)', tx:'var(--rtt)'},
+    soir:    {bg:'var(--sobg)', bd:'var(--sobd)', tx:'var(--sot)'}
+  };
+  return map[svc] || {bg:'var(--card)', bd:'var(--sep)', tx:'var(--t1)'};
+}
 
 // ══════════════════════════════════════════
 
@@ -1624,12 +1530,6 @@ function detectAlerts(r){
     alerts.push({icon:'🍃', label:'Régime', bg:'#F0FDF4', bd:'#BBF7D0', col:'#15803D'});
   if(/\b(chaise\s*haute|bebe|nourisson|poussette|highchair|baby|nourrisson)\b/.test(all))
     alerts.push({icon:'👶', label:'Bébé', bg:'#FDF4FF', bd:'#F0ABFC', col:'#7E22CE'});
-  // Incohérence : type d'expérience "table+transats" sans nb précisé → signaler
-  if(r._typeTransatAmbiguous)
-    alerts.push({icon:'⚠', label:'Transats non confirmés', bg:'#FFF7ED', bd:'#FED7AA', col:'#C2410C'});
-  // Resa bed avec fallback transats si aucun bed libre
-  if(r.tr_fallback)
-    alerts.push({icon:'🔄', label:`Bed ou ${r.tr_fallback}T L1`, bg:'#F0FDF4', bd:'#BBF7D0', col:'#15803D'});
   // Tags Zenchef bruts : tous ceux non déjà couverts par une alerte ci-dessus
   const coveredRe = /allergi|intoleran|gluten|lactose|noix|arachide|peanut|celiac|nuts|anniversaire|birthday|fiancailles|mariage|evjf|evg|pedida|noces|proposal|celebration|pmr|wheelchair|handicap|mobilite|fauteuil|vegetar|vegan|vegetal|halal|casher|kosher|viande|pescet|highchair|nourrisson|poussette/i;
   (r.tags||[]).forEach(tag => {
@@ -1644,7 +1544,7 @@ function renderSidebar(){
   const q = (document.getElementById('search-input').value||'').toLowerCase().trim();
   const list = document.getElementById('resa-list');
   list.innerHTML='';
-  const rows = sortByTime(gr()).filter(r => {
+  const rows = sortByBookedAt(gr()).filter(r => {
     if(q && !r.name.toLowerCase().includes(q)
          && !(r.phone||'').replace(/\s/g,'').includes(q.replace(/\s/g,''))
          && !(r.comment||'').toLowerCase().includes(q)) return false;
@@ -1661,10 +1561,6 @@ function renderSidebar(){
     else if(fuseMode&&fuseTargets.includes(r.id)) cls+=' rc-fuse';
     else if(r.urgent) cls+=' rc-urgent';
     else if(r.placed) cls+=' rc-placed';
-    const hasIncoherence = !r.ns && (
-      (r.repas_transat && (!r.tr || r.tr === 0)) ||
-      (r.bed && (!r.tr || r.tr === 0))
-    );
     if(!r.ns && !fuseMode){
       if(r.repas_transat || r.svc==='transats') cls+=' svc-rt';
       else if(r.svc==='s1') cls+=' svc-s1';
@@ -1672,7 +1568,6 @@ function renderSidebar(){
       else if(r.svc==='soir') cls+=' svc-soir';
     }
     d.className=cls; d.draggable=!r.ns; d.dataset.id=r.id;
-    if(hasIncoherence) { d.style.borderColor='#FF5555'; d.style.borderLeftWidth='3px'; }
     const ptag = r.placed
       ? (currentTab===2
           ? (r.slot >= 1000
@@ -1718,21 +1613,6 @@ function renderSidebar(){
       ? `<span class="rc-att-badge">⏳ En attente</span>`
       : '';
 
-    // Badge montée à table
-    const monteeBadge = r.monteeTable
-      ? `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--s2bg,#FFF3E0);border:0.5px solid var(--s2bd,#E8870A);color:var(--s2t,#E8870A)">⬆ T${r.monteeTable}</span>`
-      : '';
-
-    // Badge incohérence (transat sans nombre, bed sans nombre…)
-    const incoherenceBadge = hasIncoherence
-      ? `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FFEAEA;border:0.5px solid #FF5555;color:#CC0000">⚠ Nb transats manquant</span>`
-      : '';
-
-    // Badge "si désistement" — transat/bed en liste d'attente si annulation
-    const desistementBadge = r.transatDesistement
-      ? `<span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:#F0FDF4;border:0.5px solid #BBF7D0;color:#15803D">🔄 Si désistement</span>`
-      : '';
-
     // Placement
     const placedLine = r.placed
       ? (currentTab===2
@@ -1751,9 +1631,6 @@ function renderSidebar(){
     const extBadge = r.pref_extremite
       ? `<span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:20px;background:var(--gdbg);border:0.5px solid var(--gdb);color:var(--gdt)">⟺ côté</span>`
       : '';
-    const rowBadge = (!r.placed && r.row_transats && rowLabels[r.row_transats])
-      ? `<span style="font-size:9px;font-weight:800;padding:1px 5px;border-radius:20px;background:${r.row_transats===500?'#FFEAEA':'var(--rtbg)'};border:0.5px solid ${r.row_transats===500?'#FF5555':'var(--rtbd)'};color:${r.row_transats===500?'#CC0000':'var(--rtt)'}">🌊 ${rowLabels[r.row_transats]}</span>`
-      : '';
 
     d.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">
@@ -1761,9 +1638,6 @@ function renderSidebar(){
           <div class="rc-name">${r.urgent?'<span class="urgent-dot"></span>':''}${r.name}</div>
           ${!r.repas_transat?`<div style="font-size:11px;font-weight:600;color:var(--t2);margin-top:3px">${r.time}</div>`:''}
           ${attBadge}
-          ${monteeBadge}
-          ${desistementBadge}
-          ${incoherenceBadge}
           ${alertLine}
           ${commentLine}
           ${placedLine}
@@ -1774,7 +1648,6 @@ function renderSidebar(){
             <div class="rc-pax">${r.pax} PAX</div>
           </div>
           ${trBottomRight}
-          ${rowBadge}
           ${extBadge}
         </div>
       </div>
@@ -1812,15 +1685,15 @@ function renderStats(){
   const paxRT = reservations.transats.filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+x.pax,0);
 
   // Total transats : somme des tr sur les resas table (pas sous-resas pour éviter doublon)
-  // + tr des repas transats purs — les resas "si désistement" sont exclues (non garanties)
+  // + tr des repas transats purs
   const trFromTables = [...reservations.s1,...reservations.s2,...reservations.soir]
-    .filter(x=>!x.ns && x.tr>0 && !isSubResa(x) && !x.transatDesistement).reduce((s,x)=>s+(x.tr||0),0);
+    .filter(x=>!x.ns && x.tr>0 && !isSubResa(x)).reduce((s,x)=>s+(x.tr||0),0);
   const trFromRT = reservations.transats
-    .filter(x=>x.repas_transat&&!x.ns&&!x.transatDesistement).reduce((s,x)=>s+(x.tr||x.pax||0),0);
+    .filter(x=>x.repas_transat&&!x.ns).reduce((s,x)=>s+(x.tr||x.pax||0),0);
   const trTotal = trFromTables + trFromRT;
-  // Beds (lits doubles) — chaque lit = 2 transats dans le total (hors désistement)
+  // Beds (lits doubles) — chaque lit = 2 transats dans le total
   const trBeds = reservations.transats
-    .filter(x=>x.bed&&!x.ns&&isSubResa(x)&&!x.transatDesistement).reduce((s,x)=>s+(x.tr||1),0);
+    .filter(x=>x.bed&&!x.ns&&isSubResa(x)).reduce((s,x)=>s+(x.tr||1),0);
   // Grand total transats journée : transats normaux + beds×2
   const trGrandTotal = trTotal + trBeds * 2;
 
@@ -2362,8 +2235,8 @@ function makeCell(id, tMap){
       `<span class="fuse-tnum">${TABLE_DATA[tid]?.lbl||tid}</span>`
     ).join('');
     cell.innerHTML = rr
-      ? `<span class="fuse-corner-tag">⊕ fusion</span><div class="fuse-nums">${segsHtml}</div><div class="tbl-name">${rr.name}</div><div class="pax-bubble fused">${rr.pax}</div>`
-      : `<span class="fuse-corner-tag">⊕ fusion</span><div class="fuse-nums">${segsHtml}</div><div class="tbl-fuse-tag">libre</div>`;
+      ? `<div class="fuse-nums">${segsHtml}</div><div class="tbl-name">${rr.name}</div><div class="pax-bubble fused">${rr.pax}</div>`
+      : `<div class="fuse-nums">${segsHtml}</div><div class="tbl-fuse-tag">fusionné</div>`;
     cell.addEventListener('dragover',e=>{e.preventDefault();cell.classList.add('dropping')});
     cell.addEventListener('dragleave',()=>cell.classList.remove('dropping'));
     cell.addEventListener('drop',e=>{e.preventDefault();cell.classList.remove('dropping');if(!dragId)return;saveUndo();const dr=gr().find(x=>x.id===dragId);if(!dr)return;fg.tids.forEach(tid=>{gr().forEach(x=>{if(x.id!==dr.id&&x.tableId===tid){x.placed=false;x.tableId=null;}})});dr.placed=true;dr.tableId=fg.tids[0];dragId=null;selectedId=dr.id;render();});
@@ -2386,8 +2259,7 @@ function makeCell(id, tMap){
   const disp = d.lbl || id;
   cell.title=`${disp} · ${capStr(d)}${d.note?' · '+d.note:''}`;
   if(r){
-    const nameDisp=(r.monteeTable?'⛱ ':'')+r.name;
-    cell.innerHTML=`<div class="tbl-num">${disp}</div><div class="tbl-name">${nameDisp}</div><div class="pax-bubble${r.urgent?' urg':''}">${r.pax}</div>`;
+    cell.innerHTML=`<div class="tbl-num">${disp}</div><div class="tbl-name">${r.name}</div><div class="pax-bubble${r.urgent?' urg':''}">${r.pax}</div>`;
   } else {
     cell.innerHTML=`<div class="tbl-num">${disp}</div><div class="tbl-cap">${capStr(d)}</div>`;
   }
@@ -2442,10 +2314,6 @@ function renderTablesDefaultLayout(){
   // Chaque onglet voit son propre plan — autoplace S1 n'affecte pas S2
   const tMap={};
   gr().forEach(r=>{if(r.placed&&r.tableId&&!r.ns)tMap[r.tableId]=r;});
-  // Transats "montés à table" visibles dans le plan S2
-  if(currentTab===1){
-    reservations.transats.forEach(rt=>{if(rt.monteeTable&&!rt.ns&&!tMap[rt.monteeTable])tMap[rt.monteeTable]=rt;});
-  }
 
   const card=document.createElement('div'); card.className='floor-card';
 
@@ -3449,9 +3317,6 @@ function showDetail(id){
     statusHTML=`<div class="rp-status" style="background:var(--rbg);border-color:var(--rbd);color:var(--rt)"><div class="rp-status-dot" style="background:var(--red)"></div>No-show</div>`;
   } else if(r.urgent){
     statusHTML=`<div class="rp-status" style="background:var(--rbg);border-color:var(--rbd);color:var(--rt)"><div class="rp-status-dot" style="background:var(--red)"></div>Arrivée imminente</div>`;
-  } else if(r.monteeTable){
-    const loc=r.placed?(r.slot>=1000?'Transat extra':`Transat ${r.slot}`):'';
-    statusHTML=`<div class="rp-status" style="background:var(--rtbg);border-color:var(--rtbd);color:var(--rtt)"><div class="rp-status-dot" style="background:var(--teal,#169B8A)"></div>⛱ En salle · T${r.monteeTable}${loc?' · '+loc:''}</div>`;
   } else if(r.placed){
     const loc=currentTab===2?(r.slot>=1000?'Transat extra':`Transats ${r.slot}`):`T${r.tableId}`;
     statusHTML=`<div class="rp-status" style="background:var(--s1bg);border-color:var(--s1bd);color:var(--s1t)"><div class="rp-status-dot" style="background:var(--green)"></div>Placé · ${loc}</div>`;
@@ -3470,13 +3335,12 @@ function showDetail(id){
     ${r.comment?`<div class="det-row"><div class="det-label">Note</div><div class="det-val" style="color:var(--t3);font-size:11px">${r.comment}</div></div>`:''}
     ${(()=>{
       const tags=[];
-      if(r.requested_table_id){ const tid=r.requested_table_id; tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--s1bg);border:0.5px solid var(--s1bd);color:var(--s1t)">🪑 ${tid>=1001&&tid<=1004?'Salon '+(tid-1000):'Table '+tid} demandé${tid>=1001&&tid<=1004?'':'e'}</span>`); }
+      if(r.requested_table_id) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--s1bg);border:0.5px solid var(--s1bd);color:var(--s1t)">🪑 Table ${r.requested_table_id} demandée</span>`);
       if(r.row_transats===500) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FFEAEA;border:0.5px solid #FF5555;color:#CC0000">🌊 1ère ligne mer</span>`);
       else if(r.row_transats===400) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--rtbg);border:0.5px solid var(--rtbd);color:var(--rtt)">🌊 2ème ligne</span>`);
       else if(r.row_transats===300) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--rtbg);border:0.5px solid var(--rtbd);color:var(--rtt)">🌊 Milieu</span>`);
       if(r.pref_extremite) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--gdbg);border:0.5px solid var(--gdb);color:var(--gdt)">⟺ Extrémité</span>`);
       if(r.bed) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FFF8E1;border:0.5px solid #FFD54F;color:#8A6200">🛏 Lit double</span>`);
-      if(r.transatDesistement) tags.push(`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F0FDF4;border:0.5px solid #BBF7D0;color:#15803D">🔄 Si désistement</span>`);
       return tags.length?`<div class="det-row"><div class="det-label">Détecté</div><div class="det-val" style="display:flex;flex-wrap:wrap;gap:4px">${tags.join('')}</div></div>`:'';
     })()}
     ${r.repas_transat?`<div class="det-row"><div class="det-label">Type</div><div class="det-val"><span style="background:var(--rtbg);color:var(--rtt);border:0.5px solid var(--rtbd);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700">⛱ Repas transat</span></div></div>`:''}
@@ -3503,22 +3367,8 @@ function showDetail(id){
     }
     // No-show
     addRpBtn(rpA,'✗ No-show','rp-btn-noshow',()=>{
-      saveUndo();r.ns=true;r.placed=false;r.tableId=null;r.slot=null;r.monteeTable=null;render();
+      saveUndo();r.ns=true;r.placed=false;r.tableId=null;r.slot=null;render();
     });
-    // Montée à table (transats uniquement)
-    if(r.svc==='transats'||r.repas_transat){
-      if(!r.monteeTable){
-        addRpBtn(rpA,'⬆ Monter à table','rp-btn-montee',()=>monteeTablePicker(r));
-      } else {
-        addRpBtn(rpA,`↩ Retour transat`,'rp-btn-retour-transat',()=>retourTransat(r.id));
-      }
-    }
-    // Confirmer transats désistement (une place s'est libérée)
-    if(r.transatDesistement){
-      addRpBtn(rpA,'✓ Confirmer transats','rp-btn-confirmer-transats',()=>{
-        saveUndo(); r.transatDesistement=false; render(); showDetail(r.id);
-      });
-    }
   }
 
   // Récap jour + Fiche client
@@ -3548,48 +3398,6 @@ function addRpBtn(container, label, cls, onclick){
   b.textContent=label;
   b.onclick=onclick;
   container.appendChild(b);
-}
-
-function monteeTablePicker(r){
-  // Tables S2 libres (non occupées par une resa S2 placée)
-  const occupiedS2=new Set(reservations.s2.filter(x=>x.placed&&!x.ns).map(x=>x.tableId));
-  // Aussi exclure les tables déjà prises par d'autres montées
-  reservations.transats.forEach(rt=>{if(rt.id!==r.id&&rt.monteeTable)occupiedS2.add(rt.monteeTable);});
-  const freeTables=Object.keys(TABLE_DATA).map(Number)
-    .filter(id=>!occupiedS2.has(id))
-    .sort((a,b)=>(TABLE_DATA[a].prio||99)-(TABLE_DATA[b].prio||99));
-  openOverlay((box,close)=>{
-    box.innerHTML=`
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="font-size:15px;font-weight:800;color:var(--t1)">⬆ Monter à table — ${r.name}</div>
-        <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3);line-height:1">✕</button>
-      </div>
-      <div style="font-size:11px;color:var(--t3);margin-bottom:12px">Tables S2 libres — choisissez où installer le client</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px">
-        ${freeTables.map(id=>{
-          const d=TABLE_DATA[id];
-          const lbl=d.lbl||`T${id}`;
-          return `<button onclick="assignMonteeTable(${r.id},${id});this.closest('[style*=fixed]').remove()" style="padding:10px 14px;border-radius:10px;border:1px solid var(--sep);background:var(--bg);font-size:13px;font-weight:700;cursor:pointer;color:var(--t1);min-width:64px">${lbl}<br><span style="font-size:10px;font-weight:500;color:var(--t3)">${d.lo}–${d.hi} pax</span></button>`;
-        }).join('')}
-        ${freeTables.length===0?'<div style="color:var(--t4);font-size:13px;padding:8px 0">Toutes les tables S2 sont occupées</div>':''}
-      </div>`;
-  });
-}
-
-function assignMonteeTable(resaId, tableId){
-  saveUndo();
-  const r=Object.values(reservations).flat().find(x=>x.id===resaId);
-  if(r){ r.monteeTable=tableId; }
-  render();
-  if(selectedId===resaId) showDetail(resaId);
-}
-
-function retourTransat(resaId){
-  saveUndo();
-  const r=Object.values(reservations).flat().find(x=>x.id===resaId);
-  if(r){ r.monteeTable=null; }
-  render();
-  if(selectedId===resaId) showDetail(resaId);
 }
 
 // ── Modal overlay générique
@@ -3644,34 +3452,16 @@ function showClientModal(r){
 
     // Scan async (setTimeout pour laisser le modal s'afficher)
     setTimeout(()=>{
-      // Source principale : CRM persistant (5 ans d'historique)
       const history=[];
-      const normName=(r.name||'').toLowerCase().trim();
-      const crmMap=_crmLoadMap()||{};
-      const crmEntry=crmMap[normName]
-        || Object.values(crmMap).find(c=>r.phone&&c.phone&&c.phone===r.phone)
-        || null;
-      if(crmEntry){
-        (crmEntry.visits||[]).forEach(v=>{
-          history.push({date:v.date||'',time:'',pax:v.pax||2,status:'confirmed'});
-        });
-      }
-      // Complément : cache brut Zenchef (time + no-shows pour les dates récentes)
-      const zcKeys=Object.keys(localStorage).filter(k=>k.startsWith('playa_zc_')&&!k.startsWith('playa_zc_pool'));
-      const zcDates=new Set(history.map(h=>h.date));
-      for(const key of zcKeys){
+      const keys=Object.keys(localStorage).filter(k=>k.startsWith('playa_zc_'));
+      for(const key of keys){
         try{
           const parsed=JSON.parse(localStorage.getItem(key));
           const data=parsed.data||[];
           data.forEach(b=>{
             const match=(r.phone&&b.phone_number===r.phone)||(r.email&&b.email===r.email&&r.email)||
               (!r.phone&&!r.email&&b.lastname&&r.name.toLowerCase().includes(b.lastname.toLowerCase())&&b.lastname.length>2);
-            if(!match) return;
-            const d=b.shift_date||b.day||key.replace('playa_zc_','');
-            const st=b.status||'';
-            const existing=history.find(h=>h.date===d);
-            if(existing){ existing.time=(b.time||'').substring(0,5); existing.status=st; }
-            else if(!zcDates.has(d)) history.push({date:d,time:(b.time||'').substring(0,5),pax:b.nb_guests||1,status:st});
+            if(match) history.push({date:b.shift_date||b.day||key.replace('playa_zc_',''),time:(b.time||'').substring(0,5),pax:b.nb_guests||1,status:b.status||''});
           });
         }catch(e){}
       }
@@ -3835,7 +3625,7 @@ function initTouchDrag(){
     dragId = parseInt(src.id, 10);
     const rect = el.getBoundingClientRect();
     ghost = el.cloneNode(true);
-    ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;opacity:.88;z-index:9999;pointer-events:none;border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.22);transform:scale(1.05) translateY(-4px);transition:none`;
+    ghost.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;opacity:.88;z-index:9999;pointer-events:none;border-radius:10px;box-shadow:0 10px 32px rgba(0,0,0,.22);transform:scale(1.05) translateY(-4px);transition:none`;
     document.body.appendChild(ghost);
     el.style.opacity = '.3';
   }
@@ -3858,37 +3648,18 @@ function initTouchDrag(){
   }
 
   document.addEventListener('touchstart', e => {
-    // Sidebar reservation card
     const card = e.target.closest('.rc[data-id]');
-    if(card) {
-      const id = card.dataset.id;
-      if(!id) return;
-      const t = e.touches[0];
-      src = {
-        id, el: card,
-        startX: t.clientX, startY: t.clientY, dragReady: false,
-        timer: setTimeout(() => {
-          if(src && src.id === id){ src.dragReady = true; }
-        }, 400)
-      };
-      return;
-    }
-    // Placed table cell on floor plan — drag the reservation placed on it
-    const tbl = e.target.closest('.TBL[data-tid]');
-    if(tbl) {
-      const tid = parseInt(tbl.dataset.tid);
-      const placed = gr().find(r => r.placed && r.tableId === tid && !r.ns);
-      if(!placed) return;
-      const t = e.touches[0];
-      const pid = String(placed.id);
-      src = {
-        id: pid, el: tbl,
-        startX: t.clientX, startY: t.clientY, dragReady: false,
-        timer: setTimeout(() => {
-          if(src && src.id === pid){ src.dragReady = true; }
-        }, 400)
-      };
-    }
+    if(!card) return;
+    const id = card.dataset.id;
+    if(!id) return;
+    const t = e.touches[0];
+    src = {
+      id, el: card,
+      startX: t.clientX, startY: t.clientY, dragReady: false,
+      timer: setTimeout(() => {
+        if(src && src.id === id){ src.dragReady = true; }
+      }, 400)
+    };
   }, {passive:false});
 
   document.addEventListener('touchmove', e => {
@@ -3898,15 +3669,12 @@ function initTouchDrag(){
     const dist = Math.hypot(dx, dy);
 
     if(!touchDragActive){
-      if(src.dragReady){
-        e.preventDefault(); // bloquer le scroll dès que le long-press est prêt
-        if(dist > 12){
-          startGhost(src.el, t.clientX, t.clientY);
-          // fall through to ghost movement below
-        } else {
-          return; // prêt mais pas assez bougé — attendre
-        }
-      } else if(dist > 14){
+      if(src.dragReady && dist > 12){
+        // Long press done + finger moving → start drag
+        e.preventDefault();
+        startGhost(src.el, t.clientX, t.clientY);
+        // fall through to ghost movement below
+      } else if(!src.dragReady && dist > 14){
         // Moved too early → cancel (let scroll happen)
         clearTimeout(src.timer);
         src = null;
@@ -4020,13 +3788,13 @@ function mobileToggleView(){
 }
 
 // ══ MOBILE TAB SWITCH ══
-function _syncBttabs(i){
-  document.querySelectorAll('.bttab').forEach((t,j)=>t.classList.toggle('bttab-on',j===i));
-}
 function mobileSwitchTab(i){
   if(typeof currentModule !== 'undefined' && currentModule !== 'service') goModule('service');
   switchTab(i);
-  _syncBttabs(i);
+  document.querySelectorAll('.bttab').forEach((t,j)=>{
+    t.classList.remove('bttab-on');
+    if(j===i) t.classList.add('bttab-on');
+  });
 }
 
 
@@ -4172,9 +3940,9 @@ function autoPlaceFor(svcKey){
   currentTab = TAB_KEYS.indexOf(svcKey);
   const all = reservations[svcKey];
   const resas = svcKey === 'transats'
-    ? all.filter(r => !r.placed && !r.ns && !r.waiting && !r.transatDesistement)
+    ? all.filter(r => !r.placed && !r.ns && !r.waiting)
     : all.filter(r => !r.placed && !r.ns && !r.waiting && r.svc === svcKey);
-  const skipped = all.filter(r => !r.ns && (r.waiting || r.transatDesistement)).length;
+  const skipped = all.filter(r => !r.ns && r.waiting).length;
   svcKey === 'transats' ? autoTransats(resas, skipped) : autoTables(resas, skipped);
   currentTab = prevTab;
   render();
@@ -4190,7 +3958,7 @@ function autoPlace(){
   // Évite que des resas mal classées (svc !== svcKey) soient placées par erreur.
   // Exception : onglet Transats → toutes les resas de reservations.transats sont valides.
   const resas = currentTab === 2
-    ? all.filter(r => !r.placed && !r.ns && !r.waiting && !r.transatDesistement)
+    ? all.filter(r => !r.placed && !r.ns && !r.waiting)
     : all.filter(r => !r.placed && !r.ns && !r.waiting && r.svc === svcKey);
 
   const skipped = all.filter(r => !r.ns && r.waiting).length;
@@ -4253,8 +4021,6 @@ function parseTableRequest(text){
   const t = text.toLowerCase();
   const m = t.match(/table\s*(?:n[°oa]?\s*)?(\d+)/i) || t.match(/\bt(\d+)\b/);
   if(m){ const n = parseInt(m[1]); if(n >= 1 && n <= 30 && TABLE_DATA[n]) return n; }
-  const ms = t.match(/\bsalon\s*([1-4])\b/);
-  if(ms){ const n = 1000 + parseInt(ms[1]); if(TABLE_DATA[n]) return n; }
   return null;
 }
 
@@ -4555,53 +4321,8 @@ function findVertical(sm, needed){
 // Cette fonction est appelée par autoTransats qui gère l'ordre global
 function placeTransat(r, sm, opts){
   opts = opts || {};
-
-  // ─── Multi-rangée explicite (ex: "6 en 2ème ligne + 6 en 3ème ligne") ───
-  if(r.tr_by_row && r.tr_by_row.length >= 2){
-    const allSlots = [];
-    for(const entry of r.tr_by_row){
-      let toPlace = entry.tr;
-      for(; toPlace >= 1; toPlace--){
-        const h = findHorizontal(sm, toPlace, false, false, entry.row);
-        if(h){ h.slots.forEach(s => { sm[s] = r; allSlots.push(s); }); break; }
-      }
-    }
-    if(allSlots.length > 0){
-      r.placed = true;
-      r.slot = allSlots[0];
-      r.extraSlots = allSlots;
-      r.tr = allSlots.length;
-      return true;
-    }
-    // Aucun slot dispo dans les rangées demandées → fall-through vers placement normal
-  }
-
   const needed = r.tr || r.pax || 1;
   const forceRow = r.row_transats || null;
-
-  // ─── Slot précis demandé ("en 501") — priorité absolue ───
-  if(r.requested_slot && r.requested_slot >= 101 && r.requested_slot <= 521){
-    const start = r.requested_slot;
-    // Vérifier que les N slots consécutifs sont libres (même rangée)
-    const rowBase = Math.floor(start / 100) * 100;
-    const rowEnd = rowBase + 21; // fin de rangée (max slot = rowBase+21, ex: 521 pour rangée 500)
-    const slots = [];
-    for(let i = 0; i < needed && (start + i) <= rowEnd; i++){
-      if(sm[start + i]) break;
-      slots.push(start + i);
-    }
-    if(slots.length === needed){
-      r.placed = true; r.slot = slots[0]; r.extraSlots = null;
-      slots.forEach(s => sm[s] = r);
-      return true;
-    } else if(slots.length > 0){
-      // Place autant que possible à partir du slot demandé
-      r.placed = true; r.slot = slots[0]; r.extraSlots = null; r.tr = slots.length;
-      slots.forEach(s => sm[s] = r);
-      return true;
-    }
-    // Slot occupé → fall-through vers placement normal dans la même rangée
-  }
 
   // ─── Rangée forcée + extrémité (ex: "1ère ligne sur le côté") — priorité max ───
   if(forceRow && r.pref_extremite){
@@ -4774,7 +4495,7 @@ function findCompactVertical(sm, needed, avoidSingletons){
 function autoTransats(resas, skipped=0){
   const sm = buildSlotMap();
 
-  // ─── Pré-traitement : lire les commentaires pour déduire bed / extrémité / salon ───
+  // ─── Pré-traitement : lire les commentaires pour déduire bed / extrémité ───
   // (backup pour resas manuelles — les resas Zenchef sont déjà traitées par zcToResa)
   resas.forEach(r => {
     const raw = (r.comment || '').toLowerCase();
@@ -4785,27 +4506,6 @@ function autoTransats(resas, skipped=0){
       if(hasCote || /\b(extremit[e]?|extreme|lateral[e]?)\b/.test(t) || /\b(au\s*bout|en\s*bout)\b/.test(t) || /\bon\s*the\s*side\b/.test(raw)){
         r.pref_extremite = true;
       }
-    }
-    // Salon demandé dans le commentaire → stocker l'ID salon
-    if(!r.requested_table_id){
-      const salonM = t.match(/\bsalon\s*([1-4])\b/);
-      if(salonM) r.requested_table_id = 1000 + parseInt(salonM[1]);
-      else if(/\bsalon\b/.test(t)) r._wantsSalon = true;
-    }
-  });
-
-  // ─── Phase -1 : SALONS — honorer les demandes de salon explicites ───
-  resas.forEach(r => {
-    if(r.placed) return;
-    const sid = r.requested_table_id;
-    if(sid >= 1001 && sid <= 1004 && !sm[sid]){
-      r.placed = true; r.slot = sid; sm[sid] = r;
-    }
-  });
-  // "salon" sans numéro → premier salon libre
-  resas.filter(r => r._wantsSalon && !r.placed).forEach(r => {
-    for(const sid of [1001,1002,1003,1004]){
-      if(!sm[sid]){ r.placed = true; r.slot = sid; sm[sid] = r; break; }
     }
   });
 
@@ -4823,8 +4523,8 @@ function autoTransats(resas, skipped=0){
   // ─── Phase 0 : BEDS — placer exclusivement sur BED_SLOTS (lit double = 2 PAX max) ───
   // Les BED_SLOTS ne peuvent accueillir qu'UNE resa bed chacun.
   // Les transats ordinaires ne doivent JAMAIS atterrir sur ces slots.
-  const bedResas     = resas.filter(r => r.bed && !r.placed);
-  const transatResas = resas.filter(r => !r.bed && !r.placed);
+  const bedResas     = resas.filter(r => r.bed);
+  const transatResas = resas.filter(r => !r.bed);
 
   let bedPlaced = 0, bedFailed = 0;
   bedResas.sort((a,b) => {
@@ -4839,15 +4539,6 @@ function autoTransats(resas, skipped=0){
       bedPlaced++;
     } else {
       bedFailed++;
-      // Si resa conditionnelle bed/transat (ex: "1 bed / 2 transats 1ère ligne") :
-      // fallback automatique → convertir en transats sur 1ère ligne
-      if(r.tr_fallback){
-        r.bed = false;
-        r.tr = r.tr_fallback;
-        r.row_transats = r.tr_fallback_row || 500;
-        transatResas.push(r); // sera placé dans les phases 1-3
-        bedFailed--; // ne compte pas comme échec — fallback géré
-      }
     }
   });
 
@@ -5026,7 +4717,151 @@ function clearAll(){
   toast('Toutes les tables libérées');
 }
 
+// ── Snapshot/restore des placements (persistance inter-sync)
+function snapshotPlacements(){
+  try {
+    const placements = {};
+    ['s1','s2','transats','soir'].forEach(svc => {
+      (reservations[svc]||[]).forEach(r => {
+        if(r.placed || r.tableId != null || r.slot != null){
+          const key = r.zenchef_id || r.id;
+          placements[key] = {placed:r.placed, tableId:r.tableId, slot:r.slot, extraSlots:r.extraSlots};
+        }
+      });
+    });
+    const fusedSnap = {};
+    ['s1','s2','transats','soir'].forEach(svc => {
+      fusedSnap[svc] = (fused[svc]||[]).map(g => ({...g, tids:[...(g.tids||[])]}));
+    });
+    return {placements, fused:fusedSnap};
+  } catch(e){ return {placements:{}, fused:{s1:[],s2:[],transats:[],soir:[]}}; }
+}
 
+function restorePlacements(snap){
+  if(!snap) return;
+  const p = snap.placements || {};
+  if(!Object.keys(p).length) return;
+  ['s1','s2','transats','soir'].forEach(svc => {
+    (reservations[svc]||[]).forEach(r => {
+      const key = r.zenchef_id || r.id;
+      const s = p[key];
+      if(s){ r.placed=s.placed; r.tableId=s.tableId; r.slot=s.slot; r.extraSlots=s.extraSlots; }
+    });
+  });
+  ['s1','s2','transats','soir'].forEach(svc => {
+    if(!(fused[svc]||[]).length && snap.fused && (snap.fused[svc]||[]).length){
+      fused[svc] = snap.fused[svc];
+    }
+  });
+}
+
+function totalResaCount(){
+  return ['s1','s2','transats','soir'].reduce((n,k) => n + (reservations[k]||[]).length, 0);
+}
+
+
+// ══════════════════════════════════════════
+// PERSISTANCE DES PLACEMENTS — localStorage + GitHub Gist
+// ══════════════════════════════════════════
+const GIST_TOKEN_KEY = 'playa_gist_token';
+const GIST_ID_KEY    = 'playa_gist_id';
+const GIST_FNAME     = 'playa_placements.json';
+const PL_LS_PFX      = 'playa_placements_';
+
+let gistToken    = localStorage.getItem(GIST_TOKEN_KEY) || '';
+let gistId       = localStorage.getItem(GIST_ID_KEY)    || '';
+let gistCache    = null;   // { 'YYYY-MM-DD': snap }
+let gistSaveT    = null;   // debounce timer id
+let gistSyncing  = false;
+let gistLastSync = null;
+
+// Sauvegarde locale + planifie la sync Gist (debounce 3s)
+function savePlacements(date){
+  if(!date || !totalResaCount()) return;
+  const snap = snapshotPlacements();
+  try{ localStorage.setItem(PL_LS_PFX+date, JSON.stringify(snap)); }catch(e){}
+  if(gistCache) gistCache[date] = snap;
+  if(gistToken && gistId){
+    if(gistSaveT) clearTimeout(gistSaveT);
+    gistSaveT = setTimeout(gistPush, 3000);
+  }
+}
+
+// Lit les placements pour une date (cache Gist > localStorage)
+function loadPlacements(date){
+  if(!date) return null;
+  if(gistCache && gistCache[date]) return gistCache[date];
+  try{ const d=localStorage.getItem(PL_LS_PFX+date); return d?JSON.parse(d):null; }catch(e){ return null; }
+}
+
+// Pousse le cache local vers le Gist
+async function gistPush(){
+  if(!gistToken||!gistId||gistSyncing) return;
+  gistSyncing=true; _gistUpdateStatus();
+  try{
+    // Copie défensive avant d'élaguer pour ne pas détruire le cache live si la requête échoue
+    const all = Object.assign({}, gistCache || {});
+    const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-30);
+    const cs=cutoff.toISOString().split('T')[0];
+    Object.keys(all).forEach(k=>{ if(k<cs) delete all[k]; });
+    const r = await fetch('https://api.github.com/gists/'+gistId,{
+      method:'PATCH',
+      headers:{Authorization:'token '+gistToken,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify({files:{[GIST_FNAME]:{content:JSON.stringify(all)}}})
+    });
+    if(r.ok){ gistLastSync=new Date(); }
+  }catch(e){}
+  gistSyncing=false; _gistUpdateStatus();
+}
+
+// Tire les données du Gist → peuple localStorage + restaure le jour courant
+async function gistPull(){
+  if(!gistToken||!gistId||gistSyncing) return;
+  try{
+    const r = await fetch('https://api.github.com/gists/'+gistId,{
+      headers:{Authorization:'token '+gistToken,Accept:'application/vnd.github.v3+json'}
+    });
+    if(!r.ok) return;
+    const data = await r.json();
+    const content = data.files[GIST_FNAME]?.content;
+    if(!content) return;
+    const all = JSON.parse(content);
+    gistCache = all;
+    Object.entries(all).forEach(([d,snap])=>{
+      try{ localStorage.setItem(PL_LS_PFX+d,JSON.stringify(snap)); }catch(e){}
+    });
+    gistLastSync=new Date(); _gistUpdateStatus();
+    const snap=all[currentDate];
+    if(snap && Object.keys(snap.placements||{}).length && totalResaCount()>0){
+      restorePlacements(snap); render();
+    }
+  }catch(e){}
+}
+
+// Crée un nouveau Gist privé et retourne son ID
+async function gistCreate(token){
+  try{
+    const r=await fetch('https://api.github.com/gists',{
+      method:'POST',
+      headers:{Authorization:'token '+token,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify({description:'Playa-OS · placements tables & transats',public:false,files:{[GIST_FNAME]:{content:'{}'}}})
+    });
+    if(!r.ok) return null;
+    return (await r.json()).id;
+  }catch(e){ return null; }
+}
+
+// Met à jour l'indicateur de statut dans les réglages
+function _gistUpdateStatus(){
+  const el=document.getElementById('gist-status');
+  if(!el) return;
+  if(!gistToken||!gistId){ el.textContent='Non configuré'; el.style.color='var(--t4)'; return; }
+  if(gistSyncing){ el.textContent='Sync…'; el.style.color='var(--ot)'; return; }
+  if(gistLastSync){
+    el.textContent='Sync '+gistLastSync.toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'});
+    el.style.color='var(--gt)';
+  } else { el.textContent='Connecté'; el.style.color='var(--gt)'; }
+}
 
 // ══════════════════════════════════════════
 // RUSH MODE OVERLAY
@@ -5099,7 +4934,6 @@ function switchTab(i){
   btn.className='tbtn tbtn-fuse'; btn.textContent='⊕ Fusionner'; btn.onclick=toggleFuse;
   // modal service pré-sélectionné à l'ouverture via openModal()
   if(rushMode){document.getElementById('ro-tab-label').textContent=TAB_LABELS[i];renderRushOverlay();}
-  _syncBttabs(i);
   render();
 }
 
@@ -5460,14 +5294,23 @@ ${unplacedHtml}
 
 
 // ══════════════════════════════════════════
-// PRINT PLAN DE TRANSATS — une cellule par slot, hachures par service
+// PRINT PLAN DE TRANSATS — fond blanc, lisible, blocs g/m/d séparés
 // ══════════════════════════════════════════
 function printTransats(){
   const dateStr = fmtDateLong(currentDate);
-  const W=9.0, GAP=1.0, ALLEY=5, LBL=14;
+
+  const W=10.8, GAP=1.2, ALLEY=5, LBL=14;
+
+  const C = {
+    s1:   {bg:'#FFFFFF', tx:'#111', lbl:'S1',   bw:'0.5pt'},
+    s2:   {bg:'#FFFFFF', tx:'#111', lbl:'S2',   bw:'0.5pt'},
+    soir: {bg:'#FFFFFF', tx:'#111', lbl:'Soir', bw:'0.5pt'},
+    rt:   {bg:'#FFFFFF', tx:'#111', lbl:'RT',   bw:'0.5pt'},
+  };
+  function cFor(r){ return r.repas_transat ? C.rt : C[r.svc] || C.s1; }
 
   function sCol(slot){
-    const pos=slot-Math.floor(slot/100)*100;
+    const pos = slot - Math.floor(slot/100)*100;
     if(pos>=1&&pos<=7)  return 1+pos;
     if(pos>=8&&pos<=13) return 2+pos;
     return 3+pos;
@@ -5481,9 +5324,10 @@ function printTransats(){
     return String(slot);
   }
 
-  const placed=reservations.transats.filter(r=>r.placed&&!r.ns&&(r.slot||0)<1001);
-  const unplcd=reservations.transats.filter(r=>!r.placed&&!r.ns);
+  const placed = reservations.transats.filter(r=>r.placed&&!r.ns&&(r.slot||0)<1001);
+  const unplcd = reservations.transats.filter(r=>!r.placed&&!r.ns);
 
+  // slotIdxMap : slot → index dans placed (entier, pas objet → comparaison fiable)
   const slotIdxMap={};
   placed.forEach((resa,idx)=>{
     const isBed=BED_SLOTS.includes(resa.slot);
@@ -5493,240 +5337,199 @@ function printTransats(){
     slots.forEach(s=>{ if(slotIdxMap[s]===undefined) slotIdxMap[s]=idx; });
   });
 
-  const salonResaMap={}; // id → [resas] (toutes services)
+  const salonResaMap={};
   ['s1','s2','soir'].forEach(svc=>{
     (reservations[svc]||[]).forEach(r=>{
-      if(r.placed&&!r.ns&&r.tableId>=1001&&r.tableId<=1004){
-        if(!salonResaMap[r.tableId]) salonResaMap[r.tableId]=[];
-        salonResaMap[r.tableId].push(r);
-      }
+      if(r.placed&&!r.ns&&r.tableId>=1001&&r.tableId<=1004)
+        if(!salonResaMap[r.tableId]) salonResaMap[r.tableId]=r;
     });
   });
   reservations.transats.filter(r=>r.placed&&!r.ns&&(r.slot||0)>=1001&&(r.slot||0)<=1004)
-    .forEach(r=>{
-      if(!salonResaMap[r.slot]) salonResaMap[r.slot]=[];
-      salonResaMap[r.slot].push(r);
-    });
+    .forEach(r=>{if(!salonResaMap[r.slot])salonResaMap[r.slot]=r;});
 
-  // Même logique que renderStats — source de vérité, identique à la barre de stats
-  // Sous-résa = zenchef_id finissant par _tr ou _bed (créées pour le placement uniquement)
-  const isSubResa = r => r.zenchef_id && (String(r.zenchef_id).endsWith('_tr')||String(r.zenchef_id).endsWith('_bed'));
-  // Transats issus de resas table : lire depuis s1/s2/soir (PAS depuis transats[])
-  // pour éviter de compter les sous-resas ET les resas parentes (doublon)
-  const tableResas = [...(reservations.s1||[]),...(reservations.s2||[]),...(reservations.soir||[])]
-    .filter(r => !r.ns && (r.tr||0)>0 && !isSubResa(r));
-  // Repas-transat purs : uniquement dans transats[] avec repas_transat=true
-  const rtResas = (reservations.transats||[]).filter(r => r.repas_transat && !r.ns);
-  // Beds : sous-resas lit double dans transats[]
-  const bedResas = (reservations.transats||[]).filter(r => r.bed && !r.ns && isSubResa(r));
+  const allTr  = reservations.transats.filter(r=>!r.ns);
+  const nbSlots= placed.reduce((s,r)=>s+(r.tr||1),0);
+  const nbRT   = allTr.filter(r=>r.repas_transat).length;
+  const nbS1   = placed.filter(r=>r.svc==='s1'  &&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const nbS2   = placed.filter(r=>r.svc==='s2'  &&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
+  const nbSoir = placed.filter(r=>r.svc==='soir'&&!r.repas_transat).reduce((s,r)=>s+(r.tr||1),0);
 
-  const nbTransats = tableResas.reduce((s,r) => s+(r.tr||0), 0)
-                   + rtResas.reduce((s,r) => s+(r.tr||r.pax||0), 0);
-  const nbBeds     = bedResas.reduce((s,r) => s+(r.tr||1), 0); // nb de lits (pas d'emplacements)
-  // Grand total emplacements transats : transats ordinaires + beds×2 (1 lit = 2 places)
-  const trGrandTotal = nbTransats + nbBeds * 2;
-  // 1ère ligne = préférence row_transats===500 (front de mer) — inclut les beds en 1ère ligne
-  const nbLigne1   = tableResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||0), 0)
-                   + rtResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||r.pax||0), 0)
-                   + bedResas.filter(r => r.row_transats===500).reduce((s,r) => s+(r.tr||1)*2, 0);
-  // Ventilation service — mutuellement exclusive, somme = nbTransats
-  const nbS1   = tableResas.filter(r => r.svc==='s1').reduce((s,r) => s+(r.tr||0), 0);
-  const nbS2   = tableResas.filter(r => r.svc==='s2').reduce((s,r) => s+(r.tr||0), 0);
-  const nbSoir = tableResas.filter(r => r.svc==='soir').reduce((s,r) => s+(r.tr||0), 0);
-  const nbRT   = rtResas.reduce((s,r) => s+(r.tr||r.pax||0), 0);
-
-  function svcKey(resa){ return resa.repas_transat?'rt':(resa.svc||'s1'); }
-
-  // Groupe de slots consécutifs appartenant à la même résa — un seul nom, un seul bloc
-  function resaGroupBlock(resa, slots, gridRow, gcOverride=null){
-    if(!slots.length) return '';
-    const cMin=sCol(slots[0]), cMax=sCol(slots[slots.length-1]);
-    const gc=gcOverride||`${cMin}/${cMax+1}`;
-    const sk=svcKey(resa);
-    const isRT=sk==='rt';
-    const innerSlots=slots.map(s=>{
-      const isBed=BED_SLOTS.includes(s);
-      return `<div class="tr-is">${isBed?`<div class="tr-ib">BED</div>`:''}<div class="tr-in">${slotLbl(s)}</div></div>`;
-    }).join('');
-    const rtT=isRT?`<div class="tr-rt-t">T</div>`:'';
-    return `<div class="tr-wrap ${sk}" style="grid-column:${gc};grid-row:${gridRow}">
-      <div class="tr-gname">${resa.name||''} x${resa.tr||slots.length}</div>
-      <div class="tr-gs ${sk}">${innerSlots}${rtT}</div>
+  function emptySlot(slot, gridRow){
+    const isBed=BED_SLOTS.includes(slot);
+    return `<div style="grid-column:${sCol(slot)};grid-row:${gridRow};margin:0.8mm;background:#EBEBEB;border:0.5pt solid #AAAAAA;border-radius:1.5mm;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden">
+      ${isBed?`<div style="font-size:4.5pt;font-weight:800;color:#999;line-height:1">BED</div>`:''}
+      <div style="font-size:4.5pt;color:#999;font-weight:500;line-height:1">${slotLbl(slot)}</div>
     </div>`;
   }
 
-  function emptySlot(slot, gridRow, gcOverride=null){
-    const isBed=BED_SLOTS.includes(slot);
-    const gc=gcOverride||`${sCol(slot)}`;
-    return `<div class="tr-wrap" style="grid-column:${gc};grid-row:${gridRow}">
-      <div class="tr-gname-ph"></div>
-      <div class="tr-gs empty${isBed?' bed':''}">
-        <div class="tr-is">${isBed?`<div class="tr-ib">BED</div>`:''}<div class="tr-in">${slotLbl(slot)}</div></div>
+  function resaBlock(resa, cMin, cMax, rowMin, rowMax){
+    const nCols=cMax-cMin+1, nRows=rowMax-rowMin+1;
+    const c=cFor(resa);
+    const tot=resa.tr||nCols;
+    const totalW=nCols*W+(nCols-1)*GAP;
+    let slotOutlines='';
+    if(nRows===1){
+      slotOutlines=Array.from({length:nCols},(_,i)=>{
+        const lPct=(i*(W+GAP)/totalW*100).toFixed(2);
+        const wPct=(W/totalW*100).toFixed(2);
+        return `<div style="position:absolute;left:${lPct}%;top:5%;width:${wPct}%;height:90%;border:0.5pt solid #AAAAAA;border-radius:1mm;pointer-events:none"></div>`;
+      }).join('');
+    }
+    const fsName=nCols>=5?'8.5pt':nCols>=3?'7pt':nCols>=2?'6pt':'4.5pt';
+    const fsCnt =nCols>=3?'7.5pt':nCols>=2?'6.5pt':'5.5pt';
+    const fsLbl =nCols>=4?'8pt':nCols>=2?'7pt':'6pt';
+    return `<div style="grid-column:${cMin}/${cMax+1};grid-row:${rowMin}/${rowMax+1};margin:0.8mm;position:relative;overflow:hidden;border-radius:1.5mm;background:${c.bg};border:${c.bw} solid #666">
+      ${slotOutlines}
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.8mm;padding:2mm 1.5mm;z-index:1">
+        <div style="font-size:${fsName};font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${resa.name}</div>
+        <div style="font-size:${fsCnt};font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${tot}</div>
+        <div style="font-size:${fsLbl};font-weight:900;color:#fff;line-height:1;background:#111;border-radius:0.8mm;padding:0.3mm 1.5mm">${c.lbl}</div>
       </div>
     </div>`;
   }
 
-  const PRINT_SALON_SLOTS=[
-    {id:1001, lbl:'Salon 1', gc:'10/13'},
-    {id:1002, lbl:'Salon 2', gc:'13/16'},
-    {id:1003, lbl:'Salon 3', gc:'17/21'},
-    {id:1004, lbl:'Salon 4', gc:'21/25'},
-  ];
-
   function salonCell(salon, gridRow){
-    const resas=salonResaMap[salon.id]||[];
-    if(!resas.length){
-      return `<div class="tr-salon-wrap" style="grid-column:${salon.gc};grid-row:${gridRow}">
-        <div class="tr-salon-empty"><span class="tr-salon-lbl">${salon.lbl}</span></div>
+    const r=salonResaMap[salon.id], gc=salon.gridCol;
+    const N=parseInt(gc.split('/')[1])-parseInt(gc.split('/')[0]);
+    if(r){
+      const c=cFor(r);
+      const totalW=N*W+(N-1)*GAP;
+      const slotOutlines=Array.from({length:N},(_,i)=>{
+        const lPct=(i*(W+GAP)/totalW*100).toFixed(2);
+        const wPct=(W/totalW*100).toFixed(2);
+        return `<div style="position:absolute;left:${lPct}%;top:5%;width:${wPct}%;height:90%;border:0.5pt solid #AAAAAA;border-radius:1mm;pointer-events:none"></div>`;
+      }).join('');
+      return `<div style="grid-column:${gc};grid-row:${gridRow};margin:0.8mm;position:relative;overflow:hidden;border-radius:1.5mm;background:${c.bg};border:${c.bw} solid #666">
+        ${slotOutlines}
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.5mm;padding:2mm 1.5mm;z-index:1">
+          <div style="font-size:3.5pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;line-height:1">${salon.lbl}</div>
+          <div style="font-size:7pt;font-weight:700;color:${c.tx};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2;max-width:100%;text-align:center">${r.name}</div>
+          <div style="font-size:6.5pt;font-weight:800;color:${c.tx};font-family:monospace;line-height:1">x${r.tr||r.pax||2}</div>
+          <div style="font-size:7pt;font-weight:900;color:#fff;line-height:1;background:#111;border-radius:0.8mm;padding:0.3mm 1.5mm">${c.lbl}</div>
+        </div>
       </div>`;
     }
-    const bands=resas.map(r=>{
-      const sk=svcKey(r);
-      return `<div class="tr-salon-band ${sk}">
-        <span class="tr-salon-svc">${sk.toUpperCase()}</span>
-        <span class="tr-salon-name">${r.name||''}</span>
-        <span class="tr-salon-id">${salon.lbl}</span>
-      </div>`;
-    }).join('');
-    return `<div class="tr-salon-wrap" style="grid-column:${salon.gc};grid-row:${gridRow}">${bands}</div>`;
+    return `<div style="grid-column:${gc};grid-row:${gridRow};margin:0.8mm;background:#EBEBEB;border:0.5pt solid #AAAAAA;border-radius:1.5mm;display:flex;align-items:center;justify-content:center">
+      <div style="font-size:5pt;color:#999;font-weight:600;text-align:center;line-height:1.4">${salon.lbl}</div>
+    </div>`;
   }
 
-  let cells='';
+  // Rectangles englobants par index de reservation (indices numériques = pas de pb de référence)
+  const resaRegions=placed.map(()=>null); // [idx] = {cMin,cMax,rowMin,rowMax} ou null
+
   TR_ROWS.forEach((row,ri)=>{
-    const rb=row.id;
-    // Row 100: beds=gridRow 1, salons=gridRow 2. Rows 200-500: gridRows 3-6.
-    const gridRow=ri===0?1:ri+2;
-    if(rb===100){
-      // Label rangée 100 spans beds row + salons row
-      cells+=`<div style="grid-column:1;grid-row:1/3;display:flex;align-items:flex-end;justify-content:flex-end;padding-right:2mm;padding-bottom:1.5mm">
-        <span style="font-size:6.5pt;font-weight:800;color:#666;font-family:monospace">${rb}</span>
-      </div>`;
-      // Beds rangée 100 : chaque lit double occupe 2 colonnes
-      const bedGC={101:'2/4',102:'4/6',103:'6/8'};
-      for(let s=101;s<=103;s++){
-        const idx=slotIdxMap[s];
-        cells+=idx!==undefined?resaGroupBlock(placed[idx],[s],1,bedGC[s]):emptySlot(s,1,bedGC[s]);
-      }
-      // Salons en long — ligne dédiée (gridRow 2)
-      PRINT_SALON_SLOTS.forEach(sl=>{cells+=salonCell(sl,2);});
-      return;
-    }
-    cells+=`<div style="grid-column:1;grid-row:${gridRow};display:flex;align-items:flex-end;justify-content:flex-end;padding-right:2mm;padding-bottom:1.5mm">
-      <span style="font-size:6.5pt;font-weight:800;color:#666;font-family:monospace">${rb}</span>
-    </div>`;
+    const rb=row.id, gridRow=ri+1;
+    if(rb===100) return;
     for(const blk of ['g','m','d']){
-      const bSlots=trSlots(rb)[blk];
-      let i=0;
+      const bSlots=trSlots(rb)[blk]; let i=0;
       while(i<bSlots.length){
-        const s=bSlots[i];
-        // Beds rangée 200 : 220→cols 23-24, 221→cols 25-26 (grille étendue)
-        const bedGC200={220:'23/25',221:'25/27',222:'27/29'};
-        const isBed200=bedGC200[s];
-        if(isBed200){
-          const idx=slotIdxMap[s];
-          cells+=idx!==undefined?resaGroupBlock(placed[idx],[s],gridRow,isBed200):emptySlot(s,gridRow,isBed200);
-          i++; continue;
-        }
-        const idx=slotIdxMap[s];
-        if(idx===undefined){ cells+=emptySlot(s,gridRow); i++; continue; }
+        const s=bSlots[i], idx=slotIdxMap[s];
+        if(idx===undefined){i++;continue;}
         let j=i+1;
         while(j<bSlots.length && slotIdxMap[bSlots[j]]===idx) j++;
-        cells+=resaGroupBlock(placed[idx],bSlots.slice(i,j),gridRow);
+        const cols=bSlots.slice(i,j).map(sCol);
+        const cMin=Math.min(...cols), cMax=Math.max(...cols);
+        if(!resaRegions[idx]){
+          resaRegions[idx]={cMin,cMax,rowMin:gridRow,rowMax:gridRow};
+        } else {
+          const reg=resaRegions[idx];
+          reg.cMin=Math.min(reg.cMin,cMin); reg.cMax=Math.max(reg.cMax,cMax);
+          reg.rowMin=Math.min(reg.rowMin,gridRow); reg.rowMax=Math.max(reg.rowMax,gridRow);
+        }
         i=j;
       }
     }
-    // Slot 222 (bed label '221') absent de trSlots — rendu explicitement en rangée 200
-    if(rb===200){
-      const idx=slotIdxMap[222];
-      cells+=idx!==undefined?resaGroupBlock(placed[idx],[222],gridRow,'27/29'):emptySlot(222,gridRow,'27/29');
+  });
+
+  // Cellules couvertes par des blocs s'étendant sur plusieurs rangées
+  const coveredCells=new Set();
+  resaRegions.forEach(reg=>{
+    if(!reg) return;
+    for(let r=reg.rowMin;r<=reg.rowMax;r++)
+      for(let c=reg.cMin;c<=reg.cMax;c++)
+        coveredCells.add(`${r}:${c}`);
+  });
+
+  let cells='';
+
+  // Labels de rangée + slots vides
+  TR_ROWS.forEach((row,ri)=>{
+    const rb=row.id, gridRow=ri+1;
+    cells+=`<div style="grid-column:1;grid-row:${gridRow};display:flex;align-items:center;justify-content:flex-end;padding-right:2.5mm">
+      <span style="font-size:7pt;font-weight:800;color:#555;font-family:monospace">${rb}</span>
+    </div>`;
+    if(rb===100){
+      for(let s=101;s<=103;s++){
+        const idx=slotIdxMap[s];
+        cells+=idx!==undefined?resaBlock(placed[idx],sCol(s),sCol(s),gridRow,gridRow):emptySlot(s,gridRow);
+      }
+      SALON_SLOTS.forEach(sl=>{cells+=salonCell(sl,gridRow);});
+      return;
     }
+    for(const blk of ['g','m','d']){
+      trSlots(rb)[blk].forEach(s=>{
+        if(slotIdxMap[s]===undefined){
+          const col=sCol(s);
+          if(!coveredCells.has(`${gridRow}:${col}`)) cells+=emptySlot(s,gridRow);
+        }
+      });
+    }
+  });
+
+  // Blocs de réservation — un seul bloc par resa, potentiellement multi-rangée
+  resaRegions.forEach((reg,idx)=>{
+    if(!reg) return;
+    cells+=resaBlock(placed[idx],reg.cMin,reg.cMax,reg.rowMin,reg.rowMax);
   });
 
   let unplacedHtml='';
   if(unplcd.length){
     unplacedHtml=`<div style="margin-top:2mm;border:0.6pt solid #555;border-radius:1.5mm;padding:1.5mm 3mm;display:flex;flex-wrap:wrap;gap:1.5mm;align-items:center">
-      <span style="font-size:6pt;font-weight:800;flex-shrink:0">&#9888; Non placés :</span>
-      ${unplcd.map(r=>`<span style="font-size:5.5pt;font-weight:700;padding:0.5mm 2mm;border-radius:1mm;background:#fff;border:0.5pt solid #555">${r.name} x${r.tr||1} ${svcKey(r).toUpperCase()}</span>`).join('')}
+      <span style="font-size:6pt;font-weight:800;flex-shrink:0">&#9888; Non places :</span>
+      ${unplcd.map(r=>{const c=cFor(r);return`<span style="font-size:5.5pt;font-weight:700;padding:0.5mm 2mm;border-radius:1mm;background:#fff;border:0.5pt solid #555">${r.name} x${r.tr||1} ${c.lbl}</span>`;}).join('')}
     </div>`;
   }
 
-  const html=`<!DOCTYPE html><html lang="fr" style="-webkit-print-color-adjust:exact;print-color-adjust:exact;color-scheme:light"><head><meta charset="UTF-8">
+  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
 <title>Plan transats - ${dateStr}</title>
 <style>
 @page{size:A4 landscape;margin:7mm 9mm}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;forced-color-adjust:none!important}
-html,body{color-scheme:light}
-body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;height:196mm;display:flex;flex-direction:column}
-@media screen{body{height:calc(196mm + 36px)}}
-.no-print{height:36px;display:flex;align-items:center;flex-shrink:0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Helvetica Neue',Arial,sans-serif;background:#fff;color:#111;-webkit-print-color-adjust:exact;print-color-adjust:exact;height:196mm;display:flex;flex-direction:column}
+.no-print{padding:4px 0;flex-shrink:0}
 @media print{.no-print{display:none!important}}
 .btn{padding:4px 12px;background:#111;color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-right:4px}
 .hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:2mm;border-bottom:1pt solid #222;margin-bottom:2mm;flex-shrink:0}
-.grid{display:grid;grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(12,${W}mm);grid-template-rows:20mm 22mm 30mm 30mm 30mm 30mm;column-gap:${GAP}mm;row-gap:1.5mm}
-.sea{flex-shrink:0;text-align:center;font-size:6pt;font-weight:700;letter-spacing:.1em;color:#555;border-top:0.5pt solid #CCCCCC;padding-top:1.5mm;margin-top:1.5mm}
-.leg{display:inline-flex;align-items:center;gap:2mm;font-size:5pt;font-weight:600;margin-right:4mm}
-.leg-swatch{display:inline-block;width:11px;height:11px;vertical-align:middle;border-radius:1px}
-.tr-wrap{display:flex;flex-direction:column;margin:0.5mm}
-.tr-gname{font-size:7.5pt;font-weight:800;color:#fff;text-align:center;line-height:1.3;white-space:normal;word-break:break-word;overflow-wrap:anywhere;padding:0.8mm 1.5mm;margin-bottom:0.8mm;border-radius:1.2mm;flex-shrink:0}
-.tr-wrap.s1   .tr-gname{background:#166534!important;color:#fff!important}
-.tr-wrap.s2   .tr-gname{background:#9A3412!important;color:#fff!important}
-.tr-wrap.rt   .tr-gname{background:#1E3A8A!important;color:#fff!important}
-.tr-wrap.soir .tr-gname{background:#4C1D95!important;color:#fff!important}
-.tr-gname-ph{min-height:6.5pt;flex-shrink:0}
-.tr-gs.rt{position:relative}
-.tr-rt-t{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:8mm;height:8mm;border:1.5pt solid #111;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8pt;font-weight:900;color:#111;pointer-events:none}
-.tr-gs{flex:1;min-height:0;display:flex;gap:0.8mm;border:0.75pt solid #555;border-radius:1.5mm;padding:1mm;overflow:hidden}
-.tr-gs.bed{border-radius:3mm}
-.tr-gs.s1,.tr-gs.s2{background:linear-gradient(to top right,rgba(255,255,255,0) calc(50% - 0.5px),#111 calc(50% - 0.5px),#111 calc(50% + 0.5px),rgba(255,255,255,0) calc(50% + 0.5px))!important}
-.tr-gs.soir{background:linear-gradient(to top right,rgba(255,255,255,0) calc(50% - 0.5px),#111 calc(50% - 0.5px),#111 calc(50% + 0.5px),rgba(255,255,255,0) calc(50% + 0.5px))!important;border-color:#7C3AED!important}
-.tr-gs.rt{background:#fff!important;border:1.5pt dashed #333;border-radius:4mm}
-.tr-gs.empty{background:#EBEBEB!important;border:0.5pt solid #BBBBBB}
-.tr-is{flex:1;min-width:0;min-height:0;border:0.4pt solid rgba(0,0,0,0.22);border-radius:0.8mm;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:0.5mm;background:transparent}
-.tr-gs.empty .tr-is{border-color:transparent}
-.tr-in{font-size:3.5pt;color:#777;font-weight:600;line-height:1;text-align:center}
-.tr-gs.empty .tr-in{color:#AAAAAA}
-.tr-ib{font-size:3pt;font-weight:800;color:#999;line-height:1;text-align:center}
-.tr-salon-wrap{display:flex;flex-direction:column;gap:0.8mm;margin:0.5mm}
-.tr-salon-empty{flex:1;display:flex;align-items:center;justify-content:center;border:0.5pt solid #BBBBBB;border-radius:1.5mm;background:#EBEBEB!important;min-height:0}
-.tr-salon-lbl{font-size:5pt;font-weight:700;color:#AAAAAA}
-.tr-salon-band{flex:1;min-height:0;display:flex;align-items:center;gap:1.5mm;padding:0 1.5mm;border-radius:1.2mm;overflow:hidden}
-.tr-salon-band.s1{background:#166534!important;color:#fff!important}
-.tr-salon-band.s2{background:#9A3412!important;color:#fff!important}
-.tr-salon-band.rt{background:#1E3A8A!important;color:#fff!important}
-.tr-salon-band.soir{background:#4C1D95!important;color:#fff!important}
-.tr-salon-svc{font-size:4pt;font-weight:900;letter-spacing:.06em;color:rgba(255,255,255,0.7);flex-shrink:0}
-.tr-salon-name{font-size:7pt;font-weight:800;color:#fff;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tr-salon-id{font-size:4pt;color:rgba(255,255,255,0.65);font-weight:700;flex-shrink:0}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:${LBL}mm repeat(7,${W}mm) ${ALLEY}mm repeat(6,${W}mm) ${ALLEY}mm repeat(8,${W}mm);grid-template-rows:15mm repeat(4,1fr);column-gap:${GAP}mm;row-gap:2mm}
+.sea{flex-shrink:0;text-align:center;font-size:6pt;font-weight:700;letter-spacing:.1em;color:#555;border-top:0.5pt solid #CCCCCC;padding-top:1.5mm;margin-top:2mm}
+.leg{display:inline-flex;align-items:center;gap:1.5mm;font-size:5pt;margin-right:3mm}
 </style></head><body>
 <div class="no-print">
   <button class="btn" onclick="window.print()">Imprimer</button>
   <button class="btn" style="background:#555" onclick="window.close()">Fermer</button>
-  <span style="font-size:10px;font-weight:700;color:#C2410C;margin-left:8px">&#9888; Imprimer en mode PAYSAGE (Landscape)</span>
 </div>
 <div class="hd">
-  <div style="display:flex;align-items:center;gap:5mm">
+  <div style="display:flex;align-items:center;gap:4mm">
     <div style="font-size:13pt;font-weight:800">${dateStr}</div>
-    <div style="display:flex;align-items:center;flex-wrap:wrap">
-      <span class="leg"><span class="leg-swatch" style="background:linear-gradient(to top right,transparent calc(50% - 0.6px),#111 calc(50% - 0.6px),#111 calc(50% + 0.6px),transparent calc(50% + 0.6px));border:0.6pt solid #555;-webkit-print-color-adjust:exact"></span>1er service (S1)</span>
-      <span class="leg"><span class="leg-swatch" style="background:linear-gradient(to top right,transparent calc(50% - 0.6px),#111 calc(50% - 0.6px),#111 calc(50% + 0.6px),transparent calc(50% + 0.6px));border:0.6pt solid #555;-webkit-print-color-adjust:exact"></span>2ème service (S2)</span>
-      <span class="leg"><span class="leg-swatch" style="background:linear-gradient(to top right,transparent calc(50% - 0.6px),#111 calc(50% - 0.6px),#111 calc(50% + 0.6px),transparent calc(50% + 0.6px));border:0.6pt solid #7C3AED;-webkit-print-color-adjust:exact"></span>Soir</span>
-      <span class="leg"><span class="leg-swatch" style="background:#fff;border:1.5pt dashed #333;border-radius:3px"></span>Repas transat (RT)</span>
+    <div>
+      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">S1</span> Service 1</span>
+      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">S2</span> Service 2</span>
+      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">Soir</span> Soir</span>
+      <span class="leg"><span style="font-size:6pt;font-weight:900;color:#fff;background:#111;border-radius:1mm;padding:0.2mm 1.5mm">RT</span> Repas-transat</span>
     </div>
   </div>
   <div style="display:flex;align-items:center;gap:2.5mm;flex-wrap:wrap">
     <div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center">
-      <div style="font-size:11pt;font-weight:700;line-height:1">${trGrandTotal}</div>
+      <div style="font-size:11pt;font-weight:700;line-height:1">${nbSlots}</div>
       <div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">transats</div>
     </div>
-    ${nbBeds?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbBeds}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">beds (×2)</div></div>`:''}
-    ${nbLigne1?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbLigne1}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">1ère ligne</div></div>`:''}
+    ${nbRT?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${nbRT}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">RT</div></div>`:''}
     <div style="display:flex;gap:1.5mm;align-items:center;flex-wrap:wrap">
-      ${nbS1?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #166534;color:#166534">S1 · ${nbS1}</span>`:''}
-      ${nbS2?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #9A3412;color:#9A3412">S2 · ${nbS2}</span>`:''}
-      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #4C1D95;color:#4C1D95">Soir · ${nbSoir}</span>`:''}
-      ${nbRT?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #1E3A8A;color:#1E3A8A">RT · ${nbRT}</span>`:''}
+      ${nbS1  ?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333;background:#FFF">S1 - ${nbS1}</span>`:''}
+      ${nbS2  ?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333;background:#FFF">S2 - ${nbS2}</span>`:''}
+      ${nbSoir?`<span style="font-size:5pt;font-weight:800;padding:1mm 2.5mm;border-radius:6mm;border:0.6pt solid #333;background:#FFF">Soir - ${nbSoir}</span>`:''}
     </div>
-    ${unplcd.length?`<div style="border:0.8pt solid #c00;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1;color:#c00">${unplcd.length}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#c00;margin-top:0.5mm">non placés</div></div>`:''}
+    ${unplcd.length?`<div style="border:0.8pt solid #333;border-radius:3px;padding:1mm 2.5mm;text-align:center"><div style="font-size:11pt;font-weight:700;line-height:1">${unplcd.length}</div><div style="font-size:3.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.07em;opacity:.7;margin-top:0.5mm">non places</div></div>`:''}
   </div>
 </div>
 <div class="grid">${cells}</div>
@@ -5776,16 +5579,17 @@ function printServiceSheet() {
       const fg = !entry.tranat && (fusedGroups||[]).find(f => f.tids.includes(id));
       if (fg && !done.has(fg.tids[0])) {
         const r = fg.tids.map(t => map[t]).find(x => x) || null;
-        const tbadge = (r && (r.tr > 0 || r.bed)) ? `<span class="t-badge">T</span>` : '';
-        // Première table : hachures + réservation + bordure haute encadrante
-        rows += r
-          ? `<tr class="occ fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`
-          : `<tr class="fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
-        // Tables suivantes : hachures + ligne vide (modifiable à la main)
-        // Dernière ligne du groupe : bordure basse épaisse pour séparer visuellement des autres groupes
-        fg.tids.slice(1).forEach((tid, idx, arr) => {
-          const isLast = idx === arr.length - 1;
-          rows += `<tr${isLast ? ' class="fused-group-end"' : ''}><td class="d-tbl fused-hatch">${tid}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
+        // Première table de la fusion : ligne normale avec la resa
+        rows += dataRow(String(fg.tids[0]), r);
+        // Tables suivantes : border-top pointillée + [+] encadré centré sur la bordure
+        fg.tids.slice(1).forEach(tid => {
+          const dot = 'border-top:2px dotted #555';
+          const plus = `<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);border:1.5px solid #555;border-radius:2px;padding:0 4px;font-size:7pt;font-weight:900;line-height:1.5;background:#fff;white-space:nowrap">+</span>`;
+          rows += `<tr>
+            <td class="d-tbl" style="${dot};position:relative;overflow:visible">${plus}${tid}</td>
+            <td class="d-cov" style="${dot}"></td>
+            <td class="d-nom" style="${dot}"></td>
+          </tr>`;
         });
         fg.tids.forEach(t => done.add(t));
         return;
@@ -5804,7 +5608,7 @@ function printServiceSheet() {
 
   function dataRow(lbl, r, isLong) {
     if (!r) return `<tr><td class="d-tbl">${lbl}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
-    const tbadge = (r.tr > 0 || r.bed) ? `<span class="t-badge">T</span>` : '';
+    const tbadge = (r.tr > 0) ? `<span class="t-badge">T</span>` : '';
     return `<tr class="occ"><td class="d-tbl">${lbl}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`;
   }
 
@@ -5850,17 +5654,11 @@ body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000;
 .plan td { vertical-align: middle; padding: 0 3px; }
 .d-tbl  { text-align: center; font-size: 11pt; font-weight: 700; line-height: 1.2; }
 .d-cov  { text-align: center; font-size: 11pt; font-weight: 700; }
-.d-nom  { font-size: 11pt; font-weight: 700; padding-left: 5px !important; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.occ td { background-color: #FAFAFA; }
+.d-nom  { font-size: 9pt; font-weight: 600; padding-left: 5px !important; }
+.occ td { background: #FAFAFA; }
 .t-badge { display:inline-block; border:1px solid #000; border-radius:50%;
   width:11px; height:11px; text-align:center; line-height:10px;
   font-size:6.5pt; font-weight:800; margin-left:5px; vertical-align:middle; }
-.fused-hatch {
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-1,1 l2,-2 M0,12 l12,-12 M11,13 l2,-2' stroke='black' stroke-width='0.75' fill='none'/%3E%3C/svg%3E");
-  background-size: 12px 12px;
-  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.fused-group-start td { border-top: 2px solid #000 !important; }
-.fused-group-end td { border-bottom: 2px solid #000 !important; }
 </style></head><body>
 <div class="no-print">
   <button class="btn btn-pri" onclick="window.print()">⎙ Imprimer</button>
@@ -5903,7 +5701,7 @@ function printSoirSheet() {
 
   function dataRow(lbl, r) {
     if (!r) return `<tr><td class="d-tbl">${lbl}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
-    const tbadge = (r.tr > 0 || r.bed) ? `<span class="t-badge">T</span>` : '';
+    const tbadge = (r.tr > 0) ? `<span class="t-badge">T</span>` : '';
     return `<tr class="occ"><td class="d-tbl">${lbl}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`;
   }
 
@@ -5915,13 +5713,15 @@ function printSoirSheet() {
     const fg = !entry.tranat && [...(fused.soir||[])].find(f => f.tids.includes(id));
     if (fg && !done.has(fg.tids[0])) {
       const r = fg.tids.map(t => mapSoir[t]).find(x => x) || null;
-      const tbadge = (r && (r.tr > 0 || r.bed)) ? `<span class="t-badge">T</span>` : '';
-      rows += r
-        ? `<tr class="occ fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov">${r.pax}</td><td class="d-nom">${r.name}${tbadge}</td></tr>`
-        : `<tr class="fused-group-start"><td class="d-tbl fused-hatch">${fg.tids[0]}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
-      fg.tids.slice(1).forEach((tid, idx, arr) => {
-        const isLast = idx === arr.length - 1;
-        rows += `<tr${isLast ? ' class="fused-group-end"' : ''}><td class="d-tbl fused-hatch">${tid}</td><td class="d-cov"></td><td class="d-nom"></td></tr>`;
+      rows += dataRow(String(fg.tids[0]), r);
+      fg.tids.slice(1).forEach(tid => {
+        const dot = 'border-top:2px dotted #555';
+        const plus = `<span style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);border:1.5px solid #555;border-radius:2px;padding:0 4px;font-size:7pt;font-weight:900;line-height:1.5;background:#fff;white-space:nowrap">+</span>`;
+        rows += `<tr>
+          <td class="d-tbl" style="${dot};position:relative;overflow:visible">${plus}${tid}</td>
+          <td class="d-cov" style="${dot}"></td>
+          <td class="d-nom" style="${dot}"></td>
+        </tr>`;
       });
       fg.tids.forEach(t => done.add(t));
       return;
@@ -5956,17 +5756,11 @@ body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #000;
 .plan td { vertical-align: middle; padding: 0 3px; }
 .d-tbl  { text-align: center; font-size: 11pt; font-weight: 700; line-height: 1.2; }
 .d-cov  { text-align: center; font-size: 11pt; font-weight: 700; }
-.d-nom  { font-size: 11pt; font-weight: 700; padding-left: 5px !important; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.occ td { background-color: #FAFAFA; }
+.d-nom  { font-size: 9pt; font-weight: 600; padding-left: 5px !important; }
+.occ td { background: #FAFAFA; }
 .t-badge { display:inline-block; border:1px solid #000; border-radius:50%;
   width:11px; height:11px; text-align:center; line-height:10px;
   font-size:6.5pt; font-weight:800; margin-left:5px; vertical-align:middle; }
-.fused-hatch {
-  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M-1,1 l2,-2 M0,12 l12,-12 M11,13 l2,-2' stroke='black' stroke-width='0.75' fill='none'/%3E%3C/svg%3E");
-  background-size: 12px 12px;
-  -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-.fused-group-start td { border-top: 2px solid #000 !important; }
-.fused-group-end td { border-bottom: 2px solid #000 !important; }
 </style></head><body>
 <div class="no-print">
   <button class="btn btn-pri" onclick="window.print()">⎙ Imprimer</button>
@@ -6167,7 +5961,7 @@ let syncInterval = null;
 let lastSyncAt = null;
 
 // ── Cache IndexedDB + localStorage fallback
-const ZC_CACHE_TTL_NOW  = 15 * 60 * 1000;  // 15 min pour aujourd'hui et futur
+const ZC_CACHE_TTL_NOW  = 10 * 60 * 1000;  // 10 min pour aujourd'hui et futur
 const ZC_CACHE_TTL_PAST = 24 * 60 * 60 * 1000; // 24h pour les dates passées
 const ZC_FULL_FETCH_KEY = 'playa_zc_pool_ts';
 let _zcDb = null; // IndexedDB connection
@@ -6189,10 +5983,7 @@ async function zcDbInit(){
 
 function zcCacheTTL(date){
   const today = new Date().toISOString().split('T')[0];
-  if(date >= today) return ZC_CACHE_TTL_NOW;
-  // Passé récent (≤7 jours) : même TTL que aujourd'hui pour capter les suppressions
-  const cutoff = new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0];
-  return date >= cutoff ? ZC_CACHE_TTL_NOW : ZC_CACHE_TTL_PAST;
+  return date < today ? ZC_CACHE_TTL_PAST : ZC_CACHE_TTL_NOW;
 }
 
 async function zcCacheGet(date){
@@ -6282,9 +6073,8 @@ function parseTransatsFromText(txt){
     /(\d+)\s*x?\s*sdraio/i,               // sdraio (italien)
   ];
   for(const p of patterns){
-    const gp = new RegExp(p.source, p.flags.replace('g','') + 'g');
-    const matches = [...txt.matchAll(gp)];
-    if(matches.length > 0) return matches.reduce((sum, m) => sum + parseInt(m[1]), 0);
+    const m = txt.match(p);
+    if(m) return parseInt(m[1]);
   }
   // Formes sans nombre : "sunbed", "transat", "chaise longue" → 1 (si présent seul)
   if(/\b(?:sunbed|deck\s*chair|beach\s*chair|lounge\s*chair|lettino|sdraio)\b/i.test(txt)) return 1;
@@ -6362,26 +6152,6 @@ function parsePreferredRowFromText(txt){
   return null;
 }
 
-// Parse "N transats en Xème ligne et M transats en Yème ligne" → [{tr, row}, …] ou null
-function parseMultiRowSplitFromText(txt){
-  if(!txt) return null;
-  const ROW_IDS = {1:500, 2:400, 3:300, 4:200, 5:100};
-  const n = txt.toLowerCase()
-    .replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u').replace(/[îï]/g,'i').replace(/[ôö]/g,'o')
-    .replace(/\b(1ere?|premiere?)\b/g,'1eme')
-    .replace(/\b(2e(?!\w)|deuxieme?)\b/g,'2eme')
-    .replace(/\b(3e(?!\w)|troisieme?)\b/g,'3eme')
-    .replace(/\b(4e(?!\w)|quatrieme?)\b/g,'4eme')
-    .replace(/\b(5e(?!\w)|cinquieme?)\b/g,'5eme');
-  const pat = /(\d+)\s*(?:transats?|t)\s+en\s+(\d)eme?\s+(?:ligne|rang(?:ee?)?|row)/g;
-  const entries = [];
-  for(const m of n.matchAll(pat)){
-    const row = ROW_IDS[parseInt(m[2])];
-    if(row) entries.push({tr: parseInt(m[1]), row});
-  }
-  return entries.length >= 2 ? entries : null;
-}
-
 // Détecte si le client veut un transat "en extrémité" (col 1 ou col 20, bouts de rangée)
 // Synonymes couverts : côté, extrémité, bout, bord de rang, latéral, coin de rang, side, edge
 function parseExtremiteFromText(txt){
@@ -6408,46 +6178,6 @@ function parseExtremiteFromText(txt){
     /\bon\s*the\s*side\b/.test(t) ||                    // "on the side"
     /\bedge\s*(?:of\s*(?:the\s*)?)?(?:row|line|rang)\b/.test(t) // "edge of the row"
   );
-}
-
-// Détecte "N transats si ça libère / 1 bed" ou "soit N transats soit 1 bed"
-// Retourne {fallbackTr: N, fallbackRow: 500} si pattern trouvé, sinon null
-// Logique : bed est la préférence principale, les N transats en 1ère ligne sont le plan B
-function parseBedOrTransatFromText(txt){
-  if(!txt) return null;
-  const t = txt.toLowerCase()
-    .replace(/[èéêë]/g,'e').replace(/[àâ]/g,'a').replace(/[ùû]/g,'u').replace(/[îï]/g,'i').replace(/[ôö]/g,'o');
-  // "2 transats si ça libère / 1 bed" ou "N transats si ca libere / bed"
-  const m1 = t.match(/(\d+)\s*transats?\s*(?:si\s*[cç]a\s*lib[eè]re|if\s*available|si\s*dispo)[\s/\\|]*(?:\d+\s*)?beds?/);
-  if(m1) return { fallbackTr: parseInt(m1[1]), fallbackRow: 500 };
-  // "1 bed / 2 transats" (bed prioritaire, transats en fallback)
-  const m2 = t.match(/(?:\d+\s*)?beds?[\s/\\|]+(\d+)\s*transats?/);
-  if(m2) return { fallbackTr: parseInt(m2[1]), fallbackRow: 500 };
-  // "soit N transats soit 1 bed" / "soit 1 bed soit N transats"
-  const m3 = t.match(/soit\s*(\d+)\s*transats?\s*soit\s*(?:\d+\s*)?beds?/);
-  if(m3) return { fallbackTr: parseInt(m3[1]), fallbackRow: 500 };
-  const m4 = t.match(/soit\s*(?:\d+\s*)?beds?\s*soit\s*(\d+)\s*transats?/);
-  if(m4) return { fallbackTr: parseInt(m4[1]), fallbackRow: 500 };
-  // "N transats ou 1 bed" / "1 bed ou N transats"
-  const m5 = t.match(/(\d+)\s*transats?\s*ou\s*(?:\d+\s*)?beds?/);
-  if(m5) return { fallbackTr: parseInt(m5[1]), fallbackRow: 500 };
-  const m6 = t.match(/(?:\d+\s*)?beds?\s*ou\s*(\d+)\s*transats?/);
-  if(m6) return { fallbackTr: parseInt(m6[1]), fallbackRow: 500 };
-  return null;
-}
-
-// Détecte "si désistement", "en cas d'annulation", "si ça se libère", etc.
-// Retourne true si le client veut des transats UNIQUEMENT si une place se libère
-function parseDesistementFromText(txt){
-  if(!txt) return false;
-  const n = txt.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/'/g,' ');
-  return /\bdesistement\b/.test(n)
-    || /\bsi\s+desiste\b/.test(n)
-    || /\bannulation\b/.test(n)
-    || /\bsi\s+(?:ca\s+se|il\s+se|place\s+se|)\s*libere\b/.test(n)
-    || /\bsi\s+(?:une?\s+)?place\s+(?:se\s+)?libere\b/.test(n)
-    || /\bsi\s+dispo(?:nible)?\b/.test(n)
-    || /\ben\s+cas\s+(?:de\s+)?(?:annulation|desistement|liberation)\b/.test(n);
 }
 
 // "en 501", "slot 501", "n°315", "#412" → numéro de slot → rangée = Math.floor(slot/100)*100
@@ -6521,54 +6251,26 @@ function zcToResa(b){
   // (customer.comment, tags[], custom_field, shift_slot.shift.name, etc.)
   const allTextFields = extractAllBookingText(b).join(' | ');
 
-  // ── Notes/commentaires rédigés uniquement (sans les valeurs de formulaire structuré)
-  // Priorité maximale pour le parsing transat/bed : ce que le client ou le staff a écrit
-  const notesOnly = [
-    b.comment, b.note, b.internal_note, b.internal_comment,
-    b.customer_comment, b.extra_comment, b.restaurant_comment, b.private_comment,
-    b.public_comment, b.preparation, b.occasion, b.special_request,
-    b.wishes, b.message, b.remarks, b.allergy, b.dietary,
-    b.customer && b.customer.comment, b.customer && b.customer.note,
-    b.customer && b.customer.wishes, b.customer && b.customer.message,
-  ].filter(Boolean).map(s => String(s).trim()).filter(s => s.length > 1).join(' | ');
+  // Nb transats : tous les champs texte libres prennent le dessus sur le formulaire structuré
+  const nbTransatsText = parseTransatsFromText(allTextFields);
+  const nbTransatsForm = parseInt(cf['de-combien-de-transats-avez-vous-besoin']) || 0;
+  let nbTransats = nbTransatsText > 0 ? nbTransatsText : nbTransatsForm;
 
-  // Priorité : 1) notes rédigées  2) nombre sélectionné en ligne  3) tout le texte restant
-  const nbTransatsNotes = parseTransatsFromText(notesOnly);
-  const nbTransatsForm  = parseInt(cf['de-combien-de-transats-avez-vous-besoin']) || 0;
-  const nbTransatsAll   = parseTransatsFromText(allTextFields);
-  let nbTransats = nbTransatsNotes > 0 ? nbTransatsNotes
-                 : nbTransatsForm  > 0 ? nbTransatsForm
-                 : nbTransatsAll;
-
-  // Beds (lit double) — priorité identique : notes d'abord, puis tout le texte
-  const nbBedsNotes = parseBedFromText(notesOnly);
-  const nbBeds = nbBedsNotes > 0 ? nbBedsNotes : parseBedFromText(allTextFields);
+  // Beds (lit double) — détectés séparément, ne comptent pas comme transats ordinaires
+  const nbBeds = parseBedFromText(allTextFields);
   const isBed  = nbBeds > 0;
 
-  // Si type "repas à table + transat" — on N'assigne PAS de transats depuis le type seul.
-  // Règle : il faut un nb explicite dans le formulaire OU dans le texte libre.
-  // Sans info explicite, nbTransats reste 0 et le flag _typeTransatAmbiguous est levé.
+  // Si type "repas à table + transat" sans nb indiqué → autant de transats que de PAX
   const isTablePlusTransat = typeExp.toLowerCase().includes('table') && typeExp.toLowerCase().includes('transat');
-  const typeTransatAmbiguous = isTablePlusTransat && nbTransats === 0 && !isBed;
-  // (pas de fallback pax : trop de faux positifs — cf. Rambaud Philippe)
-
-  // Désistement : client veut des transats UNIQUEMENT si une annulation libère une place
-  // → pas de tr_fallback (les sous-resas seront créées et marquées transatDesistement)
-  const _isDesistement = parseDesistementFromText(allTextFields);
-  // "N transats si ça libère / 1 bed" : bed prioritaire, transats 1ère ligne en secours
-  // Ignoré si désistement détecté (logique différente)
-  const conditionalBedTransat = _isDesistement ? null : parseBedOrTransatFromText(allTextFields);
+  if(isTablePlusTransat && nbTransats === 0 && !isBed) nbTransats = b.nb_guests || 1;
 
   // Rangée préférentielle : scan de tous les champs texte
   const preferredRow = parsePreferredRowFromText(allTextFields)
     || (()=>{ const s=parseSlotFromText(allTextFields); return s?Math.floor(s/100)*100:null; })();
-  // Slot précis demandé : "en 501", "slot 315" → placement exact à ce slot
-  const requestedSlot = parseSlotFromText(allTextFields);
   // Préférence extrémité : "en extrémité", "au bout", "côté" → slot 1 ou 20
   const preferExtremite = parseExtremiteFromText(allTextFields);
   // Table spécifique demandée : "table 5", "T3" → stocké pour le placement
   const requestedTableId = typeof parseTableRequest === 'function' ? parseTableRequest(allTextFields) : null;
-  const _trByRow = _isDesistement ? null : parseMultiRowSplitFromText(allTextFields);
 
   const heureTransats = cf['horaire-souhaite-pour-les-transats-entre-10h-et-14h30'] || null;
 
@@ -6596,8 +6298,7 @@ function zcToResa(b){
   const is13h00 = (b.time || '').startsWith('13:00');
   // Transat mentionné dans les notes (même sans nombre précis) → équivaut à avoir des transats
   const mentionsTransatsInText = nbTransats > 0 || /\btransats?\b/i.test(allTextFields);
-  // Exclure explicitement "table + transats" des deux conditions : la règle Rambaud s'applique partout
-  const isRepasTransatFinal = !isTablePlusTransat && (isRepasTransat || is13h00);
+  const isRepasTransatFinal = (isRepasTransat && !isTablePlusTransat) || (is13h00 && mentionsTransatsInText);
 
   // Heure : "13:00" -> "13h00"
   const timeRaw = b.time || '12:00';
@@ -6642,23 +6343,15 @@ function zcToResa(b){
   // Forcer svc='transats' pour les repas transats purs → couleur bleue RT
   const svcFinal = isRepasTransatFinal ? 'transats' : svc;
 
-  // Si pattern conditionnel bed/transat : bed comme resa principale, transats en fallback
-  const finalIsBed = isBed || (conditionalBedTransat ? true : false);
-  // Si pattern conditionnel détecté ("bed / N transats") : les transats sont le fallback, pas la demande principale
-  // → finalNbTransats = 0 pour éviter que parseTransatsFromText compte les transats du fallback comme directs
-  const finalNbTransats = conditionalBedTransat ? 0 : ((!finalIsBed || isBed) ? nbTransats : 0);
-
   return {
     _cancelled: isCancelled,
     _isTablePlusTransat: isTablePlusTransat,
-    _nbTransats: finalNbTransats,
-    _isBed: finalIsBed,
+    _nbTransats: nbTransats,
+    _isBed: isBed,
     _nbBeds: nbBeds,
     _preferredRow: preferredRow,
     _preferExtremite: preferExtremite,
     _svc: svcFinal,
-    _desistement: _isDesistement,
-    _trByRow,
     resa: mkResa({
       zenchef_id: String(b.id),
       source: 'zenchef',
@@ -6673,7 +6366,7 @@ function zcToResa(b){
       tags: Array.isArray(b.tags) ? b.tags.map(t=>typeof t==='string'?t:(t.name||t.label||'')).filter(Boolean) : [],
       svc: svcFinal,
       repas_transat: isRepasTransatFinal,
-      tr: finalNbTransats > 0 ? finalNbTransats : (isRepasTransatFinal ? (b.nb_guests || 1) : null),
+      tr: nbTransats > 0 ? nbTransats : (isRepasTransatFinal ? (b.nb_guests || 1) : null),
       ns,
       zenchef_status,
       waiting: b.phase === 'waiting_list',
@@ -6682,15 +6375,9 @@ function zcToResa(b){
       slot: null,
       booked_at: b.date || b.created_at || null,
       time_transats: heureTransats || null,
-      row_transats: _isDesistement ? null : (conditionalBedTransat ? conditionalBedTransat.fallbackRow : preferredRow),
-      tr_by_row: _isDesistement ? null : _trByRow,
+      row_transats: preferredRow,
       pref_extremite: preferExtremite,
       requested_table_id: requestedTableId,
-      requested_slot: requestedSlot,
-      bed: finalIsBed,
-      tr_fallback: conditionalBedTransat ? conditionalBedTransat.fallbackTr : null,
-      tr_fallback_row: conditionalBedTransat ? conditionalBedTransat.fallbackRow : null,
-      _typeTransatAmbiguous: typeTransatAmbiguous,
     })
   };
 }
@@ -6708,15 +6395,7 @@ async function fetchZcPage(page, dateFilter){
     }
   });
   if(!res.ok) throw new Error('HTTP ' + res.status);
-  const json = await res.json();
-  // Log de diagnostic page 1 — clés top-level + structure premier booking
-  if(page === 1 && !dateFilter){
-    const b0 = (json.data||[])[0];
-    console.log('[ZC p1] top-level keys:', Object.keys(json).join(', '));
-    console.log('[ZC p1] data.length:', (json.data||[]).length, '| paginator:', JSON.stringify(json.paginator||json.meta||json.pagination||null));
-    if(b0) console.log('[ZC p1] booking[0] keys:', Object.keys(b0).join(', '), '| shift_date:', b0.shift_date, '| day:', b0.day, '| time:', b0.time, '| status:', b0.status);
-  }
-  return json;
+  return await res.json();
 }
 
 // ── Voie rapide : fetch filtré par date (1-2 requêtes si l'API supporte date_min/date_max)
@@ -6769,85 +6448,49 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1P
   if(_fetchAllInProgress) return _fetchAllInProgress;
 
   _fetchAllInProgress = (async () => {
-    const byDate = {};
-
-    // Essaie tous les champs de date possibles dans la réponse Zenchef
-    const extractDate = (b) => {
-      const raw = b.shift_date || b.day || b.shift_slot?.date
-        || b.shift_slot?.shift?.date || b.booking_date || b.service_date || b.date_service || '';
-      return typeof raw === 'string' ? raw.substring(0, 10) : '';
-    };
-    const addToBD = (rows) => {
-      rows.forEach(b => {
-        const d = extractDate(b);
-        if(d && /^\d{4}-\d{2}-\d{2}$/.test(d)){ if(!byDate[d]) byDate[d]=[]; byDate[d].push(b); }
-      });
-    };
-
-    let p1data, knownTotalPages;
+    let p1data, totalPages;
     if(p1Prefetch){
       p1data = p1Prefetch.p1data;
-      knownTotalPages = p1Prefetch.totalPages;
+      totalPages = p1Prefetch.totalPages;
     } else {
       const p1full = await fetchZcPage(1);
       p1data = p1full.data || [];
-      // Essaie plusieurs chemins de paginateur — l'API peut changer de structure
-      const pag = p1full.paginator || p1full.meta || p1full.pagination || {};
-      const total = pag.total || pag.total_count || pag.count || p1full.total || 0;
-      const lastPage = pag.last_page || pag.total_pages || pag.pages || 0;
-      knownTotalPages = lastPage > 0 ? lastPage : (total > 0 ? Math.ceil(total / 250) : 0);
+      const total = p1full.paginator?.total || 0;
+      totalPages = Math.max(1, Math.ceil(total / 250));
     }
+    if(onProgress) onProgress(1, totalPages);
 
+    const byDate = {};
+    const addToBD = (rows) => {
+      rows.forEach(b => {
+        const d = (b.shift_date || b.day || '').substring(0, 10);
+        if(d){ if(!byDate[d]) byDate[d]=[]; byDate[d].push(b); }
+      });
+    };
     addToBD(p1data);
+
+    // Notifier si la date cible est déjà dans la page 1
     if(onDateReady && targetDate && byDate[targetDate])
       onDateReady(targetDate, byDate[targetDate]);
 
-    // Si le paginateur donne un total fiable, on utilise les batches rapides
-    // Sinon on pagine séquentiellement jusqu'à une page courte (stratégie safe)
-    if(knownTotalPages > 1){
-      if(onProgress) onProgress(1, knownTotalPages);
-      const BATCH = 8;
-      for(let start = 2; start <= knownTotalPages; start += BATCH){
-        const pageNums = Array.from(
-          {length: Math.min(BATCH, knownTotalPages - start + 1)},
-          (_, i) => start + i
-        );
-        const results = await Promise.all(pageNums.map(p => fetchZcPage(p).then(r => r.data || [])));
-        results.forEach(rows => addToBD(rows));
-        if(onProgress) onProgress(Math.min(start + BATCH - 1, knownTotalPages), knownTotalPages);
-        if(onDateReady && targetDate && byDate[targetDate])
-          onDateReady(targetDate, byDate[targetDate]);
-      }
-    } else if(p1data.length >= 250){
-      // Paginateur absent/vide mais page 1 est pleine → il y a peut-être d'autres pages
-      // On pagine jusqu'à une page courte (< 250 bookings)
-      if(onProgress) onProgress(1, 99);
-      let page = 2;
-      while(page <= 50){ // sécurité max 50 pages
-        const result = await fetchZcPage(page);
-        const rows = result.data || [];
-        if(rows.length === 0) break;
-        addToBD(rows);
-        if(onProgress) onProgress(page, 99);
-        if(onDateReady && targetDate && byDate[targetDate])
-          onDateReady(targetDate, byDate[targetDate]);
-        if(rows.length < 250) break; // dernière page
-        page++;
-      }
-    } else {
-      if(onProgress) onProgress(1, 1);
+    const BATCH = 12; // batches de 12 — 2× plus rapide que 6 sans saturer l'API
+    for(let start = 2; start <= totalPages; start += BATCH){
+      const pageNums = Array.from(
+        {length: Math.min(BATCH, totalPages - start + 1)},
+        (_, i) => start + i
+      );
+      const results = await Promise.all(pageNums.map(p => fetchZcPage(p).then(r => r.data || [])));
+      results.forEach(rows => addToBD(rows));
+      if(onProgress) onProgress(Math.min(start + BATCH - 1, totalPages), totalPages);
+      if(onDateReady && targetDate && byDate[targetDate])
+        onDateReady(targetDate, byDate[targetDate]);
     }
 
     // Stocker en mémoire
     _memoryPool = { ts: Date.now(), byDate };
 
-    // Persister dans localStorage — nettoyer les entrées orphelines (resas supprimées de Zenchef)
+    // Persister dans localStorage
     const ts = Date.now();
-    const freshDates = new Set(Object.keys(byDate));
-    try{
-      Object.keys(localStorage).filter(k => k.startsWith('playa_zc_') && !k.startsWith('playa_zc_pool'))
-        .forEach(k => { if(!freshDates.has(k.replace('playa_zc_',''))) localStorage.removeItem(k); });
-    }catch(e){}
     let cacheErrors = 0;
     Object.entries(byDate).forEach(([d, bk]) => {
       try{ localStorage.setItem('playa_zc_' + d, JSON.stringify({ts, data:bk})); }
@@ -6855,10 +6498,7 @@ async function fetchAllPagesAndCacheAll(onProgress, onDateReady, targetDate, p1P
     });
     if(cacheErrors > 0) console.warn('ZC cache: ' + cacheErrors + ' dates non sauvegardées (localStorage plein)');
     zcMarkFullFetch();
-    const totalBk = Object.values(byDate).flat().length;
-    const allDates = Object.keys(byDate).sort();
-    console.log('[ZC] ' + totalBk + ' bookings · dates: ' + (allDates.join(', ') || 'aucune'));
-    if(totalBk === 0) console.warn('[ZC] ATTENTION: 0 bookings récupérés — vérifier shift_date dans la réponse API');
+    console.log('ZC pool: ' + Object.values(byDate).flat().length + ' bookings · ' + totalPages + ' pages · ' + Object.keys(byDate).length + ' dates');
     return byDate;
   })();
 
@@ -6897,8 +6537,6 @@ function applyBookings(bookings, date){
     return Object.values(reservations).flat().some(r => r.zenchef_id === zcId);
   }
   bookings.forEach(b => {
-    const bDate = (b.shift_date||b.day||b.shift_slot?.date||b.shift_slot?.shift?.date||b.booking_date||b.service_date||b.date_service||'').substring(0,10);
-    if(date && bDate && bDate !== date){ return; }
     const conv = zcToResa(b);
     if(conv._cancelled){ cancelled++; return; }
     if(isDupe(String(b.id))){ dupes++; return; }
@@ -6928,10 +6566,8 @@ function applyBookings(bookings, date){
         ns: conv.resa.ns,
         zenchef_status: conv.resa.zenchef_status,
         placed: false, slot: null,
-        row_transats: conv._desistement ? null : conv._preferredRow,
-        tr_by_row: conv._desistement ? null : (conv._trByRow || null),
+        row_transats: conv._preferredRow,
         pref_extremite: conv._preferExtremite,
-        transatDesistement: conv._desistement || false,
       });
       reservations.transats.push(trResa);
     }
@@ -6954,9 +6590,8 @@ function applyBookings(bookings, date){
         ns: conv.resa.ns,
         zenchef_status: conv.resa.zenchef_status,
         placed: false, slot: null,
-        row_transats: conv._desistement ? null : null,
-        pref_extremite: conv._preferExtremite,
-        transatDesistement: conv._desistement || false,
+        row_transats: null,
+        pref_extremite: false,
       });
       reservations.transats.push(bedResa);
     }
@@ -6991,52 +6626,13 @@ function reAnalyzeAllResas(){
         || /\blateral[e]?\b/.test(norm) || /\bon\s*the\s*side\b/.test(raw.toLowerCase());
     }
 
-    // Désistement : client veut transats/bed uniquement si une annulation libère une place
-    // Limité aux resas du tableau transats — la resa "table" principale du client ne doit pas être marquée
-    if(reservations.transats.includes(r) && (r.tr > 0 || r.bed) && parseDesistementFromText(r.comment || '')){
-      r.transatDesistement = true;
-      r.row_transats = null; // efface tout faux L1 hérité d'un import précédent
-    }
-
-    // Rangée préférentielle non encore détectée (skip pour les resas désistement — évite faux L1)
-    if(!r.transatDesistement && !r.row_transats && (r.tr > 0 || r.bed)){
+    // Rangée préférentielle non encore détectée
+    if(!r.row_transats && (r.tr > 0 || r.bed)){
       const row = parsePreferredRowFromText(raw);
       if(row) r.row_transats = row;
       else {
         const slot = parseSlotFromText(raw);
         if(slot) r.row_transats = Math.floor(slot / 100) * 100;
-      }
-    }
-    // Slot précis demandé (toutes sources, y compris saisie manuelle)
-    if(!r.requested_slot && (r.tr > 0 || r.bed)){
-      const slot = parseSlotFromText(raw);
-      if(slot) r.requested_slot = slot;
-    }
-    // Pattern conditionnel bed/transat (ex: "2 transats si ça libère / 1 bed")
-    if(!r.tr_fallback && r.source !== 'zenchef'){
-      const cond = parseBedOrTransatFromText(raw);
-      if(cond && !r.bed){
-        r.bed = true;
-        r.tr = null;  // les transats sont le fallback, pas la demande principale
-        r.tr_fallback = cond.fallbackTr;
-        r.tr_fallback_row = cond.fallbackRow;
-        r.row_transats = cond.fallbackRow;
-      }
-    }
-
-    // ── CRM enrichment : combler les préférences manquantes depuis l'historique client
-    // Règle : l'historique ne s'applique QUE si le champ n'est pas déjà renseigné
-    // (commentaire du jour est prioritaire), et uniquement si la resa a déjà des transats/bed.
-    if(r.tr > 0 || r.bed){
-      const hist = (typeof getClientHistPrefs === 'function') ? getClientHistPrefs(r.name) : null;
-      if(hist){
-        if(!r.row_transats && hist.preferredRow) r.row_transats = hist.preferredRow;
-        if(!r.requested_slot && hist.preferredSlot) r.requested_slot = hist.preferredSlot;
-        if(!r.pref_extremite && hist.extremite) r.pref_extremite = true;
-        // Badge CRM pour indiquer que le placement vient de l'historique
-        if((!r.row_transats || !r.requested_slot) && (hist.preferredRow || hist.preferredSlot)){
-          if(!r._crmHint) r._crmHint = true;
-        }
       }
     }
 
@@ -7046,112 +6642,9 @@ function reAnalyzeAllResas(){
       if(nbT > 0) r.tr = nbT;
     }
 
-    // Multi-rangée : detecter sur toutes les resas (Zenchef + manuelles) si pas encore fixé
-    if(!r.tr_by_row && (r.tr > 0 || r.bed)){
-      const split = parseMultiRowSplitFromText(raw);
-      if(split){ r.tr_by_row = split; r.tr = split.reduce((s,e) => s + e.tr, 0); }
-    }
-
-    // Bed si non encore détecté — exclure les sous-resas _tr/_bed pour éviter les doublons
-    const isZcSub = r.zenchef_id && (String(r.zenchef_id).endsWith('_tr') || String(r.zenchef_id).endsWith('_bed'));
-    if(!r.bed && !isZcSub && parseBedFromText(raw) > 0) r.bed = true;
+    // Bed si non encore détecté (toutes sources)
+    if(!r.bed && parseBedFromText(raw) > 0) r.bed = true;
   });
-
-  // ── Déduplication complète : élimine les doublons Zenchef (booking modifié → 2 IDs différents)
-  // Stratégie en 4 passes de plus en plus larges :
-  // 1. Intra-service (s1/s2/soir) par (nom, date) — même service, même personne
-  // 2. Cross-service par (nom, date) sur l'ensemble s1+s2+soir — même personne, services différents
-  // 3. Transats non-bed par (nom, date) — toutes catégories confondues (_tr, RT, etc.)
-  // 4. Cross-catégorie : supprime les RT purs si un _tr sub-resa pour même personne+date existe
-  (function dedupeReservations(){
-    function dedupe(arr, keyFn, preferFn){
-      const seen = {}, bad = new Set();
-      arr.forEach((r,i) => {
-        const k = keyFn(r);
-        if(!k) return;
-        if(seen[k] !== undefined){
-          const prev = arr[seen[k]];
-          if(preferFn(r, prev)){ bad.add(seen[k]); seen[k]=i; }
-          else bad.add(i);
-        } else seen[k]=i;
-      });
-      if(bad.size) console.warn('[Playa dedup] ' + bad.size + ' doublon(s):', [...bad].map(i=>arr[i]?.name));
-      return bad.size ? arr.filter((_,i)=>!bad.has(i)) : arr;
-    }
-    // Préfère une resa confirmée sur une liste d'attente ; à égalité, préfère le plus grand nb
-    const byTrPax = (a,b) => {
-      if(!a.waiting && b.waiting) return true;  // confirmé > liste d'attente
-      if(a.waiting && !b.waiting) return false;
-      return (a.tr||a.pax||0) > (b.tr||b.pax||0);
-    };
-    // Préfère les _tr sub-resas (liés à une table) sur les RT purs
-    const preferTrOverRT = (a,b) => {
-      if(!a.waiting && b.waiting) return true;
-      if(a.waiting && !b.waiting) return false;
-      return !a.repas_transat && b.repas_transat ? true : byTrPax(a,b);
-    };
-
-    // Passe 1 : intra-service — même nom + même date dans chaque bucket séparé
-    ['s1','s2','soir'].forEach(svc => {
-      reservations[svc] = dedupe(
-        reservations[svc]||[],
-        r => !(String(r.zenchef_id||'').endsWith('_tr')||String(r.zenchef_id||'').endsWith('_bed'))
-             ? (r.name||'')+'|'+(r.date||'').substring(0,10) : null,
-        (a,b) => !a.zenchef_id && b.zenchef_id ? true : (a.zenchef_id && !b.zenchef_id ? false : byTrPax(a,b))
-      );
-    });
-
-    // Passe 2 : cross-service — même nom + même date dans s1+s2+soir combinés
-    // Cas : booking modifié change de service (S1→S2) ou doublon dans deux services
-    {
-      const crossSeen = {}, crossBad = new Map(); // svc → Set<idx>
-      ['s1','s2','soir'].forEach(svc => {
-        (reservations[svc]||[]).forEach((r,i) => {
-          if(!r.zenchef_id||String(r.zenchef_id).endsWith('_tr')||String(r.zenchef_id).endsWith('_bed')) return;
-          const k = (r.name||'')+'|'+(r.date||'').substring(0,10);
-          if(crossSeen[k]){
-            const {r:prev, svc:pSvc, i:pIdx} = crossSeen[k];
-            const removePrev = byTrPax(r, prev);
-            const [rSvc, rIdx] = removePrev ? [pSvc, pIdx] : [svc, i];
-            if(!crossBad.has(rSvc)) crossBad.set(rSvc, new Set());
-            crossBad.get(rSvc).add(rIdx);
-            if(removePrev) crossSeen[k] = {r, svc, i};
-          } else crossSeen[k] = {r, svc, i};
-        });
-      });
-      crossBad.forEach((bad, svc) => {
-        if(bad.size) console.warn('[Playa dedup cross-svc] ' + bad.size + ' doublon(s) ' + svc);
-        reservations[svc] = (reservations[svc]||[]).filter((_,i)=>!bad.has(i));
-      });
-    }
-
-    // Passe 3 : transats — toutes catégories non-bed confondues, par (nom, date)
-    // Attrape _tr+RT pour même personne, _tr svc1 + _tr svc2, etc.
-    reservations.transats = dedupe(
-      reservations.transats||[],
-      r => !r.bed ? (r.name||'')+'|'+(r.date||'').substring(0,10) : null,
-      preferTrOverRT
-    );
-
-    // Passe 4 : si une resa table (s1/s2/soir) avec tr>0 et un RT pur en transats
-    // pour même personne+date → supprimer le RT (doublon du booking table+transat)
-    {
-      const tableNames = new Set();
-      ['s1','s2','soir'].forEach(svc =>
-        (reservations[svc]||[]).forEach(r => {
-          if((r.tr||0)>0) tableNames.add((r.name||'')+'|'+(r.date||'').substring(0,10));
-        })
-      );
-      const before = (reservations.transats||[]).length;
-      reservations.transats = (reservations.transats||[]).filter(r => {
-        if(!r.repas_transat) return true;
-        const k = (r.name||'')+'|'+(r.date||'').substring(0,10);
-        return !tableNames.has(k);
-      });
-      const removed = before - reservations.transats.length;
-      if(removed > 0) console.warn('[Playa dedup passe4] ' + removed + ' RT supprimé(s) (doublon table+transat)');
-    }
-  })();
 }
 
 // ── Helpers UI sync
@@ -7185,12 +6678,12 @@ function zcSetSpinner(on){
 }
 
 // ── Sync principale
-async function syncZenchef(date, force){
+async function syncZenchef(date){
   if(!date) date = currentDate;
 
   // ── ÉTAPE 1 : cache (IndexedDB/localStorage) valide → retour immédiat
-  const cached = !force ? await zcCacheGet(date) : null;
-  if(cached && cached.length > 0){
+  const cached = await zcCacheGet(date);
+  if(cached){
     reservations = {s1:[], s2:[], transats:[], soir:[]};
     fused = {s1:[],s2:[],transats:[],soir:[]};
     selectedId = null;
@@ -7210,14 +6703,11 @@ async function syncZenchef(date, force){
         null, date
       ).then(byDate=>{
         const bkgs = byDate[date] || [];
-        // Si le fetch revient vide (glitch réseau / API) mais qu'on a déjà des données → ne pas vider
-        if(bkgs.length === 0 && totalResaCount() > 0) return;
-        const snap = snapshotPlacements();
         reservations = {s1:[], s2:[], transats:[], soir:[]};
         fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
         applyBookings(bkgs, date);
-        restorePlacements(snap);
+        restorePlacements(loadPlacements(date));
         lastSyncAt = new Date();
         updateSyncAge();
         render();
@@ -7248,14 +6738,8 @@ async function syncZenchef(date, force){
       });
     } catch(e){ fast = null; }
 
-    // Certaines versions Zenchef filtrent par date de création et non de service → vérifier chaque booking
     if(fast !== null && fast.filtered){
-      fast.bookings = fast.bookings.filter(b =>
-        (b.shift_date||b.day||b.shift_slot?.date||b.shift_slot?.shift?.date||'').startsWith(date)
-      );
-    }
-    if(fast !== null && fast.filtered && fast.bookings.length > 0){
-      // Filtre API fonctionnel ET résultats non vides — résultats fiables en 1-2 requêtes
+      // Filtre API fonctionnel — résultats en 1-2 requêtes
       zcSetProgress(100);
       zcCacheSet(date, fast.bookings);
       const { added, dupes, cancelled } = applyBookings(fast.bookings, date);
@@ -7267,14 +6751,13 @@ async function syncZenchef(date, force){
         (cancelled > 0 ? ' · ' + cancelled + ' annulées' : '') +
         (dupes > 0 ? ' · ' + dupes + ' doublons' : '');
       toast('✓ Zenchef — ' + msg);
-      // Remplir le pool en background pour navigation entre dates
-      fetchAllPagesAndCacheAll(null, null, null, null).catch(()=>{});
-    } else {
-      // Filtre API non supporté, 0 résultats (non fiables), ou erreur → fetch complet groupé par shift_date
-      // (date_min/date_max filtre par date de création, pas de service — le fetch complet est la seule voie fiable)
-      const p1Prefetch = (fast !== null && !fast.filtered) ? {p1data: fast.p1data, totalPages: fast.totalPages} : null;
+      // Remplir le pool en background pour navigation entre dates — réutiliser p1 existante
+      fetchAllPagesAndCacheAll(null, null, null, fast.filtered ? null : {p1data: fast.p1data, totalPages: fast.totalPages}).catch(()=>{});
+    } else if(fast !== null && !fast.filtered){
+      // Filtre API non supporté → fetch complet avec p1 réutilisée
       let firstDataShown = false;
-      const byDate = await fetchAllPagesAndCacheAll(
+      const bookings = await fetchZcForDate(
+        date,
         (cur, total) => {
           zcSetProgress(Math.round(cur/total*100));
           zcSetLabel('chargement ' + cur + '/' + total + ' pages…');
@@ -7289,22 +6772,40 @@ async function syncZenchef(date, force){
           lastSyncAt = new Date();
           render();
           zcSetLabel('mise à jour…');
-        },
-        date,
-        p1Prefetch
+        }
       );
-      const bookings = byDate[date] || [];
-      // Log diagnostic si toujours 0 après le fetch complet
-      if(bookings.length === 0){
-        const allDates = Object.keys(byDate).sort();
-        const totalBk = Object.values(byDate).flat().length;
-        console.warn('[ZC sync] 0 bookings pour ' + date + ' | total pool: ' + totalBk + ' | dates disponibles: ' + (allDates.join(', ')||'aucune'));
-      }
       zcCacheSet(date, bookings);
-      // Réinitialiser avant l'apply final pour éviter les doublons dus au callback progressif
-      reservations = {s1:[], s2:[], transats:[], soir:[]};
-      fused = {s1:[],s2:[],transats:[],soir:[]};
-      selectedId = null;
+      const { added, dupes, cancelled } = applyBookings(bookings, date);
+      restorePlacements(loadPlacements(date));
+      lastSyncAt = new Date();
+      updateSyncAge();
+      render();
+      const msg = formatDateFR(date) + ' · ' + added + ' resas' +
+        (cancelled > 0 ? ' · ' + cancelled + ' annulées' : '') +
+        (dupes > 0 ? ' · ' + dupes + ' doublons' : '');
+      toast('✓ Zenchef — ' + msg);
+    } else {
+      // Voie classique : fetch complet tout-parallèle avec affichage progressif
+      let firstDataShown = false;
+      const bookings = await fetchZcForDate(
+        date,
+        (cur, total) => {
+          zcSetProgress(Math.round(cur/total*100));
+          zcSetLabel('chargement ' + cur + '/' + total + ' pages…');
+        },
+        (d, bkgs) => {
+          if(firstDataShown) return;
+          firstDataShown = true;
+          reservations = {s1:[], s2:[], transats:[], soir:[]};
+          fused = {s1:[],s2:[],transats:[],soir:[]};
+          selectedId = null;
+          applyBookings(bkgs, date);
+          lastSyncAt = new Date();
+          render();
+          zcSetLabel('mise à jour…');
+        }
+      );
+      zcCacheSet(date, bookings);
       const { added, dupes, cancelled } = applyBookings(bookings, date);
       restorePlacements(loadPlacements(date));
       lastSyncAt = new Date();
@@ -7340,166 +6841,7 @@ function updateSyncAge(){
   else if(mins < 15){ el.textContent='il y a ' + mins + ' min'; el.className='sync-age stale'; }
   else { el.textContent='il y a ' + mins + ' min'; el.className='sync-age stale'; }
 }
-setInterval(updateSyncAge, 30000); // refresh l'affichage toutes les 30s
-
-// ── Helpers : snapshot/restore des placements pendant un sync background
-function snapshotPlacements(){
-  try {
-    const placements = {};
-    ['s1','s2','transats','soir'].forEach(svc => {
-      (reservations[svc]||[]).forEach(r => {
-        if(r.placed || r.tableId != null || r.slot != null){
-          // Clé stable = zenchef_id (survit au re-fetch) ; fallback r.id pour les resas manuelles
-          const key = r.zenchef_id || r.id;
-          placements[key] = {placed:r.placed, tableId:r.tableId, slot:r.slot, extraSlots:r.extraSlots};
-        }
-      });
-    });
-    const fusedSnap = {};
-    ['s1','s2','transats','soir'].forEach(svc => {
-      fusedSnap[svc] = (fused[svc]||[]).map(g => ({...g, tids:[...(g.tids||[])]}));
-    });
-    return {placements, fused:fusedSnap};
-  } catch(e){ return {placements:{}, fused:{s1:[],s2:[],transats:[],soir:[]}}; }
-}
-function restorePlacements(snap){
-  if(!snap) return;
-  const p = snap.placements || {};
-  if(!Object.keys(p).length) return;
-  ['s1','s2','transats','soir'].forEach(svc => {
-    (reservations[svc]||[]).forEach(r => {
-      // Même clé que dans snapshotPlacements : zenchef_id en priorité
-      const key = r.zenchef_id || r.id;
-      const s = p[key];
-      if(s){ r.placed=s.placed; r.tableId=s.tableId; r.slot=s.slot; r.extraSlots=s.extraSlots; }
-    });
-  });
-  ['s1','s2','transats','soir'].forEach(svc => {
-    if(!(fused[svc]||[]).length && snap.fused && (snap.fused[svc]||[]).length){
-      fused[svc] = snap.fused[svc];
-    }
-  });
-}
-// Retourne le nb total de resas chargées (toutes tabs)
-function totalResaCount(){
-  return ['s1','s2','transats','soir'].reduce((n,k) => n + (reservations[k]||[]).length, 0);
-}
-
-// ══════════════════════════════════════════
-// PERSISTANCE DES PLACEMENTS — GitHub Gist
-// ══════════════════════════════════════════
-const GIST_TOKEN_KEY = 'playa_gist_token';
-const GIST_ID_KEY    = 'playa_gist_id';
-const GIST_FNAME     = 'playa_placements.json';
-const PL_LS_PFX      = 'playa_placements_';
-
-let gistToken    = localStorage.getItem(GIST_TOKEN_KEY) || '';
-let gistId       = localStorage.getItem(GIST_ID_KEY)    || '';
-let gistCache    = null;   // { 'YYYY-MM-DD': snap }
-let gistSaveT    = null;   // debounce timer id
-let gistSyncing  = false;
-let gistLastSync = null;
-
-// Sauvegarde locale + planifie la sync Gist (debounce 3s)
-function savePlacements(date){
-  if(!date || !totalResaCount()) return;
-  const snap = snapshotPlacements();
-  try{ localStorage.setItem(PL_LS_PFX+date, JSON.stringify(snap)); }catch(e){}
-  if(gistCache) gistCache[date] = snap;
-  if(gistToken && gistId){
-    if(gistSaveT) clearTimeout(gistSaveT);
-    gistSaveT = setTimeout(gistPush, 3000);
-  }
-}
-
-// Lit les placements pour une date (cache Gist > localStorage)
-function loadPlacements(date){
-  if(!date) return null;
-  if(gistCache && gistCache[date]) return gistCache[date];
-  try{ const d=localStorage.getItem(PL_LS_PFX+date); return d?JSON.parse(d):null; }catch(e){ return null; }
-}
-
-// Pousse le cache local vers le Gist
-async function gistPush(){
-  if(!gistToken||!gistId||gistSyncing) return;
-  gistSyncing=true; _gistUpdateStatus();
-  try{
-    const all = gistCache || {};
-    const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-30);
-    const cs=cutoff.toISOString().split('T')[0];
-    Object.keys(all).forEach(k=>{ if(k<cs) delete all[k]; });
-    const r = await fetch('https://api.github.com/gists/'+gistId,{
-      method:'PATCH',
-      headers:{Authorization:'token '+gistToken,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},
-      body:JSON.stringify({files:{[GIST_FNAME]:{content:JSON.stringify(all)}}})
-    });
-    if(r.ok){ gistLastSync=new Date(); }
-  }catch(e){}
-  gistSyncing=false; _gistUpdateStatus();
-}
-
-// Tire les données du Gist → peuple localStorage + restaure le jour courant
-async function gistPull(){
-  if(!gistToken||!gistId) return;
-  try{
-    const r = await fetch('https://api.github.com/gists/'+gistId,{
-      headers:{Authorization:'token '+gistToken,Accept:'application/vnd.github.v3+json'}
-    });
-    if(!r.ok) return;
-    const data = await r.json();
-    const content = data.files[GIST_FNAME]?.content;
-    if(!content) return;
-    const all = JSON.parse(content);
-    gistCache = all;
-    Object.entries(all).forEach(([d,snap])=>{
-      try{ localStorage.setItem(PL_LS_PFX+d,JSON.stringify(snap)); }catch(e){}
-    });
-    gistLastSync=new Date(); _gistUpdateStatus();
-    // Restaurer le jour courant si des resas sont déjà chargées
-    const snap=all[currentDate];
-    if(snap && Object.keys(snap.placements||{}).length && totalResaCount()>0){
-      restorePlacements(snap); render();
-    }
-  }catch(e){}
-}
-
-// Crée un nouveau Gist privé et retourne son ID
-async function gistCreate(token){
-  try{
-    const r=await fetch('https://api.github.com/gists',{
-      method:'POST',
-      headers:{Authorization:'token '+token,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},
-      body:JSON.stringify({description:'Playa-OS · placements tables & transats',public:false,files:{[GIST_FNAME]:{content:'{}'}}})
-    });
-    if(!r.ok) return null;
-    return (await r.json()).id;
-  }catch(e){ return null; }
-}
-
-// Met à jour l'indicateur de statut dans les réglages
-function _gistUpdateStatus(){
-  const el=document.getElementById('gist-status');
-  if(!el) return;
-  if(!gistToken||!gistId){ el.textContent='Non configuré'; el.style.color='var(--t4)'; return; }
-  if(gistSyncing){ el.textContent='Sync…'; el.style.color='var(--ot)'; return; }
-  if(gistLastSync){
-    el.textContent='Sync '+gistLastSync.toLocaleTimeString('fr',{hour:'2-digit',minute:'2-digit'});
-    el.style.color='var(--gt)';
-  } else { el.textContent='Connecté'; el.style.color='var(--gt)'; }
-}
-
-// Init au chargement : nettoyage localStorage + pull Gist si configuré
-(function _initPlacements(){
-  try{
-    const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-30);
-    const cs=cutoff.toISOString().split('T')[0];
-    for(let i=localStorage.length-1;i>=0;i--){
-      const k=localStorage.key(i);
-      if(k&&k.startsWith(PL_LS_PFX)&&k.replace(PL_LS_PFX,'')<cs) localStorage.removeItem(k);
-    }
-  }catch(e){}
-  if(gistToken&&gistId) gistPull();
-})();
+const _syncAgeInterval = setInterval(updateSyncAge, 30000); // refresh l'affichage toutes les 30s
 
 // ── Auto-sync toutes les 5 min — refetch complet pour aujourd'hui et futur
 function isToday(dateStr){
@@ -7513,20 +6855,17 @@ function startAutoSync(){
     if(currentDate >= today){
       fetchAllPagesAndCacheAll().then(byDate => {
         const bookings = byDate[currentDate] || [];
-        // Si le fetch revient vide mais qu'on a déjà des données → ne pas vider (glitch réseau)
-        if(bookings.length === 0 && totalResaCount() > 0) return;
-        const snap = snapshotPlacements();
         reservations = {s1:[], s2:[], transats:[], soir:[]};
         fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
         applyBookings(bookings, currentDate);
-        restorePlacements(snap);
+        restorePlacements(loadPlacements(currentDate));
         lastSyncAt = new Date();
         updateSyncAge();
         render();
       }).catch(() => {});
     }
-  }, 15 * 60 * 1000);
+  }, 5 * 60 * 1000);
 }
 
 // Ferme avec Escape
@@ -7615,7 +6954,7 @@ function goModule(mod){
   document.getElementById('service-tabs').style.display=isService?'flex':'none';
   document.getElementById('module-topbar-title').style.display=isService?'none':'block';
   document.getElementById('service-top-btns').style.display=isService?'flex':'none';
-  const titles={dash:'Accueil',equipe:'Équipe & RH',stocks:'Stocks & Commandes',analyse:'Analyse',caisse:'Caisse · L\'Addition',admin:'Admin & Finances',resas:'Réservations',settings:'Réglages',ai:'Playa AI',cuisine:'Cuisine',bar:'Bar',haccp:'HACCP & Hygiène',prestataires:'Prestataires & Fournisseurs',event:'Événementiel & Privatisations',urgences:'Urgences & Sécurité',clients:'Clients & Fidélité',groupes:'Groupes 2026'};
+  const titles={dash:'Accueil',equipe:'Équipe & RH',stocks:'Stocks & Commandes',analyse:'Analyse',caisse:'Caisse · L\'Addition',admin:'Admin & Finances',resas:'Réservations',settings:'Réglages',ai:'Playa AI',cuisine:'Cuisine',bar:'Bar',haccp:'HACCP & Hygiène',prestataires:'Prestataires & Fournisseurs',event:'Événementiel & Privatisations',urgences:'Urgences & Sécurité',clients:'Clients & Fidélité'};
   if(!isService) document.getElementById('module-topbar-title').textContent=titles[mod]||mod;
 
   document.getElementById('app').style.display=isService?'flex':'none';
@@ -7640,7 +6979,6 @@ function goModule(mod){
     else if(mod==='event') renderEvent(mc);
     else if(mod==='urgences') renderUrgences(mc);
     else if(mod==='clients') renderClients(mc);
-    else if(mod==='groupes') renderGroupes(mc);
   }
 }
 
@@ -7708,7 +7046,7 @@ function renderDash(c){
   // ── SERVICE
   const sService=section('Service');
   const gService=document.createElement('div');
-  gService.className='dash-section-grid';gService.style.gap='8px';
+  gService.style.cssText='display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px';
   gService.appendChild(card('Plan de salle','S1 · S2 · Soir',paxS1+' PAX S1','#F0FBF3','#155724','#2D8A4A',()=>goModule('service')));
   gService.appendChild(card('Transats',trTotal+' réservés',''+trTotal+' / 110','#EEF8FF','#075985','#0EA5E9',()=>{goModule('service');setTimeout(()=>switchTab(2),300);}));
   gService.appendChild(card('Soir',paxSoir+' PAX réservés',paxSoir+' PAX','#F3EEFF','#4C1D95','#8B5CF6',()=>{goModule('service');setTimeout(()=>switchTab(3),300);}));
@@ -7718,7 +7056,7 @@ function renderDash(c){
   // ── RÉSERVATIONS
   const sResas=section('Réservations');
   const gResas=document.createElement('div');
-  gResas.className='dash-section-grid';gResas.style.gap='8px';
+  gResas.style.cssText='display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px';
   gResas.appendChild(card("Aujourd'hui",currentDate,(allResas.filter(x=>!x.ns).length)+' resas','#EEF5FF','#003E9C','#007AFF',()=>goModule('service')));
   gResas.appendChild(card("Liste d'attente",'Non confirmées',allResas.filter(x=>x.waiting).length+' en attente','#EEF5FF','#003E9C','#007AFF',()=>goModule('service')));
   gResas.appendChild(card('+ Nouvelle resa','Saisie manuelle','Ajouter →','#EEF5FF','#003E9C','#007AFF',()=>{goModule('service');setTimeout(openModal,300);}));
@@ -7808,7 +7146,7 @@ function renderEquipe(c){
 
   // KPIs ligne
   const kpi = document.createElement('div');
-  kpi.className='dash-kpi-row';kpi.style.marginBottom='18px';
+  kpi.style.cssText = 'display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px';
   [
     {l:"Présents aujourd'hui", v:'7/9', s:'Paul absent · Tom en retard', col:'#1A7A3E', bg:'#EDF7F1'},
     {l:'Heures semaine', v:'168h', s:'sur 180h planifiées · +3h sup', col:'#2563EB', bg:'#EFF6FF'},
@@ -8393,7 +7731,7 @@ function renderStocks(c){
 
   // KPIs
   const kpi = document.createElement('div');
-  kpi.className='dash-kpi-row';kpi.style.marginBottom='18px';
+  kpi.style.cssText = 'display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px';
   [
     {l:'Articles suivis', v:'46', s:'Cuisine · Bar · Vins · Plage', col:'#2563EB'},
     {l:'Alertes rupture', v:'2', s:"Citrons · Huile d'olive", col:'#DC2626'},
@@ -8564,7 +7902,7 @@ function renderAnalyse(c){
 
   // KPI ligne
   const kpi = document.createElement('div');
-  kpi.className='dash-kpi-row';kpi.style.marginBottom='18px';
+  kpi.style.cssText = 'display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px';
   [
     {l:'CA du mois', v:'48 200€', s:'↑ +14% vs avril 2025', col:'#1A7A3E'},
     {l:'Ticket moyen', v:'46€', s:'↑ +3€ vs mars', col:'#2563EB'},
@@ -9201,20 +8539,18 @@ function renderCuisine(c){
       {l:'Meilleure marge',     v:'Smash ×7.1', s:'Coef multiplicateur', col:'#0284C7'}
     ]));
     const tabs = [
-      {k:'fiches',     label:'📋 Fiches techniques'},
-      {k:'foodcost',   label:'💰 Food Cost'},
-      {k:'recettes',   label:'👨‍🍳 Recette vedette'},
-      {k:'process',    label:'⏱ Process service'},
-      {k:'formation',  label:'🎓 Formation'},
-      {k:'allergenes', label:'⚠ Allergènes'},
+      {k:'fiches',    label:'📋 Fiches techniques'},
+      {k:'foodcost',  label:'💰 Food Cost'},
+      {k:'recettes',  label:'👨‍🍳 Recette vedette'},
+      {k:'process',   label:'⏱ Process service'},
+      {k:'formation', label:'🎓 Formation'}
     ];
     body.appendChild(makeSubNav(tabs, currentTab, k => { currentTab = k; rebuild(); }));
-    if(currentTab === 'fiches')      renderFichesTab();
-    else if(currentTab === 'foodcost')   renderFoodcostTab();
-    else if(currentTab === 'recettes')   renderRecettesTab();
-    else if(currentTab === 'process')    renderProcessTab();
-    else if(currentTab === 'formation')  renderFormationTab();
-    else if(currentTab === 'allergenes') renderAllergènesTab();
+    if(currentTab === 'fiches')    renderFichesTab();
+    else if(currentTab === 'foodcost')  renderFoodcostTab();
+    else if(currentTab === 'recettes')  renderRecettesTab();
+    else if(currentTab === 'process')   renderProcessTab();
+    else if(currentTab === 'formation') renderFormationTab();
   }
 
   function renderFichesTab(){
@@ -9562,152 +8898,8 @@ function renderCuisine(c){
     body.appendChild(grid);
   }
 
-  function renderAllergènesTab(){
-    // ── Données menu + numéros allergènes (source : carte physique La Playa)
-    // Légende : 14 allergènes (numérotation La Playa)
-    const ALLERGENS = [
-      {n:1,  icon:'🌾', label:'Gluten',         sub:'céréales'},
-      {n:2,  icon:'🌰', label:'Fruits à coque', sub:'noix, noisettes…'},
-      {n:3,  icon:'🦐', label:'Crustacés',      sub:''},
-      {n:4,  icon:'🥬', label:'Céleri',         sub:''},
-      {n:5,  icon:'🥚', label:'Œufs',           sub:''},
-      {n:6,  icon:'🟡', label:'Moutarde',       sub:''},
-      {n:7,  icon:'🐟', label:'Poissons',       sub:''},
-      {n:8,  icon:'🫘', label:'Soja',           sub:''},
-      {n:9,  icon:'🥛', label:'Lait',           sub:'lactose'},
-      {n:10, icon:'🍷', label:'Sulfites',       sub:'SO₂ > 10 mg/kg'},
-      {n:11, icon:'⚫', label:'Sésame',         sub:'graines'},
-      {n:12, icon:'🌿', label:'Lupin',          sub:'farine'},
-      {n:13, icon:'🥜', label:'Arachides',      sub:'cacahuètes'},
-      {n:14, icon:'🦑', label:'Mollusques',     sub:''},
-    ];
-
-    const MENU = [
-      { section:'NOS STARTERS', items:[
-        {plat:'Bao de "Carlo" le tentacule, sauce mangue piment',                                   all:[1,7,13,14],        prix:'17,00€'},
-        {plat:'Pain perdu à l\'ail, joue de lotte en persillade',                                   all:[1,7,9,12],         prix:'18,00€'},
-        {plat:'Mini tacos de cochon, cuit basse température',                                       all:[1,2,4,5,6,7,8,10,13], prix:'12,00€'},
-        {plat:'Pain Pita, burrata, pesto maison',                                                   all:[1,2,4,9,13],       prix:'16,00€'},
-        {plat:'Palourdines à la crème d\'ail',                                                      all:[3,9],              prix:'18,00€'},
-        {plat:'Couteaux (×10) en persillade gratinés',                                              all:[2,3,4,9],          prix:'18,00€'},
-        {plat:'Croque comté, farce de truffe, jambon italien truffé',                               all:[1,2,4,6,9],        prix:'14,00€'},
-        {plat:'Sardines de Médit. à la plancha, sauce blanche épicée',                              all:[6,7,8,9],          prix:'12,00€'},
-        {plat:'Fleurs de courgette en tempura, yaourt aux herbes',                                  all:[1,2,6,9,13],       prix:'14,50€'},
-        {plat:'Pinsa truffe, roquette, tomates cerises',                                            all:[1,2,4,5,6,9,10],   prix:'22,00€'},
-        {plat:'Huîtres de Bouzigues',                                                               all:[3,14],             prix:'16,00€ ×6 / 28,00€ ×12'},
-      ]},
-      { section:'LES ENTRÉES EN MATIÈRE', items:[
-        {plat:'Tataki de taureau AOP Camargue, wok croque, glace wasabi',                           all:[1,2,4,8,9],        prix:'22,00€'},
-        {plat:'Ceviche de poisson blanc au leche de tigre',                                         all:[7,9],              prix:'22,00€'},
-        {plat:'Salade de pastèque, burrata, Féta, pesto maison',                                    all:[5,6,8,9,12],       prix:'22,00€'},
-      ]},
-      { section:'NOS BONS PETITS PLATS', items:[
-        {plat:'Smash burger bœuf de Galice maturé, Cheddar Mild Red, mayonnaise fumée',             all:[1,2,4,5,6,9],      prix:'24,00€'},
-        {plat:'Volaille et poulette, condiment pistache, lissé petit pois, carotte des sables',     all:[1,2,5,6,9,13],     prix:'29,00€'},
-        {plat:'Faux Filet Wagyu (180g), Grade 6+, jus réduit Umami, Carotte BBQ',                  all:[1,2,3,4,5,6,9,10], prix:'56,00€'},
-        {plat:'Risotto aux 3 riz de Camargue, Car\'hot, ananas',                                    all:[1,9,13],           prix:'26,00€'},
-        {plat:'Notre filet de poisson, smashed grenaille, fenouil, hollandaise aérienne',           all:[1,2,4,6,7,8,13],   prix:'30,00€'},
-        {plat:'Nos poissons sauvages (selon arrivage), riz Camargue, beurre blanc tomate xères',    all:[1,2,4,6,7,8,13],   prix:'11,00 – 16,00€ / 100g'},
-      ]},
-      { section:'NOS GOURANDISES', items:[
-        {plat:'Pélardon des Cévennes',                                                              all:[9],                prix:'10,00€'},
-        {plat:'Gaspacho de framboise, bavarois 2 citrons, citron caviar, crumble, spéculoos',       all:[2,5,9,13],         prix:'12,00€'},
-        {plat:'K\'ouète en tartelette, praliné pécan cajou, ganache chocolat, glace chouchou',      all:[2,5,9,10,13],      prix:'16,00€'},
-        {plat:'Clafoutis à l\'ananas flambé, sorbet coco, suzette pina colada',                     all:[1,2,5,9,13],       prix:'14,00€'},
-      ]},
-    ];
-
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:14px';
-
-    // Barre d'action
-    const bar = document.createElement('div');
-    bar.style.cssText = 'display:flex;justify-content:flex-end;width:100%;max-width:820px';
-    bar.innerHTML = `<button id="print-allergen-btn" style="display:flex;align-items:center;gap:6px;padding:9px 20px;background:#C41E1E;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(196,30,30,.3)">🖨 Imprimer A4</button>`;
-    wrap.appendChild(bar);
-
-    // Feuille A4 (écran)
-    const sheet = document.createElement('div');
-    sheet.id = 'playa-allergen-sheet';
-    sheet.style.cssText = 'width:100%;max-width:820px;background:#fff;padding:12mm 14mm;box-sizing:border-box;font-family:Georgia,serif;box-shadow:0 4px 32px rgba(0,0,0,.15);border-radius:6px';
-
-    function renderSection(sec){
-      const rows = sec.items.map(it => {
-        const nums = it.all.map(n=>`<sup style="font-size:6pt;font-weight:700;color:#C41E1E;font-style:normal">${n}</sup>`).join('<span style="font-size:5pt;color:#bbb">,</span>');
-        return `<div style="display:flex;align-items:baseline;gap:5px;padding:1.6mm 0;border-bottom:0.3px solid #ede8e2">
-          <div style="flex:1;font-size:8pt;color:#1a1a1a;line-height:1.4">${it.plat} ${nums}</div>
-          <div style="white-space:nowrap;font-size:7.5pt;font-weight:700;color:#C41E1E;font-family:'Courier New',monospace;text-align:right;min-width:58px">${it.prix}</div>
-        </div>`;
-      }).join('');
-      return `<div style="margin-bottom:4mm">
-        <div style="font-size:7.5pt;font-weight:900;color:#C41E1E;letter-spacing:0.1em;text-transform:uppercase;border-bottom:1.2px solid #C41E1E;padding-bottom:1mm;margin-bottom:1.5mm">${sec.section}</div>
-        ${rows}
-      </div>`;
-    }
-
-    const allergenCells = ALLERGENS.map(a =>
-      `<div style="border:0.8px solid #ddd5cc;border-radius:4px;padding:2mm 1mm;text-align:center;background:#faf8f5">
-        <div style="font-size:15px;line-height:1.15">${a.icon}</div>
-        <div style="font-size:10.5pt;font-weight:900;color:#C41E1E;line-height:1">${a.n}</div>
-        <div style="font-size:6pt;font-weight:700;color:#1a1a1a;margin-top:1px;line-height:1.25">${a.label}</div>
-        ${a.sub ? `<div style="font-size:5pt;color:#999;line-height:1.2">${a.sub}</div>` : ''}
-      </div>`
-    ).join('');
-
-    sheet.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:center;gap:12px;border-bottom:2.5px solid #C41E1E;padding-bottom:4mm;margin-bottom:5mm">
-        <div style="font-size:40px">🦞</div>
-        <div style="text-align:center">
-          <div style="font-size:26pt;font-weight:900;color:#C41E1E;letter-spacing:0.04em;line-height:1">LA PLAYA</div>
-          <div style="font-size:10pt;font-weight:700;letter-spacing:0.2em;color:#1a1a1a">CLUB DE PLAGE</div>
-          <div style="font-size:7.5pt;color:#999;letter-spacing:0.1em;margin-top:1px">DEPUIS 2013</div>
-        </div>
-        <div style="font-size:40px;transform:scaleX(-1)">🦞</div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7mm;margin-bottom:5mm">
-        <div>${[MENU[0],MENU[1]].map(renderSection).join('')}</div>
-        <div>${[MENU[2],MENU[3]].map(renderSection).join('')}</div>
-      </div>
-
-      <div style="border-top:2px solid #C41E1E;padding-top:4mm">
-        <div style="font-size:8.5pt;font-weight:900;color:#C41E1E;text-align:center;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:3mm">Tableau des Allergènes</div>
-        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2.5mm">${allergenCells}</div>
-        <div style="margin-top:3mm;font-size:6.5pt;color:#aaa;text-align:center;border-top:0.5px solid #ede8e2;padding-top:2mm">
-          Les allergènes sont identifiés par leur numéro dans la description de chaque plat · En cas de doute, interrogez notre équipe · Les plats peuvent contenir des traces dues aux manipulations en cuisine
-        </div>
-      </div>
-
-      <div style="text-align:center;font-size:7pt;font-weight:700;color:#aaa;letter-spacing:0.12em;margin-top:3mm">SERVICE COMPRIS · PRIX TTC</div>`;
-
-    wrap.appendChild(sheet);
-    body.appendChild(wrap);
-
-    // Bouton impression
-    document.getElementById('print-allergen-btn').onclick = function(){
-      const content = document.getElementById('playa-allergen-sheet').innerHTML;
-      const w = window.open('', '_blank', 'width=920,height=720');
-      if(!w) return toast('Autorisez les popups pour imprimer');
-      w.document.write(`<!DOCTYPE html><html><head><title>Allergènes – La Playa</title>
-        <style>
-          @page{size:A4 portrait;margin:8mm 10mm}
-          body{margin:0;font-family:Georgia,serif;background:#fff;color:#1a1a1a}
-          @media screen{body{background:#e8e3de}#s{max-width:210mm;margin:auto;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,.18);padding:12mm 14mm;box-sizing:border-box}}
-          @media print{body{background:#fff}#s{padding:0;box-shadow:none}}
-          sup{font-size:6pt!important;font-weight:700!important;color:#C41E1E!important;vertical-align:super}
-        </style>
-      </head><body><div id="s">${content}</div>
-      <script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script>
-      </body></html>`);
-      w.document.close();
-    };
-  }
-
   rebuild();
 }
-
-
-
 
 // ══════════════════════════════════════════
 // BAR — Cocktails, spiritueux, vins, process
@@ -11196,7 +10388,7 @@ function renderResasModule(c){
 
   // KPI
   const kpi = document.createElement('div');
-  kpi.className='dash-kpi-row';kpi.style.marginBottom='18px';
+  kpi.style.cssText = 'display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px';
   const paxS1 = reservations.s1.filter(r=>!r.ns&&!r.repas_transat).reduce((s,r)=>s+r.pax,0);
   const paxS2 = reservations.s2.filter(r=>!r.ns).reduce((s,r)=>s+r.pax,0);
   const paxSoir = reservations.soir.filter(r=>!r.ns).reduce((s,r)=>s+r.pax,0);
@@ -11380,7 +10572,7 @@ function renderSettings(c){
 
   g2.appendChild(estab);
 
-  // ── Synchronisation Cloud ──────────────────────────────────────────────────
+  // ── Synchronisation Cloud ─────────────────────────────────────────────
   const cloud = document.createElement('div');
   cloud.style.cssText = 'grid-column:1/-1;background:var(--card);border:0.5px solid var(--sep);border-radius:14px;padding:16px';
   cloud.innerHTML = `
@@ -11436,22 +10628,6 @@ function renderSettings(c){
   const pullBtn = cloud.querySelector('#gist-pull-btn');
   if(pullBtn) pullBtn.addEventListener('click', ()=>gistPull());
 }
-
-// ══════════════════════════════════════════
-// CLIENTS & FIDÉLITÉ — CRM La Playa
-// ══════════════════════════════════════════
-
-// ══════════════════════════════════════════
-// CLIENTS & FIDÉLITÉ — CRM La Playa
-// ══════════════════════════════════════════
-
-// ══════════════════════════════════════════
-// CLIENTS & FIDÉLITÉ — CRM La Playa
-// ══════════════════════════════════════════
-
-// ══════════════════════════════════════════
-// CLIENTS & FIDÉLITÉ — CRM La Playa
-// ══════════════════════════════════════════
 
 // ══════════════════════════════════════════
 // CLIENTS & FIDÉLITÉ — CRM La Playa
@@ -11635,25 +10811,8 @@ function _buildAutoMemo(visits, prefs, avgPax, visitCount) {
   else if(pax<=3.8) parts.push('Table de 3 personnes');
   else if(pax<=5.5) parts.push('En groupe ('+Math.round(pax)+' pers.)');
   else parts.push('Grands groupes (~'+Math.round(pax)+' pers.)');
-  const spots=prefs.filter(p=>['terrasse','vuemer','calme','table'].includes(p.key));
-  const transatPrefs=prefs.filter(p=>['transats','bedtrans'].includes(p.key));
+  const spots=prefs.filter(p=>['terrasse','vuemer','calme','table','transats','bedtrans'].includes(p.key));
   if(spots.length) parts.push(spots.map(p=>p.icon+' '+p.label).join(' · '));
-  // Transat detail: extract specific preferences from visit comments
-  if(transatPrefs.length){
-    const trComments=(visits||[]).map(v=>v.comment||'').filter(Boolean);
-    const rows=trComments.map(t=>parsePreferredRowFromText(t)).filter(Boolean);
-    const trNums=trComments.map(t=>parseTransatsFromText(t)).filter(n=>n>0);
-    const bedMentions=trComments.filter(t=>parseBedFromText(t)>0).length;
-    const rowLabels={500:'1ère ligne',400:'2ème ligne',300:'3ème ligne',200:'4ème ligne'};
-    const topRow=rows.length?rows.reduce((acc,r)=>{acc[r]=(acc[r]||0)+1;return acc;},{}):null;
-    const topRowId=topRow?parseInt(Object.entries(topRow).sort((a,b)=>b[1]-a[1])[0][0]):null;
-    const avgTr=trNums.length?Math.round(trNums.reduce((a,b)=>a+b,0)/trNums.length):null;
-    let transatLine='🏖️';
-    if(bedMentions>=2) transatLine+=' Bed double';
-    else if(avgTr) transatLine+=' '+avgTr+' transats';
-    if(topRowId&&rowLabels[topRowId]) transatLine+=' · '+rowLabels[topRowId]+' préféré';
-    parts.push(transatLine);
-  }
   const diets=prefs.filter(p=>['allergie','vegan','vegeta','sansglut','sanslact'].includes(p.key));
   if(diets.length) parts.push('⚠️ '+diets.map(p=>p.label).join(' + '));
   const occs=prefs.filter(p=>['anniv','romant','surprise','repaspro'].includes(p.key));
@@ -11730,7 +10889,7 @@ function crmMergeDay(date,rawBookings){
     if(!ex){map[key].visits.push({date,pax,comment});changed=true;}
     else if(comment&&!ex.comment){ex.comment=comment;changed=true;}
   });
-  if(changed){_crmSaveMap(map);crmInvalidate();}
+  if(changed){_crmSaveMap(map);_clientPrefsCache=null;}
   return changed;
 }
 
@@ -11752,10 +10911,7 @@ async function crmImportHistory(onProgress,onDone){
     const p1=await _crmFetchPage(1,yearMin,today);
     const total=p1.paginator&&p1.paginator.total||0;
     const totalPages=Math.max(1,Math.ceil(total/250));
-    // Premier import : partir d'un slate vierge pour éviter que le seed data fictif persiste
-    // Imports suivants (refresh) : merger dans les données existantes pour préserver les vraies visites
-    const isFirstImport=!localStorage.getItem(CRM_HISTORY_TS_KEY);
-    const map=isFirstImport?{}:(_crmLoadMap()||{});
+    const map=_crmLoadMap()||{};
     let changed=false;
     function addBookings(bookings){
       (bookings||[]).forEach(b=>{
@@ -11788,7 +10944,7 @@ async function crmImportHistory(onProgress,onDone){
     }
     if(changed) _crmSaveMap(map);
     localStorage.setItem(CRM_HISTORY_TS_KEY,String(Date.now()));
-    crmInvalidate();
+    _clientPrefsCache=null;
     const cc=Object.keys(map).length,bc=Object.values(map).reduce((s,c)=>s+c.visits.length,0);
     if(onDone) onDone(cc,bc);
     return map;
@@ -11805,7 +10961,6 @@ async function crmEnsureHistory(){
 
 // ── Data collection ────────────────────────────────────────────────────────
 function clientsCollect(){
-  if(_clientsList) return _clientsList;
   const map={};
   function upsert(name,phone,email,date,pax,comment){
     const key=name.toLowerCase().trim();
@@ -11842,62 +10997,26 @@ function clientsCollect(){
     result.push(c);
   });
   result.sort((a,b)=>b.visitCount-a.visitCount||b.lastVisit.localeCompare(a.lastVisit));
-  _clientsList=result;
   return result;
 }
 
 // ── Client preferences cache (for auto-placement in placement.js) ──────────
 let _clientPrefsCache=null;
-let _clientsList=null; // cache mémoire de clientsCollect() — invalidé par crmInvalidate()
 function buildClientPrefsCache(){
   const clients=clientsCollect(),cache={};
   clients.forEach(c=>{
     const p=c.prefs;
     const allComments=c.visits.map(v=>v.comment||'').join(' ');
     const tm=allComments.match(/\btable[s]?\s*n?[°º]?\s*(\d+)/i);
-
-    // Extract transat/bed preferences from all visit comments
-    const rowCounts={};
-    const slotCounts={};
-    let trTotal=0, trN=0, bedN=0;
-    c.visits.forEach(v=>{
-      const txt=v.comment||'';
-      const row=parsePreferredRowFromText(txt);
-      if(row) rowCounts[row]=(rowCounts[row]||0)+1;
-      const slot=parseSlotFromText(txt);
-      if(slot) slotCounts[slot]=(slotCounts[slot]||0)+1;
-      const nbTr=parseTransatsFromText(txt);
-      if(nbTr>0){trTotal+=nbTr;trN++;}
-      if(parseBedFromText(txt)>0) bedN++;
-    });
-    // Most frequently mentioned row and slot
-    const topRowEntry=Object.entries(rowCounts).sort((a,b)=>b[1]-a[1])[0];
-    const topSlotEntry=Object.entries(slotCounts).sort((a,b)=>b[1]-a[1])[0];
-    const preferredRow=topRowEntry?parseInt(topRowEntry[0]):null;
-    const preferredSlot=topSlotEntry?parseInt(topSlotEntry[0]):null;
-    const avgTr=trN>0?Math.round(trTotal/trN):null;
-    // bedDouble: >1 bed mention OR existing bedtrans pref tag
-    const usesBed=bedN>=2||!!p.find(x=>x.key==='bedtrans');
-    // firstRow from vuemer pref OR preferredRow=500
-    const firstRow=!!p.find(x=>x.key==='vuemer')||preferredRow===500;
-    // extremite: more than 1 extremity mention in history
-    let extN=0;
-    c.visits.forEach(v=>{if(parseExtremiteFromText(v.comment||''))extN++;});
-    const hasExtremite=extN>=2;
-
     cache[c.normKey]={
       tableId:tm?parseInt(tm[1]):null,
       wantTerrasse:!!p.find(x=>x.key==='terrasse'),
-      wantInterieur:/\b(int[eé]rieur|dedans|indoor)\b/i.test(allComments),
+      wantInterieur:false,
       wantOmbre:!!p.find(x=>x.key==='calme'),
-      wantSoleil:/\b(soleil|ensoleill[eé]|sun)\b/i.test(allComments),
-      bedDouble:usesBed,
-      firstRow,
-      extremite:hasExtremite,
-      preferredRow,
-      preferredSlot,
-      avgTr,
-      usesBed,
+      wantSoleil:false,
+      bedDouble:!!p.find(x=>x.key==='bedtrans'),
+      firstRow:!!p.find(x=>x.key==='vuemer'),
+      extremite:false
     };
   });
   try{localStorage.setItem('playa-client-prefs-cache',JSON.stringify(cache));}catch(e){}
@@ -11911,12 +11030,6 @@ function getClientHistPrefs(name){
   return _clientPrefsCache[name.toLowerCase().trim()]||null;
 }
 function invalidateClientPrefsCache(){ _clientPrefsCache=null; }
-function crmInvalidate(){
-  _clientsList=null;
-  _clientPrefsCache=null;
-  const panel=document.getElementById('crm-panel');
-  if(panel&&panel.dataset.open==='1') _renderCrmList();
-}
 function clientSaveNote(normKey,text){
   try{const n=JSON.parse(localStorage.getItem(CLIENT_NOTES_KEY)||'{}');n[normKey]=text;localStorage.setItem(CLIENT_NOTES_KEY,JSON.stringify(n));}catch(e){}
 }
@@ -12195,227 +11308,21 @@ function renderClients(c){
   rebuild();
 }
 
-const GROUPES_DATA = [
-  // ── MAI ──
-  {id:'g01', nom:'Sandrine Jacquet',     pax:25,  date:'2026-05-08', service:'Journée',   offre:'',                                                    statut:'urgent',    note:''},
-  {id:'g02', nom:'Moutardier Alexandra', pax:22,  date:'2026-05-15', service:'Midi',       offre:'Tapas · Poissons · Gâteaux',                          statut:'tbd',       note:''},
-  {id:'g03', nom:'Moutardier Alexandra', pax:25,  date:'2026-05-15', service:'Soir',       offre:'Tapas / Cocktail en sus (+2 choc, Mojito, Gin Tonic)', statut:'tbd',       note:''},
-  {id:'g04', nom:'Vinciclette',          pax:30,  date:'2026-05-30', service:'Midi',       offre:'',                                                    statut:'tbd',       note:'À vérifier'},
-  // ── JUIN ──
-  {id:'g05', nom:"Cap Horizon (Pierre Bordas / L'Oréal)", pax:30, date:'2026-06-02', service:'Soir', offre:'2 Tapas · Poisson · Dessert · Café · Eau · Vins', statut:'urgent', note:'3 jours consécutifs'},
-  {id:'g06', nom:"Cap Horizon (Pierre Bordas / L'Oréal)", pax:30, date:'2026-06-03', service:'Midi', offre:'2 Tapas · Poisson · Dessert · Café · Eau · Vins', statut:'urgent', note:'3 jours consécutifs'},
-  {id:'g07', nom:"Cap Horizon (Pierre Bordas / L'Oréal)", pax:30, date:'2026-06-04', service:'Midi', offre:'2 Tapas · Poisson · Dessert · Café · Eau · Vins', statut:'urgent', note:'3 jours consécutifs'},
-  {id:'g08', nom:'Rémy (Géraldine)',     pax:25,  date:'2026-06-04', service:'Midi',       offre:'Tit déj · Tapas · Moules frites — 58€ HT/pers',       statut:'confirmed', note:''},
-  {id:'g09', nom:'Bains Gardians',       pax:47,  date:'2026-06-04', service:'Journée',    offre:'',                                                    statut:'option',    note:''},
-  {id:'g10', nom:'MMA (Bains Gardians)', pax:18,  date:'2026-06-04', service:'Soir',       offre:'2 Tapas · Poisson · Dessert · Café · Eau · Vins — 78€ HT/pers', statut:'confirmed', note:''},
-  {id:'g11', nom:'Famille Gasc',         pax:30,  date:'2026-06-06', service:'Soir',       offre:'',                                                    statut:'tbd',       note:''},
-  {id:'g12', nom:'RC Groupe (Julie Martin)', pax:30, date:'2026-06-10', service:'Soir',    offre:'Privatisation',                                       statut:'tbd',       note:'Privat'},
-  {id:'g13', nom:'Leading Event',        pax:22,  date:'2026-06-12', service:'Midi',       offre:'',                                                    statut:'option',    note:''},
-  {id:'g14', nom:'Christa',              pax:12,  date:'2026-06-13', service:'Midi',       offre:'Anniversaire',                                        statut:'confirmed', note:''},
-  {id:'g15', nom:'Kelly Driscoll',       pax:22,  date:'2026-06-14', service:'Midi',       offre:'Midi + Transats',                                     statut:'confirmed', note:''},
-  {id:'g16', nom:'Pacifica',             pax:30,  date:'2026-06-16', service:'Soir',       offre:'',                                                    statut:'confirmed', note:''},
-  {id:'g17', nom:'Pacifica',             pax:30,  date:'2026-06-17', service:'Soir',       offre:'',                                                    statut:'confirmed', note:'J2'},
-  {id:'g18', nom:'Longitude 7',          pax:45,  date:'2026-06-18', service:'Midi',       offre:'',                                                    statut:'option',    note:''},
-  {id:'g19', nom:'Artz and Co',          pax:57,  date:'2026-06-18', service:'Soir',       offre:'',                                                    statut:'option',    note:'Date : 18/06 ou 25/06'},
-  {id:'g20', nom:'Chlorophyll',          pax:40,  date:'2026-06-22', service:'Soir',       offre:'',                                                    statut:'urgent',    note:''},
-  {id:'g21', nom:'Symadrem',             pax:30,  date:'2026-06-25', service:'Midi',       offre:'',                                                    statut:'confirmed', note:''},
-  // ── JUILLET ──
-  {id:'g22', nom:'Simone Suisse / Roche Hof', pax:40, date:'2026-07-15', service:'Soir',  offre:'Privatisation',                                       statut:'tbd',       note:'Date : 15 ou 16/07'},
-  {id:'g23', nom:'Antoine Rosenfeld',    pax:40,  date:'2026-07-18', service:'Midi & Soir',offre:'',                                                    statut:'urgent',    note:'Journée complète'},
-  // ── AOÛT ──
-  {id:'g24', nom:'Abaziou Marine',       pax:20,  date:'2026-08-02', service:'Midi',       offre:'',                                                    statut:'tbd',       note:''},
-  {id:'g25', nom:'Bains Gardians (Insulet)', pax:33, date:'2026-08-27', service:'Dîner',   offre:'MAJ tarifaire à confirmer',                           statut:'confirmed', note:''},
-  // ── SEPTEMBRE ──
-  {id:'g26', nom:'France à la Carte',    pax:15,  date:'2026-09-06', service:'Soir',       offre:'10 à 20 PAX',                                         statut:'tbd',       note:''},
-  {id:'g27', nom:'Pulsea',               pax:26,  date:'2026-09-11', service:'Déjeuner',   offre:'MAJ tarifaire à confirmer',                           statut:'confirmed', note:''},
-  {id:'g28', nom:'LR Communication',     pax:80,  date:'2026-09-17', service:'Soir',       offre:'Privatisation',                                       statut:'tbd',       note:'Privat — Grand format'},
-  {id:'g29', nom:'Evea',                 pax:30,  date:null,          service:'Soir',       offre:'',                                                    statut:'tbd',       note:'Date à définir'},
-];
-
-const GROUPES_STATUT = {
-  urgent:    {label:'Urgent / Confirmé',   color:'#DC2626', bg:'#FEF2F2'},
-  confirmed: {label:'Confirmé',            color:'#16A34A', bg:'#F0FDF4'},
-  option:    {label:'Option / En attente', color:'#D97706', bg:'#FFFBEB'},
-  tbd:       {label:'À définir',           color:'#6B7280', bg:'#F9FAFB'},
-};
-
-function groupesDaysUntil(dateStr) {
-  if (!dateStr) return null;
-  const today = new Date(); today.setHours(0,0,0,0);
-  const d = new Date(dateStr); d.setHours(0,0,0,0);
-  return Math.round((d - today) / 86400000);
-}
-
-function groupesFmtDate(dateStr) {
-  if (!dateStr) return 'Date à définir';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-}
-
-function groupesFmtMonth(dateStr) {
-  if (!dateStr) return 'À définir';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('fr-FR', {month:'long', year:'numeric'}).replace(/^./, c => c.toUpperCase());
-}
-
-function renderGroupes(c) {
-  const today = new Date(); today.setHours(0,0,0,0);
-
-  const sorted = [...GROUPES_DATA].sort((a, b) => {
-    if (!a.date && !b.date) return 0;
-    if (!a.date) return 1;
-    if (!b.date) return -1;
-    return a.date.localeCompare(b.date);
-  });
-
-  c.innerHTML = '';
-
-  const bar = document.createElement('div');
-  bar.style.cssText = 'padding:10px 12px 6px;display:flex;align-items:center;gap:8px;flex-shrink:0;';
-  bar.innerHTML = `<span style="font-size:13px;font-weight:700;color:var(--tx);flex:1;">Planning Groupes 2026</span>
-    <span style="font-size:11px;font-weight:600;background:#F0FDF4;color:#16A34A;padding:3px 8px;border-radius:12px;">
-      ${sorted.filter(g=>g.statut==='confirmed'||g.statut==='urgent').length} confirmés
-    </span>
-    <span style="font-size:11px;font-weight:600;background:#FFFBEB;color:#D97706;padding:3px 8px;border-radius:12px;">
-      ${sorted.filter(g=>g.statut==='option').length} options
-    </span>`;
-  c.appendChild(bar);
-
-  const alert14 = sorted.filter(g => {
-    const d = groupesDaysUntil(g.date);
-    return d !== null && d >= 0 && d <= 14;
-  });
-
-  if (alert14.length > 0) {
-    const banner = document.createElement('div');
-    banner.style.cssText = 'margin:0 12px 8px;padding:10px 14px;background:#FFF7ED;border:1.5px solid #F59E0B;border-radius:10px;flex-shrink:0;';
-    const lines = alert14.map(g => {
-      const d = groupesDaysUntil(g.date);
-      const prefix = d === 0 ? '🔴 <b>Aujourd\'hui</b>' : d === 1 ? '🟠 <b>Demain</b>' : `🟡 <b>J-${d}</b>`;
-      return `${prefix} — ${g.nom} · ${g.pax} pax · ${g.service}`;
-    }).join('<br>');
-    banner.innerHTML = `<div style="font-size:12px;font-weight:700;color:#92400E;margin-bottom:4px;">⚠️ Groupes dans les 14 prochains jours</div>
-      <div style="font-size:12px;color:#78350F;line-height:1.7;">${lines}</div>`;
-    c.appendChild(banner);
-  }
-
-  const legend = document.createElement('div');
-  legend.style.cssText = 'display:flex;gap:6px;padding:0 12px 8px;flex-wrap:wrap;flex-shrink:0;';
-  Object.entries(GROUPES_STATUT).forEach(([k, v]) => {
-    const chip = document.createElement('span');
-    chip.style.cssText = `font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:${v.bg};color:${v.color};border:1px solid ${v.color}33;`;
-    chip.textContent = v.label;
-    legend.appendChild(chip);
-  });
-  c.appendChild(legend);
-
-  const scroll = document.createElement('div');
-  scroll.style.cssText = 'flex:1;overflow-y:auto;padding:0 12px 20px;';
-  c.appendChild(scroll);
-
-  const byMonth = {};
-  sorted.forEach(g => {
-    const mk = g.date ? g.date.slice(0, 7) : 'tbd';
-    if (!byMonth[mk]) byMonth[mk] = [];
-    byMonth[mk].push(g);
-  });
-
-  Object.keys(byMonth).sort().forEach(mk => {
-    const groups = byMonth[mk];
-    const monthLabel = mk === 'tbd' ? 'Date à définir' : groupesFmtMonth(mk + '-01');
-    const totalPax = groups.reduce((s, g) => s + g.pax, 0);
-
-    const mh = document.createElement('div');
-    mh.style.cssText = 'display:flex;align-items:center;gap:8px;margin:12px 0 8px;';
-    mh.innerHTML = `<div style="font-size:13px;font-weight:800;color:var(--tx);text-transform:uppercase;letter-spacing:.5px;">${monthLabel}</div>
-      <div style="flex:1;height:1px;background:var(--sep);"></div>
-      <div style="font-size:11px;color:var(--tx2);font-weight:600;">${groups.length} groupe${groups.length>1?'s':''} · ${totalPax} pax total</div>`;
-    scroll.appendChild(mh);
-
-    groups.forEach(g => {
-      const daysLeft = groupesDaysUntil(g.date);
-      const st = GROUPES_STATUT[g.statut] || GROUPES_STATUT.tbd;
-      const isUrgent = daysLeft !== null && daysLeft >= 0 && daysLeft <= 7;
-      const isPast = daysLeft !== null && daysLeft < 0;
-
-      const card = document.createElement('div');
-      card.style.cssText = `background:var(--card);border-radius:12px;border:1.5px solid ${isUrgent ? '#F59E0B' : 'var(--sep)'};margin-bottom:8px;overflow:hidden;opacity:${isPast ? '.55' : '1'};`;
-
-      const header = document.createElement('div');
-      header.style.cssText = `padding:10px 12px 8px;border-left:4px solid ${st.color};display:flex;flex-direction:column;gap:4px;`;
-
-      const topRow = document.createElement('div');
-      topRow.style.cssText = 'display:flex;align-items:flex-start;gap:6px;';
-      topRow.innerHTML = `<div style="flex:1;font-size:13px;font-weight:700;color:var(--tx);line-height:1.3;">${g.nom}</div>
-        <div style="font-size:13px;font-weight:800;color:${st.color};white-space:nowrap;">${g.pax} pax</div>`;
-      header.appendChild(topRow);
-
-      const dateRow = document.createElement('div');
-      dateRow.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
-
-      let dateHtml = '';
-      if (g.date) {
-        const dateLabel = groupesFmtDate(g.date);
-        let countdown = '';
-        if (daysLeft === 0) countdown = `<span style="font-size:10px;font-weight:700;background:#DC2626;color:#fff;padding:1px 6px;border-radius:8px;">Aujourd'hui</span>`;
-        else if (daysLeft === 1) countdown = `<span style="font-size:10px;font-weight:700;background:#EA580C;color:#fff;padding:1px 6px;border-radius:8px;">Demain</span>`;
-        else if (daysLeft !== null && daysLeft >= 2 && daysLeft <= 14) countdown = `<span style="font-size:10px;font-weight:700;background:#F59E0B;color:#fff;padding:1px 6px;border-radius:8px;">J-${daysLeft}</span>`;
-        else if (isPast) countdown = `<span style="font-size:10px;color:var(--tx2);">Passé</span>`;
-        dateHtml = `<span style="font-size:11px;color:var(--tx2);">📅 ${dateLabel}</span>${countdown}`;
-      } else {
-        dateHtml = `<span style="font-size:11px;color:var(--tx2);">📅 Date à définir</span>`;
-      }
-
-      dateRow.innerHTML = dateHtml +
-        `<span style="font-size:11px;font-weight:600;background:${st.bg};color:${st.color};padding:1px 7px;border-radius:8px;">${g.service}</span>` +
-        `<span style="font-size:10px;font-weight:600;background:${st.bg};color:${st.color};padding:1px 7px;border-radius:8px;border:1px solid ${st.color}33;">${st.label}</span>`;
-      header.appendChild(dateRow);
-
-      card.appendChild(header);
-
-      if (g.offre || g.note) {
-        const body = document.createElement('div');
-        body.style.cssText = `padding:8px 12px 10px;border-top:.5px solid var(--sep);background:var(--bg);`;
-        if (g.offre) {
-          body.innerHTML += `<div style="font-size:12px;color:var(--tx);line-height:1.5;">🍽️ <b>Offre :</b> ${g.offre}</div>`;
-        }
-        if (g.note) {
-          body.innerHTML += `<div style="font-size:11px;color:var(--tx2);margin-top:${g.offre?'4px':'0'};">💬 ${g.note}</div>`;
-        }
-        card.appendChild(body);
-      }
-
-      scroll.appendChild(card);
-    });
-  });
-
-  const sumDiv = document.createElement('div');
-  sumDiv.style.cssText = 'margin-top:16px;padding:12px;background:var(--card);border-radius:12px;border:1px solid var(--sep);';
-  const totalGroups = sorted.filter(g => g.date).length;
-  const totalPaxAll = sorted.filter(g => g.date).reduce((s, g) => s + g.pax, 0);
-  const maxGroup = sorted.reduce((m, g) => g.pax > m.pax ? g : m, {pax:0, nom:'—'});
-  sumDiv.innerHTML = `
-    <div style="font-size:12px;font-weight:700;color:var(--tx);margin-bottom:8px;">Récapitulatif saison 2026</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-      <div style="text-align:center;padding:8px;background:var(--bg);border-radius:8px;">
-        <div style="font-size:20px;font-weight:800;color:var(--accent);">${totalGroups}</div>
-        <div style="font-size:10px;color:var(--tx2);">Groupes planifiés</div>
-      </div>
-      <div style="text-align:center;padding:8px;background:var(--bg);border-radius:8px;">
-        <div style="font-size:20px;font-weight:800;color:#16A34A;">${totalPaxAll}</div>
-        <div style="font-size:10px;color:var(--tx2);">Couverts groupes</div>
-      </div>
-      <div style="text-align:center;padding:8px;background:var(--bg);border-radius:8px;">
-        <div style="font-size:20px;font-weight:800;color:#D97706;">${maxGroup.pax}</div>
-        <div style="font-size:10px;color:var(--tx2);">Max pax (${maxGroup.nom.split(' ')[0]})</div>
-      </div>
-    </div>`;
-  scroll.appendChild(sumDiv);
-}
+// GROUPES — fonctionnalité à développer
+// (fichier requis par build.ps1)
 
 // ══════════════════════════
 // INIT
 // ══════════════════════════
+// Reset FORCÉ de tout ce qui concerne le layout des tables
+// (nettoie les corruptions de localStorage)
+(function(){
+  try{ localStorage.removeItem('playa_table_order'); }catch(e){}
+  try{ localStorage.removeItem('playa_table_pos'); }catch(e){}
+  tableOrder = null;
+  tablePositions = {};
+  console.log('Plan de salle réinitialisé proprement');
+})();
 
 // Initialiser le date picker avec aujourd'hui
 updateDateDisplay(currentDate);
@@ -12434,179 +11341,19 @@ setTimeout(()=>{ if(typeof crmEnsureHistory==='function') crmEnsureHistory(); },
 // Drag tactile : long press sur carte sidebar → poser sur table/transat
 initTouchDrag();
 
+// Nettoyage localStorage (entrées > 30 jours) + pull Gist si configuré
+(function _initPlacements(){
+  try{
+    const cutoff=new Date(); cutoff.setDate(cutoff.getDate()-30);
+    const cs=cutoff.toISOString().split('T')[0];
+    for(let i=localStorage.length-1;i>=0;i--){
+      const k=localStorage.key(i);
+      if(k&&k.startsWith(PL_LS_PFX)&&k.replace(PL_LS_PFX,'')<cs) localStorage.removeItem(k);
+    }
+  }catch(e){}
+  if(gistToken&&gistId) gistPull();
+})();
 
-// ── CRM Panel flottant ────────────────────────────────────────────────────
-
-let _crmPanelFilter='all', _crmPanelSearch='', _crmPanelView='list', _crmPanelClient=null;
-
-function openCrmPanel(){
-  crmInitFromSeed();
-  const panel=document.getElementById('crm-panel');
-  const backdrop=document.getElementById('crm-panel-backdrop');
-  panel.style.display='flex';
-  backdrop.style.display='block';
-  requestAnimationFrame(()=>{
-    panel.style.transform='translateX(0)';
-    panel.dataset.open='1';
-  });
-  _crmPanelView='list';
-  _crmPanelClient=null;
-  _buildCrmPanelShell();
-  _renderCrmList();
-  setTimeout(()=>{const s=document.getElementById('crm-panel-search');if(s)s.focus();},300);
-}
-
-function closeCrmPanel(){
-  const panel=document.getElementById('crm-panel');
-  const backdrop=document.getElementById('crm-panel-backdrop');
-  panel.style.transform='translateX(100%)';
-  panel.dataset.open='0';
-  setTimeout(()=>{panel.style.display='none';backdrop.style.display='none';},250);
-}
-
-function _buildCrmPanelShell(){
-  const panel=document.getElementById('crm-panel');
-  const clients=clientsCollect();
-  const total=clients.length;
-  const legends=clients.filter(c=>c.visitCount>=8).length;
-  const alerts=clients.filter(c=>(c.prefs||[]).some(p=>p.key==='allergie'||p.key==='pmr')).length;
-  panel.innerHTML=`
-    <div style="padding:16px 16px 0;flex-shrink:0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div style="font-size:16px;font-weight:800;color:var(--t1)">👥 Clients</div>
-        <button onclick="closeCrmPanel()" style="width:32px;height:32px;border:none;background:var(--bg);border-radius:50%;cursor:pointer;font-size:18px;color:var(--t3);display:flex;align-items:center;justify-content:center">×</button>
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:12px">
-        <div style="flex:1;background:var(--bg);border:0.5px solid var(--sep2);border-radius:var(--r-sm);padding:8px 10px;text-align:center">
-          <div style="font-size:18px;font-weight:800;color:var(--t1)">${total}</div>
-          <div style="font-size:10px;font-weight:600;color:var(--t3)">Clients</div>
-        </div>
-        <div style="flex:1;background:#FFF7ED;border:0.5px solid #FED7AA;border-radius:var(--r-sm);padding:8px 10px;text-align:center">
-          <div style="font-size:18px;font-weight:800;color:#EA580C">${legends}</div>
-          <div style="font-size:10px;font-weight:600;color:#EA580C">Légendes & VIP</div>
-        </div>
-        <div style="flex:1;background:#FFF0F5;border:0.5px solid #FDA4C2;border-radius:var(--r-sm);padding:8px 10px;text-align:center">
-          <div style="font-size:18px;font-weight:800;color:#DB2777">${alerts}</div>
-          <div style="font-size:10px;font-weight:600;color:#DB2777">Alertes régime</div>
-        </div>
-      </div>
-      <input id="crm-panel-search" type="search" placeholder="🔍 Rechercher…" autocomplete="off"
-        style="width:100%;box-sizing:border-box;padding:9px 12px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--bg);font-size:13px;color:var(--t1);font-family:inherit;outline:none;margin-bottom:10px"
-        oninput="_crmPanelSearch=this.value;_renderCrmList()">
-      <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
-        ${['all','vip','habitu'].map(f=>`<button onclick="_crmPanelFilter='${f}';_renderCrmList();document.querySelectorAll('.crm-pill').forEach(b=>b.style.background=(b.dataset.f==='${f}'?'var(--blue)':'var(--bg)'));document.querySelectorAll('.crm-pill').forEach(b=>b.style.color=(b.dataset.f==='${f}'?'#fff':'var(--t2)'))" data-f="${f}" class="crm-pill" style="padding:5px 12px;border:1px solid var(--sep);border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;background:${f==='all'?'var(--blue)':'var(--bg)'};color:${f==='all'?'#fff':'var(--t2)'};font-family:inherit">${f==='all'?'Tous':f==='vip'?'Légendes & VIP':'Habitués+'}</button>`).join('')}
-      </div>
-    </div>
-    <div id="crm-panel-list" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 16px 8px"></div>
-    <div style="padding:12px 16px;border-top:1px solid var(--sep);flex-shrink:0">
-      <button onclick="closeCrmPanel();goModule('clients')" style="width:100%;padding:10px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--bg);font-size:12px;font-weight:700;color:var(--t2);cursor:pointer;font-family:inherit">📊 CRM complet →</button>
-    </div>`;
-}
-
-function _renderCrmList(){
-  const el=document.getElementById('crm-panel-list');
-  if(!el) return;
-  if(_crmPanelView==='detail'&&_crmPanelClient){
-    // Rafraîchir le client depuis le cache (données à jour après sync)
-    const fresh=clientsCollect().find(x=>x.normKey===_crmPanelClient.normKey)||_crmPanelClient;
-    _renderCrmDetail(fresh);
-    return;
-  }
-  const all=clientsCollect();
-  const q=(_crmPanelSearch||'').toLowerCase().trim();
-  const filtered=all.filter(c=>{
-    if(q&&!c.name.toLowerCase().includes(q)&&!(c.phone&&c.phone.includes(q))) return false;
-    if(_crmPanelFilter==='vip') return c.visitCount>=5;
-    if(_crmPanelFilter==='habitu') return c.visitCount>=3;
-    return true;
-  });
-  const LOYALTY_LABEL={nouveau:'Nouveau',regulier:'Régulier',fidele:'Fidèle',habitue:'Habitué',vip:'VIP',legende:'Légende'};
-  const LOYALTY_COL={nouveau:'#9CA3AF',regulier:'#6B7280',fidele:'#2563EB',habitue:'#7C3AED',vip:'#DB2777',legende:'#D97706'};
-  if(!filtered.length){
-    el.innerHTML=`<div style="padding:32px;text-align:center;color:var(--t4);font-size:13px">Aucun client trouvé</div>`;
-    return;
-  }
-  el.innerHTML=filtered.slice(0,80).map(c=>{
-    const lbl=LOYALTY_LABEL[c.loyalty?.label?.toLowerCase().replace(/[é]/g,'e').replace(/\s/g,'')]||c.loyalty?.label||'';
-    const col=LOYALTY_COL[c.loyalty?.label?.toLowerCase().replace(/[é]/g,'e').replace(/\s/g,'')]||'var(--t3)';
-    const prefs=(c.prefs||[]).slice(0,2).map(p=>p.label).join(' · ');
-    const lastD=c.lastVisit?c.lastVisit.split('-').reverse().join('/'):'';
-    const safeKey=c.normKey.replace(/'/g,"\\'");
-    return `<div onclick="_crmOpenDetail('${safeKey}')" style="padding:11px 0;border-bottom:1px solid var(--sep);cursor:pointer">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div style="font-size:13px;font-weight:700;color:var(--t1)">${c.name}</div>
-        <div style="font-size:10px;font-weight:700;color:${col};background:${col}18;padding:2px 8px;border-radius:20px;flex-shrink:0;margin-left:8px">${lbl}</div>
-      </div>
-      <div style="font-size:11px;color:var(--t3);margin-top:3px">${c.visitCount} visite${c.visitCount>1?'s':''}${lastD?' · '+lastD:''}${prefs?' · <span style="color:var(--t4)">'+prefs+'</span>':''}</div>
-    </div>`;
-  }).join('');
-}
-
-function _crmOpenDetail(normKey){
-  const c=clientsCollect().find(x=>x.normKey===normKey);
-  if(!c) return;
-  _crmPanelView='detail';
-  _crmPanelClient=c;
-  _renderCrmList();
-}
-
-function _renderCrmDetail(c){
-  const el=document.getElementById('crm-panel-list');
-  if(!el) return;
-  // Relire la note depuis le storage
-  const notes=(()=>{try{return JSON.parse(localStorage.getItem('playa-client-notes-v1')||'{}');}catch(e){return {};}})();
-  const note=notes[c.normKey]||'';
-  const visits=(c.visits||[]).slice(0,20);
-  el.innerHTML=`
-    <div style="padding:8px 0 12px;border-bottom:1px solid var(--sep);margin-bottom:12px">
-      <button onclick="_crmPanelView='list';_renderCrmList()" style="border:none;background:none;font-size:13px;font-weight:700;color:var(--blue);cursor:pointer;padding:0;font-family:inherit">← Retour</button>
-    </div>
-    <div style="font-size:17px;font-weight:800;color:var(--t1);margin-bottom:4px">${c.name}</div>
-    <div style="font-size:11px;color:var(--t3);margin-bottom:12px">${c.visitCount} visite${c.visitCount>1?'s':''}${c.phone?' · '+c.phone:''}${c.avgPax?' · moy '+c.avgPax.toFixed(1)+' PAX':''}</div>
-    ${(c.prefs||[]).length?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px">${(c.prefs||[]).map(p=>`<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--bg);border:0.5px solid var(--sep2);color:var(--t2)">${p.icon||''} ${p.label}</span>`).join('')}</div>`:''}
-    <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Note staff</div>
-    <textarea id="crm-note-${c.normKey}" placeholder="Ajouter une note…" rows="3"
-      style="width:100%;box-sizing:border-box;padding:8px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--bg);font-size:12px;color:var(--t1);font-family:inherit;resize:none;outline:none;margin-bottom:14px"
-      oninput="clientSaveNote('${c.normKey}',this.value)">${note}</textarea>
-    <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Historique</div>
-    ${visits.map(v=>`<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--sep)">
-      <div style="font-size:12px;color:var(--t2)">${v.date?v.date.split('-').reverse().join('/'):'?'}</div>
-      <div style="font-size:11px;color:var(--t3)">${v.pax} PAX${v.comment?` · <em>${v.comment}</em>`:''}</div>
-    </div>`).join('')}`;
-}
-
-// ══ MOBILE MENU ══
-function openMobileMenu(){
-  const bd=document.getElementById('mob-menu-bd');
-  const mn=document.getElementById('mob-menu');
-  const items=[
-    {ico:'📊',lbl:'Tableau de bord',fn:"closeMobileMenu();goModule('dash')"},
-    {ico:'👥',lbl:'Clients CRM',fn:'closeMobileMenu();openCrmPanel()'},
-    {ico:'📋',lbl:'Réservations',fn:"closeMobileMenu();goModule('resas')"},
-    {ico:'👨‍👩‍👧',lbl:'Équipe',fn:"closeMobileMenu();goModule('equipe')"},
-    {ico:'💰',lbl:'Caisse',fn:"closeMobileMenu();goModule('caisse')"},
-    {ico:'⚙️',lbl:'Paramètres',fn:"closeMobileMenu();goModule('settings')"},
-  ];
-  mn.innerHTML=`
-    <div style="width:40px;height:4px;background:var(--sep2);border-radius:2px;margin:0 auto 18px"></div>
-    <div style="font-size:13px;font-weight:800;color:var(--t1);margin-bottom:14px">Navigation</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-      ${items.map(m=>`
-        <button onclick="${m.fn}" style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border:1px solid var(--sep);border-radius:var(--r);background:var(--bg);font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
-          <span style="font-size:24px">${m.ico}</span>
-          <span style="font-size:10px;font-weight:600;color:var(--t2);text-align:center;line-height:1.2">${m.lbl}</span>
-        </button>`).join('')}
-    </div>`;
-  bd.style.display='block';
-  mn.style.display='block';
-  requestAnimationFrame(()=>mn.style.transform='translateY(0)');
-}
-function closeMobileMenu(){
-  const mn=document.getElementById('mob-menu');
-  const bd=document.getElementById('mob-menu-bd');
-  mn.style.transform='translateY(100%)';
-  setTimeout(()=>{mn.style.display='none';bd.style.display='none';},250);
-}
 
 </script>
 </body>

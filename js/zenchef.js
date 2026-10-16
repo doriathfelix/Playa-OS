@@ -145,6 +145,7 @@ async function setDate(dateStr){
     selectedId = null;
     saveUndo();
     applyBookings(fromPool, dateStr);
+    restorePlacements(loadPlacements(dateStr));
     lastSyncAt = new Date();
     updateSyncAge();
     render();
@@ -905,6 +906,7 @@ async function syncZenchef(date){
     selectedId = null;
     saveUndo();
     applyBookings(cached, date);
+    restorePlacements(loadPlacements(date));
     lastSyncAt = new Date();
     updateSyncAge();
     render();
@@ -922,6 +924,7 @@ async function syncZenchef(date){
         fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
         applyBookings(bkgs, date);
+        restorePlacements(loadPlacements(date));
         lastSyncAt = new Date();
         updateSyncAge();
         render();
@@ -957,6 +960,7 @@ async function syncZenchef(date){
       zcSetProgress(100);
       zcCacheSet(date, fast.bookings);
       const { added, dupes, cancelled } = applyBookings(fast.bookings, date);
+      restorePlacements(loadPlacements(date));
       lastSyncAt = new Date();
       updateSyncAge();
       render();
@@ -989,6 +993,7 @@ async function syncZenchef(date){
       );
       zcCacheSet(date, bookings);
       const { added, dupes, cancelled } = applyBookings(bookings, date);
+      restorePlacements(loadPlacements(date));
       lastSyncAt = new Date();
       updateSyncAge();
       render();
@@ -1019,6 +1024,7 @@ async function syncZenchef(date){
       );
       zcCacheSet(date, bookings);
       const { added, dupes, cancelled } = applyBookings(bookings, date);
+      restorePlacements(loadPlacements(date));
       lastSyncAt = new Date();
       updateSyncAge();
       render();
@@ -1052,7 +1058,7 @@ function updateSyncAge(){
   else if(mins < 15){ el.textContent='il y a ' + mins + ' min'; el.className='sync-age stale'; }
   else { el.textContent='il y a ' + mins + ' min'; el.className='sync-age stale'; }
 }
-setInterval(updateSyncAge, 30000); // refresh l'affichage toutes les 30s
+const _syncAgeInterval = setInterval(updateSyncAge, 30000); // refresh l'affichage toutes les 30s
 
 // ── Auto-sync toutes les 5 min — refetch complet pour aujourd'hui et futur
 function isToday(dateStr){
@@ -1070,6 +1076,7 @@ function startAutoSync(){
         fused = {s1:[],s2:[],transats:[],soir:[]};
         selectedId = null;
         applyBookings(bookings, currentDate);
+        restorePlacements(loadPlacements(currentDate));
         lastSyncAt = new Date();
         updateSyncAge();
         render();

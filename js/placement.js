@@ -917,3 +917,45 @@ function clearAll(){
   toast('Toutes les tables libérées');
 }
 
+// ── Snapshot/restore des placements (persistance inter-sync)
+function snapshotPlacements(){
+  try {
+    const placements = {};
+    ['s1','s2','transats','soir'].forEach(svc => {
+      (reservations[svc]||[]).forEach(r => {
+        if(r.placed || r.tableId != null || r.slot != null){
+          const key = r.zenchef_id || r.id;
+          placements[key] = {placed:r.placed, tableId:r.tableId, slot:r.slot, extraSlots:r.extraSlots};
+        }
+      });
+    });
+    const fusedSnap = {};
+    ['s1','s2','transats','soir'].forEach(svc => {
+      fusedSnap[svc] = (fused[svc]||[]).map(g => ({...g, tids:[...(g.tids||[])]}));
+    });
+    return {placements, fused:fusedSnap};
+  } catch(e){ return {placements:{}, fused:{s1:[],s2:[],transats:[],soir:[]}}; }
+}
+
+function restorePlacements(snap){
+  if(!snap) return;
+  const p = snap.placements || {};
+  if(!Object.keys(p).length) return;
+  ['s1','s2','transats','soir'].forEach(svc => {
+    (reservations[svc]||[]).forEach(r => {
+      const key = r.zenchef_id || r.id;
+      const s = p[key];
+      if(s){ r.placed=s.placed; r.tableId=s.tableId; r.slot=s.slot; r.extraSlots=s.extraSlots; }
+    });
+  });
+  ['s1','s2','transats','soir'].forEach(svc => {
+    if(!(fused[svc]||[]).length && snap.fused && (snap.fused[svc]||[]).length){
+      fused[svc] = snap.fused[svc];
+    }
+  });
+}
+
+function totalResaCount(){
+  return ['s1','s2','transats','soir'].reduce((n,k) => n + (reservations[k]||[]).length, 0);
+}
+

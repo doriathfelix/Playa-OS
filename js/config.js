@@ -80,6 +80,9 @@ const SALON_SLOTS = [
   {id:1004, lbl:'Salon 4', gridCol:'19 / 21', gridRow:1},  // remplace 115-116 (décalé par 12bis)
 ];
 
+// ── Constante salons — IDs 1001-1004 (utiliser cette constante, pas le magic number)
+const SALON_ID_MIN = 1001;
+
 // ── BEDs spéciaux — rangée 100 (101-103) + rangée 200 positions 19-21 (219-221)
 // Transats lit/cabane, style ambré/ocre distinct — capacité 2 PAX par slot
 const BED_SLOTS = [101, 102, 103, 220, 221, 222];

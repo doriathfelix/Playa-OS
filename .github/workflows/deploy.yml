@@ -19,9 +19,8 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build (PowerShell)
-        shell: pwsh
-        run: ./build.ps1
+      - name: Build
+        run: bash build.sh
 
       - name: Commit & push docs/
         run: |

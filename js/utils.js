@@ -86,9 +86,15 @@ function toast(msg){
   t._tid = setTimeout(()=>t.style.opacity='0', 2500);
 }
 
-// ══════════════════════════════════════════
-// RUSH TIMELINE
-// ══════════════════════════════════════════
-function renderRush(){ /* supprime - jauge retire */ }
+// Mapping service → couleurs CSS (bg/border/texte)
+function svcColors(svc){
+  const map = {
+    s1:      {bg:'var(--s1bg)', bd:'var(--s1bd)', tx:'var(--s1t)'},
+    s2:      {bg:'var(--s2bg)', bd:'var(--s2bd)', tx:'var(--s2t)'},
+    transats:{bg:'var(--rtbg)', bd:'var(--rtbd)', tx:'var(--rtt)'},
+    soir:    {bg:'var(--sobg)', bd:'var(--sobd)', tx:'var(--sot)'}
+  };
+  return map[svc] || {bg:'var(--card)', bd:'var(--sep)', tx:'var(--t1)'};
+}
 
 // ══════════════════════════════════════════
