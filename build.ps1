@@ -22,6 +22,7 @@ $jsOrder = @(
     "js/utils.js",
     "js/render.js",
     "js/placement.js",
+    "js/gist.js",
     "js/rush.js",
     "js/modal.js",
     "js/export.js",

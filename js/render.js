@@ -11,6 +11,7 @@ function setPlacementFilter(f){
 // RENDER MAIN
 // ══════════════════════════════════════════
 function render(){
+  savePlacements(currentDate);
   renderSidebar();
   renderStats();
   document.getElementById('persist-section').style.display = currentTab===2 ? 'block' : 'none';

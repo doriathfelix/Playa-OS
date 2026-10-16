@@ -103,4 +103,60 @@ function renderSettings(c){
   estab.appendChild(prefs);
 
   g2.appendChild(estab);
+
+  // ── Synchronisation Cloud ─────────────────────────────────────────────
+  const cloud = document.createElement('div');
+  cloud.style.cssText = 'grid-column:1/-1;background:var(--card);border:0.5px solid var(--sep);border-radius:14px;padding:16px';
+  cloud.innerHTML = `
+    <div style="font-size:13px;font-weight:700;color:var(--t1);margin-bottom:4px">Synchronisation Cloud</div>
+    <div style="font-size:11px;color:var(--t3);margin-bottom:14px">Plans de salle et transats partagés entre tous vos appareils via GitHub Gist</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--t2);margin-bottom:4px">Token GitHub <span style="font-weight:400;color:var(--t4)">(scope gist requis)</span></div>
+        <input id="gist-token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+          value="${gistToken}"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--sep);border-radius:8px;font-size:12px;font-family:inherit;background:var(--bg);color:var(--t1)">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--t2);margin-bottom:4px">Gist ID <span style="font-weight:400;color:var(--t4)">(rempli automatiquement à la connexion)</span></div>
+        <input id="gist-id-input" type="text" placeholder="Créé automatiquement"
+          value="${gistId}"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--sep);border-radius:8px;font-size:11px;font-family:monospace;background:var(--bg);color:var(--t1)">
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px">
+        <button id="gist-connect-btn" style="padding:8px 16px;border:none;background:var(--t1);color:#fff;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+          ${gistToken&&gistId?'Reconnecter':'Connecter'}
+        </button>
+        ${gistToken&&gistId?'<button id="gist-pull-btn" style="padding:8px 14px;border:1px solid var(--sep);background:var(--card);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;color:var(--t2)">↓ Sync</button>':''}
+        <span id="gist-status" style="font-size:11px;flex:1;text-align:right"></span>
+      </div>
+      <div style="font-size:10.5px;color:var(--t4)">
+        ${gistToken&&gistId
+          ? 'Les placements sont sauvegardés automatiquement 3 s après chaque modification. Copiez le Gist ID sur vos autres appareils pour synchroniser.'
+          : 'Créez un <a href="https://github.com/settings/tokens/new?scopes=gist" target="_blank" style="color:var(--t2)">token GitHub</a> avec le scope <b>gist</b>, puis cliquez Connecter.'}
+      </div>
+    </div>
+  `;
+  g2.appendChild(cloud);
+  _gistUpdateStatus();
+  cloud.querySelector('#gist-connect-btn').addEventListener('click', async () => {
+    const tok = cloud.querySelector('#gist-token-input').value.trim();
+    const idInp = cloud.querySelector('#gist-id-input').value.trim();
+    if(!tok){ toast('Token GitHub requis'); return; }
+    const btn = cloud.querySelector('#gist-connect-btn');
+    btn.textContent='Connexion…'; btn.disabled=true;
+    let id = idInp;
+    if(!id){
+      id = await gistCreate(tok);
+      if(!id){ toast('⚠ Token invalide ou scope gist manquant'); btn.textContent='Connecter'; btn.disabled=false; return; }
+    }
+    gistToken=tok; gistId=id;
+    localStorage.setItem(GIST_TOKEN_KEY,tok); localStorage.setItem(GIST_ID_KEY,id);
+    cloud.querySelector('#gist-id-input').value=id;
+    await gistPull();
+    toast('✓ Gist connecté');
+    goModule('settings');
+  });
+  const pullBtn = cloud.querySelector('#gist-pull-btn');
+  if(pullBtn) pullBtn.addEventListener('click', ()=>gistPull());
 }
