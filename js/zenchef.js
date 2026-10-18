@@ -948,12 +948,13 @@ async function syncZenchef(date){
   try {
     // Tentative voie rapide : filtre date API (1-2 requêtes si supporté)
     let fast = null;
+    let fastErr = null;
     try {
       fast = await fetchZcDateFiltered(date, (cur, total) => {
         zcSetProgress(Math.round(10 + (cur/total) * 80));
         zcSetLabel(total <= 1 ? 'chargement…' : 'chargement ' + cur + '/' + total + ' pages…');
       });
-    } catch(e){ fast = null; }
+    } catch(e){ fast = null; fastErr = e; }
 
     if(fast !== null && fast.filtered){
       // Filtre API fonctionnel — résultats en 1-2 requêtes
@@ -1035,11 +1036,15 @@ async function syncZenchef(date){
     }
 
   } catch(e){
-    zcSetLabel('⚠ erreur réseau', 'stale');
-    console.error('Zenchef sync error:', e);
+    const errMsg = (fastErr || e).message || String(fastErr || e);
+    const isAuth = /401|403/.test(errMsg);
+    const label = isAuth ? '⚠ token expiré (' + errMsg + ')' : '⚠ erreur réseau (' + errMsg + ')';
+    zcSetLabel(label, 'stale');
+    console.error('Zenchef sync error:', fastErr || e);
+    toast('❌ Zenchef : ' + errMsg + (isAuth ? ' — token à renouveler dans Paramètres' : ''), 6000);
     const ageEl = document.getElementById('sync-age');
     if(ageEl){
-      ageEl.innerHTML = '⚠ échec — <span style="text-decoration:underline;cursor:pointer" onclick="syncZenchef()">réessayer</span>';
+      ageEl.innerHTML = '⚠ ' + errMsg + ' — <span style="text-decoration:underline;cursor:pointer" onclick="syncZenchef()">réessayer</span>';
     }
   }
 
