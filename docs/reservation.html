@@ -7,6 +7,7 @@
   <meta name="description" content="Réservez votre table et vos transats à La Playa en Camargue">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
 
   <style>
     /* ═══════════════════════════════════════════
@@ -1218,16 +1219,62 @@ function fillRecap(){
 }
 
 /* ═══════════════════════════════════════════════
+   SUPABASE
+   ═══════════════════════════════════════════════ */
+const SB_URL  = 'https://exfipespqlseeaeozarx.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4ZmlwZXNwcWxzZWVhZW96YXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODIwMjEsImV4cCI6MjEwOTU1ODAyMX0.HwNqF6dqfPDJdyDTv9JLkULFIPO-G45u7Bq5MA2ETtY';
+const sb = supabase.createClient(SB_URL, SB_ANON);
+
+/* ═══════════════════════════════════════════════
    SOUMISSION
    ═══════════════════════════════════════════════ */
-function submitReservation(){
-  const ref = 'PL-' + Date.now().toString(36).toUpperCase().slice(-6);
-  document.getElementById('confirm-ref').textContent = 'Référence : ' + ref;
+async function submitReservation(){
+  const btn = document.querySelector('#step-7 .btn-success');
+  btn.disabled = true;
+  btn.textContent = '⏳ Envoi en cours…';
 
-  /* TODO : POST vers API backend */
-  console.log('Reservation:', { ...state, ref });
+  try {
+    const ref = 'PL-' + Date.now().toString(36).toUpperCase().slice(-6);
 
-  goStep(8);
+    const record = {
+      ref,
+      restaurant_id: 'laplaya',
+      date:          state.date,
+      service:       state.service,
+      slot:          state.slot,
+      formula:       state.formula,
+      grands:        state.grands,
+      presque_grands: state.presqueGrands,
+      petits_loups:  state.petitsLoups,
+      tout_doux:     state.toutDoux,
+      transats:      state.transats,
+      first_row:     state.firstRow || null,
+      prenom:        state.prenom,
+      nom:           state.nom,
+      email:         state.email,
+      tel:           state.tel,
+      note:          state.note || null,
+      status:        'confirmed',
+    };
+
+    // 1. Sauvegarde en base
+    const { error: dbErr } = await sb.from('reservations').insert(record);
+    if(dbErr) throw dbErr;
+
+    // 2. Email de confirmation
+    await sb.functions.invoke('send-confirmation', {
+      body: { reservation: { ...record, presqueGrands: state.presqueGrands, petitsLoups: state.petitsLoups, toutDoux: state.toutDoux } }
+    });
+
+    document.getElementById('confirm-ref').textContent = 'Référence : ' + ref;
+    goStep(8);
+
+  } catch(e) {
+    console.error('Erreur réservation:', e);
+    btn.disabled = false;
+    btn.textContent = '✓ Confirmer';
+    alert('Une erreur est survenue. Veuillez réessayer ou nous appeler directement.');
+  }
 }
 
 function newReservation(){
