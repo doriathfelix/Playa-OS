@@ -79,11 +79,11 @@ function saveExtra(){ try{ localStorage.setItem('playa_extra',JSON.stringify(ext
 function saveTransatConfig(){ saveExtra(); toast('Config sauvegardée pour demain ✓'); }
 function resetTransatConfig(){ if(!confirm('Réinitialiser le plan de transats ?')) return; extraTransats={}; saveExtra(); render(); toast('Plan réinitialisé'); }
 
-function toast(msg){
+function toast(msg, duration){
   const t = document.getElementById('toast');
   t.textContent = msg; t.style.opacity='1';
   clearTimeout(t._tid);
-  t._tid = setTimeout(()=>t.style.opacity='0', 2500);
+  t._tid = setTimeout(()=>t.style.opacity='0', duration || 2500);
 }
 
 // Mapping service → couleurs CSS (bg/border/texte)
