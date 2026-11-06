@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brigade Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+  <style>
+    :root {
+      --bg:          #0f1117;
+      --bg-card:     #1a1d27;
+      --bg-hover:    #22263a;
+      --border:      #2a2f45;
+      --primary:     #6366f1;
+      --primary-dim: #3730a3;
+      --success:     #22c55e;
+      --warning:     #f59e0b;
+      --danger:      #ef4444;
+      --text:        #f1f5f9;
+      --text-muted:  #94a3b8;
+      --text-dim:    #475569;
+      --radius:      10px;
+      --shadow:      0 4px 24px rgba(0,0,0,.4);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-font-smoothing:antialiased}
+
+    /* ── Login ── */
+    .login-wrap{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .login-card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:360px;box-shadow:var(--shadow)}
+    .login-logo{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--primary);margin-bottom:8px}
+    .login-title{font-size:24px;font-weight:700;margin-bottom:4px}
+    .login-sub{font-size:14px;color:var(--text-muted);margin-bottom:28px}
+    .field{margin-bottom:16px}
+    .field label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+    .field input{width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:15px;outline:none;transition:border-color .2s}
+    .field input:focus{border-color:var(--primary)}
+    .btn-primary{width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s}
+    .btn-primary:hover{opacity:.88}
+    .login-error{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;display:none}
+
+    /* ── App shell ── */
+    .app{display:none;min-height:100dvh}
+    .sidebar{width:220px;background:var(--bg-card);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;padding:24px 16px}
+    .brand{font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--primary);padding:0 8px;margin-bottom:28px}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500;color:var(--text-muted);transition:background .15s,color .15s;margin-bottom:2px}
+    .nav-item:hover{background:var(--bg-hover);color:var(--text)}
+    .nav-item.active{background:rgba(99,102,241,.15);color:var(--primary)}
+    .nav-icon{font-size:17px;width:22px;text-align:center}
+    .sidebar-bottom{margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
+    .main{margin-left:220px;padding:32px;min-height:100dvh}
+    .page{display:none}
+    .page.active{display:block}
+    .page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .page-title{font-size:22px;font-weight:700}
+    .page-sub{font-size:14px;color:var(--text-muted);margin-top:2px}
+
+    /* ── Stats row ── */
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+    .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+    .stat-val{font-size:28px;font-weight:700;line-height:1}
+    .stat-label{font-size:13px;color:var(--text-muted);margin-top:6px}
+    .stat-trend{font-size:12px;margin-top:4px}
+    .trend-up{color:var(--success)}
+    .trend-down{color:var(--danger)}
+
+    /* ── Tables ── */
+    .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+    .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .card-title{font-size:15px;font-weight:600}
+    table{width:100%;border-collapse:collapse}
+    th{padding:11px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border)}
+    td{padding:13px 16px;font-size:14px;border-bottom:1px solid rgba(42,47,69,.5)}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:var(--bg-hover)}
+    .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+    .badge-active{background:rgba(34,197,94,.15);color:var(--success)}
+    .badge-inactive{background:rgba(148,163,184,.1);color:var(--text-dim)}
+    .badge-trial{background:rgba(245,158,11,.15);color:var(--warning)}
+
+    /* ── Restaurant card ── */
+    .resto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+    .resto-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:border-color .2s,transform .15s}
+    .resto-card:hover{border-color:var(--primary);transform:translateY(-2px)}
+    .resto-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .resto-name{font-size:16px;font-weight:600}
+    .resto-id{font-size:12px;color:var(--text-dim);font-family:monospace;margin-top:2px}
+    .modules-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+    .module-chip{font-size:11px;padding:3px 8px;border-radius:6px;background:rgba(99,102,241,.12);color:var(--primary)}
+
+    /* ── Modal / drawer ── */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;align-items:flex-start;justify-content:flex-end}
+    .overlay.open{display:flex}
+    .drawer{background:var(--bg-card);border-left:1px solid var(--border);width:100%;max-width:520px;height:100dvh;overflow-y:auto;padding:28px;animation:slideIn .25s ease}
+    @keyframes slideIn{from{transform:translateX(60px);opacity:0}to{transform:translateX(0);opacity:1}}
+    .drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+    .drawer-title{font-size:18px;font-weight:700}
+    .close-btn{width:32px;height:32px;border-radius:50%;background:var(--bg-hover);border:none;color:var(--text-muted);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+    .form-section{margin-bottom:24px}
+    .form-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-dim);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .f-label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:5px}
+    .f-input,.f-select{width:100%;padding:9px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .2s}
+    .f-input:focus,.f-select:focus{border-color:var(--primary)}
+    .f-group{margin-bottom:14px}
+
+    /* ── Toggles ── */
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+    .toggle-row:last-child{border-bottom:none}
+    .toggle-info{}
+    .toggle-label{font-size:14px;font-weight:500}
+    .toggle-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
+    .toggle{position:relative;width:42px;height:24px;flex-shrink:0}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:12px;cursor:pointer;transition:.2s}
+    .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:.2s}
+    .toggle input:checked + .toggle-slider{background:var(--primary)}
+    .toggle input:checked + .toggle-slider::before{transform:translateX(18px)}
+
+    /* ── Reservations list ── */
+    .resa-filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+    .filter-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-family:inherit;font-size:13px;cursor:pointer;transition:.15s}
+    .filter-btn.active{background:var(--primary);border-color:var(--primary);color:white}
+    .filter-input{padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit;font-size:13px;outline:none}
+    .filter-input:focus{border-color:var(--primary)}
+    .resa-row{display:grid;grid-template-columns:100px 80px 60px 1fr 100px 90px;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid rgba(42,47,69,.5);transition:background .1s}
+    .resa-row:hover{background:var(--bg-hover)}
+    .resa-row.header{font-size:11px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.5px;padding:10px 16px}
+    .resa-name{font-weight:500}
+    .resa-ref{font-family:monospace;font-size:12px;color:var(--text-dim)}
+    .btn-sm{padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-family:inherit;font-size:12px;cursor:pointer;transition:.15s}
+    .btn-sm:hover{border-color:var(--primary);color:var(--primary)}
+    .btn-danger{border-color:var(--danger);color:var(--danger)}
+    .btn-danger:hover{background:rgba(239,68,68,.1)}
+
+    /* ── Boutons actions ── */
+    .btn-add{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;background:var(--primary);color:white;border:none;border-radius:var(--radius);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
+    .btn-add:hover{opacity:.85}
+
+    /* ── Colors preview ── */
+    .color-preview{width:32px;height:32px;border-radius:6px;border:2px solid var(--border);cursor:pointer;flex-shrink:0}
+    .color-row{display:flex;align-items:center;gap:10px}
+
+    /* ── Empty state ── */
+    .empty{text-align:center;padding:48px 20px;color:var(--text-muted)}
+    .empty-icon{font-size:40px;margin-bottom:12px}
+    .empty-text{font-size:15px}
+
+    @media(max-width:700px){
+      .sidebar{display:none}
+      .main{margin-left:0;padding:20px 16px}
+      .resa-row{grid-template-columns:1fr 1fr;gap:6px}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN
+══════════════════════════════════════ -->
+<div class="login-wrap" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">Brigade</div>
+    <div class="login-title">Admin</div>
+    <div class="login-sub">Accès opérateur — espace privé</div>
+    <div class="field">
+      <label>Mot de passe</label>
+      <input type="password" id="pwd-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()">
+    </div>
+    <button class="btn-primary" onclick="login()">Connexion →</button>
+    <div class="login-error" id="login-error">Mot de passe incorrect</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP
+══════════════════════════════════════ -->
+<div class="app" id="app">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="brand">Brigade</div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
+    <div class="nav-item" onclick="showPage('restaurants')"><span class="nav-icon">🏪</span> Restaurants</div>
+    <div class="nav-item" onclick="showPage('reservations')"><span class="nav-icon">📋</span> Réservations</div>
+    <div class="nav-item" onclick="showPage('templates')"><span class="nav-icon">🎨</span> Templates</div>
+    <div class="sidebar-bottom">
+      <div class="nav-item" onclick="logout()"><span class="nav-icon">🚪</span> Déconnexion</div>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- ── Dashboard ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Vue d'ensemble</div>
+          <div class="page-sub" id="dash-date"></div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-val" id="stat-total-resas">—</div>
+          <div class="stat-label">Réservations ce mois</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-today-resas">—</div>
+          <div class="stat-label">Aujourd'hui</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-restaurants">—</div>
+          <div class="stat-label">Restaurants actifs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="stat-pax">—</div>
+          <div class="stat-label">Couverts ce mois</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Dernières réservations</span></div>
+        <div id="dash-resas-list"></div>
+      </div>
+    </div>
+
+    <!-- ── Restaurants ── -->
+    <div class="page" id="page-restaurants">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Restaurants</div>
+          <div class="page-sub">Gérez vos clients Brigade</div>
+        </div>
+        <button class="btn-add" onclick="openDrawer()">+ Nouveau restaurant</button>
+      </div>
+      <div class="resto-grid" id="resto-grid"></div>
+    </div>
+
+    <!-- ── Réservations ── -->
+    <div class="page" id="page-reservations">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Réservations</div>
+          <div class="page-sub">Toutes les réservations Brigade</div>
+        </div>
+      </div>
+      <div class="resa-filters">
+        <input class="filter-input" type="date" id="filter-date" onchange="loadReservations()">
+        <button class="filter-btn active" onclick="filterStatus('all', this)">Toutes</button>
+        <button class="filter-btn" onclick="filterStatus('confirmed', this)">Confirmées</button>
+        <button class="filter-btn" onclick="filterStatus('cancelled', this)">Annulées</button>
+      </div>
+      <div class="card">
+        <div class="resa-row header">
+          <span>Date</span><span>Heure</span><span>Pax</span><span>Client</span><span>Réf.</span><span>Actions</span>
+        </div>
+        <div id="resas-list"></div>
+      </div>
+    </div>
+
+    <!-- ── Templates ── -->
+    <div class="page" id="page-templates">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Templates</div>
+          <div class="page-sub">Configurations prêtes à déployer</div>
+        </div>
+      </div>
+      <div class="resto-grid" id="templates-grid"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════
+     DRAWER — Nouveau / éditer restaurant
+══════════════════════════════════════ -->
+<div class="overlay" id="drawer-overlay" onclick="closeDrawerOutside(event)">
+  <div class="drawer">
+    <div class="drawer-header">
+      <div class="drawer-title" id="drawer-title">Nouveau restaurant</div>
+      <button class="close-btn" onclick="closeDrawer()">×</button>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Identité</div>
+      <div class="form-row">
+        <div class="f-group">
+          <label class="f-label">Nom du restaurant</label>
+          <input class="f-input" id="f-name" placeholder="La Playa">
+        </div>
+        <div class="f-group">
+          <label class="f-label">ID unique</label>
+          <input class="f-input" id="f-id" placeholder="laplaya">
+        </div>
+      </div>
+      <div class="f-group">
+        <label class="f-label">Ville / Lieu</label>
+        <input class="f-input" id="f-location" placeholder="Camargue, France">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Téléphone</label>
+        <input class="f-input" id="f-phone" placeholder="+33 4 00 00 00 00">
+      </div>
+      <div class="f-group">
+        <label class="f-label">Site web</label>
+        <input class="f-input" id="f-website" placeholder="laplaya.fr">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Branding</div>
+      <div class="form-row">
+        <div class="f-group">
+          <label class="f-label">Couleur principale</label>
+          <div class="color-row">
+            <input type="color" id="f-color-primary" value="#1a6b7c" style="width:100%;height:38px;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:none;padding:2px">
+          </div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">Couleur accent</label>
+          <input type="color" id="f-color-accent" value="#c9a96e" style="width:100%;height:38px;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:none;padding:2px">
+        </div>
+      </div>
+      <div class="f-group">
+        <label class="f-label">Tagline (sous le nom)</label>
+        <input class="f-input" id="f-tagline" placeholder="Déjeuner les pieds dans le sable">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Capacité</div>
+      <div class="form-row">
+        <div class="f-group">
+          <label class="f-label">Couverts max / service</label>
+          <input class="f-input" type="number" id="f-max-covers" value="50">
+        </div>
+        <div class="f-group">
+          <label class="f-label">Jours à l'avance (max)</label>
+          <input class="f-input" type="number" id="f-max-days" value="60">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Modules actifs</div>
+      <div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">🏖️ Transats</div>
+            <div class="toggle-desc">Réservation de transats avec gestion des rangées</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="mod-transats" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">📱 SMS rappel</div>
+            <div class="toggle-desc">Rappel automatique J-1 par SMS</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="mod-sms"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">👥 CRM clients</div>
+            <div class="toggle-desc">Historique et profils des clients récurrents</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="mod-crm"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">📊 Analytics</div>
+            <div class="toggle-desc">Statistiques, taux no-show, revenus</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="mod-analytics"><span class="toggle-slider"></span></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-label">🍳 Modules cuisine</div>
+            <div class="toggle-desc">HACCP, stocks, bar</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="mod-kitchen"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">Noms des convives</div>
+      <div class="form-row">
+        <div class="f-group">
+          <label class="f-label">Adultes (18+)</label>
+          <input class="f-input" id="f-cat-grands" value="Les grands" placeholder="Les grands">
+        </div>
+        <div class="f-group">
+          <label class="f-label">Ados (12-17)</label>
+          <input class="f-input" id="f-cat-presque" value="Les presque-grands" placeholder="Les presque-grands">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="f-group">
+          <label class="f-label">Enfants (3-11)</label>
+          <input class="f-input" id="f-cat-petits" value="Les petits loups" placeholder="Les petits loups">
+        </div>
+        <div class="f-group">
+          <label class="f-label">Bébés (0-2)</label>
+          <input class="f-input" id="f-cat-bebes" value="Les tout-doux" placeholder="Les tout-doux">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-top:8px">
+      <button class="btn-primary" style="flex:1" onclick="saveRestaurant()">Enregistrer</button>
+      <button class="btn-sm" style="padding:10px 16px" onclick="closeDrawer()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   CONFIG
+   ═══════════════════════════════════════════════ */
+const ADMIN_PASSWORD = 'brigade2024';
+const SB_URL  = 'https://exfipespqlseeaeozarx.supabase.co';
+const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4ZmlwZXNwcWxzZWVhZW96YXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODIwMjEsImV4cCI6MjEwOTU1ODAyMX0.HwNqF6dqfPDJdyDTv9JLkULFIPO-G45u7Bq5MA2ETtY';
+const sb = supabase.createClient(SB_URL, SB_ANON);
+
+/* Templates prédéfinis */
+const TEMPLATES = [
+  {
+    id: 'plage',
+    name: '🏖️ Restaurant de plage',
+    desc: 'Transats, 2 services midi, ambiance décontractée',
+    tags: ['transats', 'midi', 'plage'],
+    recommended: ['Transats', 'CRM', 'Analytics'],
+    config: {
+      colorPrimary: '#1a6b7c', colorAccent: '#c9a96e',
+      maxCovers: 50, maxDays: 60,
+      modules: { transats: true, sms: false, crm: true, analytics: true, kitchen: false },
+      cats: { grands: 'Les grands', presque: 'Les presque-grands', petits: 'Les petits loups', bebes: 'Les tout-doux' },
+    }
+  },
+  {
+    id: 'brasserie',
+    name: '🍺 Brasserie / Bistrot',
+    desc: 'Service continu, grande capacité, classique',
+    tags: ['midi', 'soir', 'traditionnel'],
+    recommended: ['CRM', 'Analytics', 'SMS'],
+    config: {
+      colorPrimary: '#7c3a1a', colorAccent: '#c9a06e',
+      maxCovers: 80, maxDays: 30,
+      modules: { transats: false, sms: true, crm: true, analytics: true, kitchen: false },
+      cats: { grands: 'Adultes', presque: 'Adolescents', petits: 'Enfants', bebes: 'Bébés' },
+    }
+  },
+  {
+    id: 'gastronomique',
+    name: '⭐ Gastronomique',
+    desc: 'Service unique, petit couverts, premium',
+    tags: ['premium', 'soir', 'unique'],
+    recommended: ['CRM', 'Analytics', 'SMS', 'HACCP'],
+    config: {
+      colorPrimary: '#1a1a2e', colorAccent: '#c9a96e',
+      maxCovers: 25, maxDays: 90,
+      modules: { transats: false, sms: true, crm: true, analytics: true, kitchen: true },
+      cats: { grands: 'Convives', presque: 'Jeunes convives', petits: 'Enfants', bebes: 'Bébés' },
+    }
+  },
+  {
+    id: 'rooftop',
+    name: '🌆 Rooftop / Bar',
+    desc: 'Cocktails, petite restauration, ambiance',
+    tags: ['soir', 'cocktails', 'terrasse'],
+    recommended: ['Analytics', 'CRM'],
+    config: {
+      colorPrimary: '#2d1a7c', colorAccent: '#e96e9a',
+      maxCovers: 60, maxDays: 14,
+      modules: { transats: false, sms: false, crm: true, analytics: true, kitchen: false },
+      cats: { grands: 'Invités', presque: 'Jeunes', petits: 'Enfants', bebes: 'Bébés' },
+    }
+  },
+];
+
+/* ═══════════════════════════════════════════════
+   AUTH
+   ═══════════════════════════════════════════════ */
+let currentStatusFilter = 'all';
+
+function login(){
+  const pwd = document.getElementById('pwd-input').value;
+  if(pwd === ADMIN_PASSWORD){
+    sessionStorage.setItem('brigade_admin', '1');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    initApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('pwd-input').value = '';
+  }
+}
+
+function logout(){
+  sessionStorage.removeItem('brigade_admin');
+  location.reload();
+}
+
+/* ═══════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  if(sessionStorage.getItem('brigade_admin') === '1'){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    initApp();
+  }
+  document.getElementById('filter-date').value = new Date().toISOString().split('T')[0];
+});
+
+async function initApp(){
+  const days = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const months = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const now = new Date();
+  document.getElementById('dash-date').textContent = days[now.getDay()] + ' ' + now.getDate() + ' ' + months[now.getMonth()];
+  await Promise.all([loadDashboard(), loadRestaurants(), loadTemplates()]);
+}
+
+/* ═══════════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════════ */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if(id === 'reservations') loadReservations();
+}
+
+/* ═══════════════════════════════════════════════
+   DASHBOARD
+   ═══════════════════════════════════════════════ */
+async function loadDashboard(){
+  const today = new Date().toISOString().split('T')[0];
+  const monthStart = today.slice(0, 7) + '-01';
+
+  const [{ data: allResas }, { data: todayResas }] = await Promise.all([
+    sb.from('reservations').select('grands,presque_grands,petits_loups,tout_doux,restaurant_id').gte('date', monthStart).eq('status','confirmed'),
+    sb.from('reservations').select('*').eq('date', today).eq('status','confirmed').order('slot'),
+  ]);
+
+  const totalPax = (allResas||[]).reduce((s,r) => s + r.grands + r.presque_grands + r.petits_loups + r.tout_doux, 0);
+  const restoIds = new Set((allResas||[]).map(r => r.restaurant_id));
+
+  document.getElementById('stat-total-resas').textContent = (allResas||[]).length;
+  document.getElementById('stat-today-resas').textContent = (todayResas||[]).length;
+  document.getElementById('stat-restaurants').textContent = restoIds.size || 1;
+  document.getElementById('stat-pax').textContent = totalPax;
+
+  const list = document.getElementById('dash-resas-list');
+  if(!(todayResas||[]).length){
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Aucune réservation aujourd\'hui</div></div>';
+    return;
+  }
+  list.innerHTML = (todayResas||[]).slice(0,8).map(r => `
+    <div class="resa-row">
+      <span>${r.date}</span>
+      <span>${r.slot}</span>
+      <span>${r.grands+r.presque_grands+r.petits_loups+r.tout_doux}</span>
+      <span class="resa-name">${r.prenom} ${r.nom}</span>
+      <span class="resa-ref">${r.ref}</span>
+      <span><span class="badge badge-active">confirmée</span></span>
+    </div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   RESTAURANTS
+   ═══════════════════════════════════════════════ */
+let restaurants = [];
+
+async function loadRestaurants(){
+  const stored = JSON.parse(localStorage.getItem('brigade_restaurants') || '[]');
+  if(!stored.length){
+    // Pré-peupler avec La Playa
+    stored.push({
+      id: 'laplaya', name: 'La Playa', location: 'Camargue, France',
+      phone: '+33 4 66 00 00 00', website: 'laplaya-camargue.fr',
+      colorPrimary: '#1a6b7c', colorAccent: '#c9a96e',
+      tagline: 'Déjeuner les pieds dans le sable',
+      maxCovers: 50, maxDays: 60, status: 'active',
+      modules: { transats: true, sms: false, crm: true, analytics: false, kitchen: false },
+      cats: { grands: 'Les grands', presque: 'Les presque-grands', petits: 'Les petits loups', bebes: 'Les tout-doux' },
+    });
+    saveRestaurantsLocal(stored);
+  }
+  restaurants = stored;
+  renderRestaurants();
+}
+
+function renderRestaurants(){
+  const grid = document.getElementById('resto-grid');
+  if(!restaurants.length){
+    grid.innerHTML = '<div class="empty"><div class="empty-icon">🏪</div><div class="empty-text">Aucun restaurant — créez-en un</div></div>';
+    return;
+  }
+  grid.innerHTML = restaurants.map((r,i) => `
+    <div class="resto-card" onclick="editRestaurant(${i})">
+      <div class="resto-card-top">
+        <div>
+          <div class="resto-name">${r.name}</div>
+          <div class="resto-id">${r.id}</div>
+        </div>
+        <span class="badge ${r.status === 'active' ? 'badge-active' : 'badge-inactive'}">${r.status === 'active' ? 'actif' : 'inactif'}</span>
+      </div>
+      <div style="font-size:13px;color:var(--text-muted)">${r.location || ''}</div>
+      <div class="modules-row">
+        ${r.modules?.transats ? '<span class="module-chip">🏖️ Transats</span>' : ''}
+        ${r.modules?.crm ? '<span class="module-chip">👥 CRM</span>' : ''}
+        ${r.modules?.sms ? '<span class="module-chip">📱 SMS</span>' : ''}
+        ${r.modules?.analytics ? '<span class="module-chip">📊 Analytics</span>' : ''}
+        ${r.modules?.kitchen ? '<span class="module-chip">🍳 Cuisine</span>' : ''}
+      </div>
+    </div>`).join('');
+}
+
+function saveRestaurantsLocal(arr){
+  localStorage.setItem('brigade_restaurants', JSON.stringify(arr));
+}
+
+/* ═══════════════════════════════════════════════
+   RESERVATIONS
+   ═══════════════════════════════════════════════ */
+async function loadReservations(){
+  const date = document.getElementById('filter-date').value;
+  let query = sb.from('reservations').select('*').order('slot');
+  if(date) query = query.eq('date', date);
+  if(currentStatusFilter !== 'all') query = query.eq('status', currentStatusFilter);
+
+  const { data, error } = await query;
+  const list = document.getElementById('resas-list');
+
+  if(error || !data?.length){
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Aucune réservation pour cette date</div></div>';
+    return;
+  }
+
+  list.innerHTML = data.map(r => {
+    const pax = r.grands + r.presque_grands + r.petits_loups + r.tout_doux;
+    const statusBadge = r.status === 'confirmed'
+      ? '<span class="badge badge-active">confirmée</span>'
+      : '<span class="badge badge-inactive">annulée</span>';
+    return `<div class="resa-row">
+      <span>${r.date}</span>
+      <span>${r.slot}</span>
+      <span>${pax} pax</span>
+      <span><div class="resa-name">${r.prenom} ${r.nom}</div><div style="font-size:12px;color:var(--text-muted)">${r.email}</div></span>
+      <span><div class="resa-ref">${r.ref}</div>${statusBadge}</span>
+      <span style="display:flex;gap:6px">
+        ${r.status === 'confirmed' ? `<button class="btn-sm btn-danger" onclick="cancelResa('${r.id}')">Annuler</button>` : ''}
+      </span>
+    </div>`;
+  }).join('');
+}
+
+function filterStatus(status, btn){
+  currentStatusFilter = status;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadReservations();
+}
+
+async function cancelResa(id){
+  if(!confirm('Annuler cette réservation ?')) return;
+  await sb.from('reservations').update({ status: 'cancelled' }).eq('id', id);
+  loadReservations();
+}
+
+/* ═══════════════════════════════════════════════
+   TEMPLATES
+   ═══════════════════════════════════════════════ */
+function loadTemplates(){
+  const grid = document.getElementById('templates-grid');
+  grid.innerHTML = TEMPLATES.map(t => `
+    <div class="resto-card" onclick="applyTemplate('${t.id}')">
+      <div class="resto-name" style="font-size:17px">${t.name}</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-top:6px">${t.desc}</div>
+      <div class="modules-row" style="margin-top:12px">
+        ${t.recommended.map(m => `<span class="module-chip">✓ ${m}</span>`).join('')}
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn-add" style="font-size:13px;padding:7px 14px" onclick="event.stopPropagation();applyTemplate('${t.id}')">Utiliser ce template →</button>
+      </div>
+    </div>`).join('');
+}
+
+function applyTemplate(id){
+  const t = TEMPLATES.find(x => x.id === id);
+  if(!t) return;
+  const c = t.config;
+  document.getElementById('f-color-primary').value = c.colorPrimary;
+  document.getElementById('f-color-accent').value = c.colorAccent;
+  document.getElementById('f-max-covers').value = c.maxCovers;
+  document.getElementById('f-max-days').value = c.maxDays;
+  document.getElementById('mod-transats').checked = c.modules.transats;
+  document.getElementById('mod-sms').checked = c.modules.sms;
+  document.getElementById('mod-crm').checked = c.modules.crm;
+  document.getElementById('mod-analytics').checked = c.modules.analytics;
+  document.getElementById('mod-kitchen').checked = c.modules.kitchen;
+  document.getElementById('f-cat-grands').value = c.cats.grands;
+  document.getElementById('f-cat-presque').value = c.cats.presque;
+  document.getElementById('f-cat-petits').value = c.cats.petits;
+  document.getElementById('f-cat-bebes').value = c.cats.bebes;
+  openDrawer();
+  showPage('restaurants');
+}
+
+/* ═══════════════════════════════════════════════
+   DRAWER
+   ═══════════════════════════════════════════════ */
+let editingIndex = -1;
+
+function openDrawer(idx){
+  editingIndex = idx !== undefined ? idx : -1;
+  const r = editingIndex >= 0 ? restaurants[editingIndex] : null;
+  document.getElementById('drawer-title').textContent = r ? 'Modifier ' + r.name : 'Nouveau restaurant';
+  if(r){
+    document.getElementById('f-name').value     = r.name || '';
+    document.getElementById('f-id').value       = r.id || '';
+    document.getElementById('f-location').value = r.location || '';
+    document.getElementById('f-phone').value    = r.phone || '';
+    document.getElementById('f-website').value  = r.website || '';
+    document.getElementById('f-color-primary').value = r.colorPrimary || '#1a6b7c';
+    document.getElementById('f-color-accent').value  = r.colorAccent || '#c9a96e';
+    document.getElementById('f-tagline').value  = r.tagline || '';
+    document.getElementById('f-max-covers').value = r.maxCovers || 50;
+    document.getElementById('f-max-days').value   = r.maxDays || 60;
+    document.getElementById('mod-transats').checked  = r.modules?.transats || false;
+    document.getElementById('mod-sms').checked       = r.modules?.sms || false;
+    document.getElementById('mod-crm').checked       = r.modules?.crm || false;
+    document.getElementById('mod-analytics').checked = r.modules?.analytics || false;
+    document.getElementById('mod-kitchen').checked   = r.modules?.kitchen || false;
+    document.getElementById('f-cat-grands').value  = r.cats?.grands || 'Les grands';
+    document.getElementById('f-cat-presque').value = r.cats?.presque || 'Les presque-grands';
+    document.getElementById('f-cat-petits').value  = r.cats?.petits || 'Les petits loups';
+    document.getElementById('f-cat-bebes').value   = r.cats?.bebes || 'Les tout-doux';
+  } else {
+    ['f-name','f-id','f-location','f-phone','f-website','f-tagline'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-color-primary').value = '#1a6b7c';
+    document.getElementById('f-color-accent').value  = '#c9a96e';
+    document.getElementById('f-max-covers').value = 50;
+    document.getElementById('f-max-days').value = 60;
+    ['mod-transats','mod-sms','mod-crm','mod-analytics','mod-kitchen'].forEach(id => document.getElementById(id).checked = false);
+    document.getElementById('f-cat-grands').value  = 'Les grands';
+    document.getElementById('f-cat-presque').value = 'Les presque-grands';
+    document.getElementById('f-cat-petits').value  = 'Les petits loups';
+    document.getElementById('f-cat-bebes').value   = 'Les tout-doux';
+  }
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+
+function closeDrawer(){ document.getElementById('drawer-overlay').classList.remove('open'); }
+function closeDrawerOutside(e){ if(e.target === document.getElementById('drawer-overlay')) closeDrawer(); }
+function editRestaurant(i){ openDrawer(i); }
+
+function saveRestaurant(){
+  const r = {
+    id:           document.getElementById('f-id').value.trim().toLowerCase().replace(/\s+/g,'-'),
+    name:         document.getElementById('f-name').value.trim(),
+    location:     document.getElementById('f-location').value.trim(),
+    phone:        document.getElementById('f-phone').value.trim(),
+    website:      document.getElementById('f-website').value.trim(),
+    colorPrimary: document.getElementById('f-color-primary').value,
+    colorAccent:  document.getElementById('f-color-accent').value,
+    tagline:      document.getElementById('f-tagline').value.trim(),
+    maxCovers:    parseInt(document.getElementById('f-max-covers').value),
+    maxDays:      parseInt(document.getElementById('f-max-days').value),
+    status:       'active',
+    modules: {
+      transats:  document.getElementById('mod-transats').checked,
+      sms:       document.getElementById('mod-sms').checked,
+      crm:       document.getElementById('mod-crm').checked,
+      analytics: document.getElementById('mod-analytics').checked,
+      kitchen:   document.getElementById('mod-kitchen').checked,
+    },
+    cats: {
+      grands:  document.getElementById('f-cat-grands').value,
+      presque: document.getElementById('f-cat-presque').value,
+      petits:  document.getElementById('f-cat-petits').value,
+      bebes:   document.getElementById('f-cat-bebes').value,
+    },
+  };
+  if(!r.name || !r.id){ alert('Nom et ID requis'); return; }
+  if(editingIndex >= 0) restaurants[editingIndex] = r;
+  else restaurants.push(r);
+  saveRestaurantsLocal(restaurants);
+  renderRestaurants();
+  closeDrawer();
+}
+</script>
+</body>
+</html>
