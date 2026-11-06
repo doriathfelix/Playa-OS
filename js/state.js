@@ -82,7 +82,7 @@ function mkResa(fields){
   };
 }
 
-// ── Import Zenchef : convertit un objet API Zenchef en résa PlayaOS
+// ── Import Zenchef : convertit un objet API Zenchef en résa Brigade
 // À connecter quand l'API sera disponible
 function importFromZenchef(zcBooking){
   return mkResa({

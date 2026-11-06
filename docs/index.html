@@ -1154,7 +1154,7 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
     <div style="font-size:18px;font-weight:800;margin-bottom:6px;color:var(--t1)">⬆ Importer depuis Zenchef</div>
     <div style="font-size:12px;color:var(--t3);margin-bottom:18px;line-height:1.6">
       Dans Zenchef → Zenbook → icône imprimante → <strong>CSV</strong><br>
-      Puis dépose le fichier ici. PlayaOS détecte automatiquement le service (S1, S2, Soir) selon l'heure de chaque réservation.
+      Puis dépose le fichier ici. Brigade détecte automatiquement le service (S1, S2, Soir) selon l'heure de chaque réservation.
     </div>
     <div id="drop-zone" style="border:2px dashed var(--pbd);border-radius:var(--r-lg);padding:28px;text-align:center;cursor:pointer;transition:all .15s;background:var(--pbg);margin-bottom:14px"
       onclick="document.getElementById('csv-input').click()"
@@ -1273,6 +1273,11 @@ const BED_SLOTS = [101, 102, 103, 220, 221, 222];
 // Slot 219 est maintenant un transat ordinaire (label "218") entre le 217 et les BEDs
 
 
+
+// ── Brigade — identifiant restaurant de cette instance
+// Surchargeable par le build (ex: BRIGADE_RESTAURANT_ID = 'lebeach')
+const BRIGADE_RESTAURANT_ID = 'laplaya';
+
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
@@ -1357,7 +1362,7 @@ function mkResa(fields){
   };
 }
 
-// ── Import Zenchef : convertit un objet API Zenchef en résa PlayaOS
+// ── Import Zenchef : convertit un objet API Zenchef en résa Brigade
 // À connecter quand l'API sera disponible
 function importFromZenchef(zcBooking){
   return mkResa({
@@ -5783,11 +5788,11 @@ function downloadPlan(){ printServiceSheet(); }
 
 // ══════════════════════════════════════════
 // SYNC BRIGADE — Supabase (remplace Zenchef)
-// Branche de sauvegarde Zenchef : backup/playa-os-zenchef
+// Branche de sauvegarde Zenchef : backup/playa-os-zenchef (état avant migration)
 // ══════════════════════════════════════════
 const SB_URL  = 'https://exfipespqlseeaeozarx.supabase.co';
 const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4ZmlwZXNwcWxzZWVhZW96YXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODIwMjEsImV4cCI6MjEwOTU1ODAyMX0.HwNqF6dqfPDJdyDTv9JLkULFIPO-G45u7Bq5MA2ETtY';
-const SB_RESTAURANT = 'laplaya';
+const SB_RESTAURANT = typeof BRIGADE_RESTAURANT_ID !== 'undefined' ? BRIGADE_RESTAURANT_ID : 'laplaya';
 
 // Stubs pour compatibilité clients.js (CRM import Zenchef désactivé)
 const ZC_TOKEN = null;
@@ -5976,7 +5981,7 @@ async function fetchBrigadeForDate(date){
   return await res.json();
 }
 
-// ── Convertit une row Supabase en resa Brigade/PlayaOS
+// ── Convertit une row Supabase en resa Brigade (format interne commun)
 function brigadeToResa(row){
   const pax = (row.grands||0) + (row.presque_grands||0) + (row.petits_loups||0) + (row.tout_doux||0) || 1;
   const name = [row.prenom, row.nom].filter(Boolean).join(' ') || 'Inconnu';
@@ -9948,7 +9953,7 @@ function renderSettings(c){
   integ.innerHTML = `
     <div style="padding:14px 16px;border-bottom:0.5px solid var(--sep)">
       <div style="font-size:13px;font-weight:700;color:var(--t1)">Intégrations</div>
-      <div style="font-size:11px;color:var(--t3);margin-top:2px">Services connectés à PlayaOS</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:2px">Services connectés à Brigade</div>
     </div>
     <div>
       ${[

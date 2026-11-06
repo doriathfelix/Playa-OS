@@ -1,10 +1,10 @@
 // ══════════════════════════════════════════
 // SYNC BRIGADE — Supabase (remplace Zenchef)
-// Branche de sauvegarde Zenchef : backup/playa-os-zenchef
+// Branche de sauvegarde Zenchef : backup/playa-os-zenchef (état avant migration)
 // ══════════════════════════════════════════
 const SB_URL  = 'https://exfipespqlseeaeozarx.supabase.co';
 const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4ZmlwZXNwcWxzZWVhZW96YXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM5ODIwMjEsImV4cCI6MjEwOTU1ODAyMX0.HwNqF6dqfPDJdyDTv9JLkULFIPO-G45u7Bq5MA2ETtY';
-const SB_RESTAURANT = 'laplaya';
+const SB_RESTAURANT = typeof BRIGADE_RESTAURANT_ID !== 'undefined' ? BRIGADE_RESTAURANT_ID : 'laplaya';
 
 // Stubs pour compatibilité clients.js (CRM import Zenchef désactivé)
 const ZC_TOKEN = null;
@@ -193,7 +193,7 @@ async function fetchBrigadeForDate(date){
   return await res.json();
 }
 
-// ── Convertit une row Supabase en resa Brigade/PlayaOS
+// ── Convertit une row Supabase en resa Brigade (format interne commun)
 function brigadeToResa(row){
   const pax = (row.grands||0) + (row.presque_grands||0) + (row.petits_loups||0) + (row.tout_doux||0) || 1;
   const name = [row.prenom, row.nom].filter(Boolean).join(' ') || 'Inconnu';

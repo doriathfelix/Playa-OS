@@ -23,7 +23,7 @@ function renderSettings(c){
   integ.innerHTML = `
     <div style="padding:14px 16px;border-bottom:0.5px solid var(--sep)">
       <div style="font-size:13px;font-weight:700;color:var(--t1)">Intégrations</div>
-      <div style="font-size:11px;color:var(--t3);margin-top:2px">Services connectés à PlayaOS</div>
+      <div style="font-size:11px;color:var(--t3);margin-top:2px">Services connectés à Brigade</div>
     </div>
     <div>
       ${[
