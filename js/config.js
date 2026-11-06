@@ -88,3 +88,8 @@ const SALON_ID_MIN = 1001;
 const BED_SLOTS = [101, 102, 103, 220, 221, 222];
 // Slot 219 est maintenant un transat ordinaire (label "218") entre le 217 et les BEDs
 
+
+
+// ── Brigade — identifiant restaurant de cette instance
+// Surchargeable par le build (ex: BRIGADE_RESTAURANT_ID = 'lebeach')
+const BRIGADE_RESTAURANT_ID = 'laplaya';
