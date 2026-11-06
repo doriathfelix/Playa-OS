@@ -666,29 +666,55 @@
 
     <!-- ÉTAPE 4 : Convives -->
     <div class="step-panel" id="step-4">
-      <h2 class="step-title">Combien de personnes ?</h2>
-      <p class="step-subtitle">Nombre de convives à table.</p>
+      <h2 class="step-title">Votre groupe</h2>
+      <p class="step-subtitle">Pour vous attribuer la meilleure table 🌊</p>
       <div class="counter-row">
         <div class="counter-info">
-          <div class="counter-label">Adultes</div>
-          <div class="counter-sublabel">12 ans et plus</div>
+          <div class="counter-label">👋 Les grands</div>
+          <div class="counter-sublabel">18 ans et plus</div>
         </div>
         <div class="counter-ctrl">
-          <button class="counter-btn" onclick="changeCount('adults', -1)">−</button>
-          <span class="counter-val" id="count-adults">1</span>
-          <button class="counter-btn" onclick="changeCount('adults', 1)">+</button>
+          <button class="counter-btn" onclick="changeCount('grands', -1)">−</button>
+          <span class="counter-val" id="count-grands">1</span>
+          <button class="counter-btn" onclick="changeCount('grands', 1)">+</button>
         </div>
       </div>
       <div class="counter-row">
         <div class="counter-info">
-          <div class="counter-label">Enfants</div>
-          <div class="counter-sublabel">Moins de 12 ans</div>
+          <div class="counter-label">😎 Les presque-grands</div>
+          <div class="counter-sublabel">12 – 17 ans</div>
         </div>
         <div class="counter-ctrl">
-          <button class="counter-btn" onclick="changeCount('children', -1)">−</button>
-          <span class="counter-val" id="count-children">0</span>
-          <button class="counter-btn" onclick="changeCount('children', 1)">+</button>
+          <button class="counter-btn" onclick="changeCount('presqueGrands', -1)">−</button>
+          <span class="counter-val" id="count-presqueGrands">0</span>
+          <button class="counter-btn" onclick="changeCount('presqueGrands', 1)">+</button>
         </div>
+      </div>
+      <div class="counter-row">
+        <div class="counter-info">
+          <div class="counter-label">🌊 Les petits loups</div>
+          <div class="counter-sublabel">3 – 11 ans</div>
+        </div>
+        <div class="counter-ctrl">
+          <button class="counter-btn" onclick="changeCount('petitsLoups', -1)">−</button>
+          <span class="counter-val" id="count-petitsLoups">0</span>
+          <button class="counter-btn" onclick="changeCount('petitsLoups', 1)">+</button>
+        </div>
+      </div>
+      <div class="counter-row">
+        <div class="counter-info">
+          <div class="counter-label">🤍 Les tout-doux</div>
+          <div class="counter-sublabel">0 – 2 ans</div>
+        </div>
+        <div class="counter-ctrl">
+          <button class="counter-btn" onclick="changeCount('toutDoux', -1)">−</button>
+          <span class="counter-val" id="count-toutDoux">0</span>
+          <button class="counter-btn" onclick="changeCount('toutDoux', 1)">+</button>
+        </div>
+      </div>
+      <div class="info-box info" style="margin-top:16px">
+        <span class="info-box-icon">🪑</span>
+        <span>Ces informations nous permettent uniquement de vous placer au mieux — aucun impact sur votre réservation.</span>
       </div>
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="goStep(3)">← Retour</button>
@@ -873,8 +899,10 @@ const state = {
   formula:   null,     // 'table' | 'table+transats'
   service:   null,     // id service
   slot:      null,     // '12:00'
-  adults:    1,
-  children:  0,
+  grands:        1,
+  presqueGrands: 0,
+  petitsLoups:   0,
+  toutDoux:      0,
   transats:  0,
   firstRow:  null,     // 'oui' | 'non'
   prenom:    '',
@@ -1088,15 +1116,26 @@ function selectSlot(btn){
 /* ═══════════════════════════════════════════════
    COMPTEURS
    ═══════════════════════════════════════════════ */
+function totalGuests(){
+  return state.grands + state.presqueGrands + state.petitsLoups + state.toutDoux;
+}
+
 function changeCount(key, delta){
-  if(key === 'adults'){
-    state.adults = Math.max(1, Math.min(CONFIG.capacity.maxAdults, state.adults + delta));
-    document.getElementById('count-adults').textContent = state.adults;
-  } else if(key === 'children'){
-    state.children = Math.max(0, Math.min(CONFIG.capacity.maxChildren, state.children + delta));
-    document.getElementById('count-children').textContent = state.children;
+  if(key === 'grands'){
+    state.grands = Math.max(1, Math.min(CONFIG.capacity.maxAdults, state.grands + delta));
+    document.getElementById('count-grands').textContent = state.grands;
+  } else if(key === 'presqueGrands'){
+    state.presqueGrands = Math.max(0, Math.min(CONFIG.capacity.maxAdults, state.presqueGrands + delta));
+    document.getElementById('count-presqueGrands').textContent = state.presqueGrands;
+  } else if(key === 'petitsLoups'){
+    state.petitsLoups = Math.max(0, Math.min(CONFIG.capacity.maxChildren, state.petitsLoups + delta));
+    document.getElementById('count-petitsLoups').textContent = state.petitsLoups;
+  } else if(key === 'toutDoux'){
+    state.toutDoux = Math.max(0, Math.min(CONFIG.capacity.maxChildren, state.toutDoux + delta));
+    document.getElementById('count-toutDoux').textContent = state.toutDoux;
   } else if(key === 'transats'){
-    const maxT = Math.min(CONFIG.capacity.maxTransats, state.adults + state.children);
+    // Les tout-doux (bébés) ne comptent pas dans les transats
+    const maxT = Math.min(CONFIG.capacity.maxTransats, state.grands + state.presqueGrands + state.petitsLoups);
     state.transats = Math.max(0, Math.min(maxT, state.transats + delta));
     document.getElementById('count-transats').textContent = state.transats;
     updateFirstRowSection();
@@ -1148,8 +1187,12 @@ function fillRecap(){
     state.formula === 'table' ? 'Table seule' : 'Table + Transats';
   document.getElementById('recap-slot').textContent = state.slot;
 
-  const guests = state.adults + (state.children > 0 ? ' adultes, ' + state.children + ' enfant(s)' : ' adulte(s)');
-  document.getElementById('recap-guests').textContent = guests;
+  const gParts = [];
+  if(state.grands > 0)        gParts.push(state.grands + ' grand' + (state.grands > 1 ? 's' : ''));
+  if(state.presqueGrands > 0) gParts.push(state.presqueGrands + ' presque-grand' + (state.presqueGrands > 1 ? 's' : ''));
+  if(state.petitsLoups > 0)   gParts.push(state.petitsLoups + ' petit' + (state.petitsLoups > 1 ? 's' : '') + ' loup' + (state.petitsLoups > 1 ? 's' : ''));
+  if(state.toutDoux > 0)      gParts.push(state.toutDoux + ' tout-doux');
+  document.getElementById('recap-guests').textContent = gParts.join(', ') + ' · ' + totalGuests() + ' pers.';
 
   const rtr = document.getElementById('recap-row-transats');
   if(state.formula === 'table+transats'){
@@ -1190,9 +1233,14 @@ function submitReservation(){
 function newReservation(){
   Object.assign(state, {
     step: 1, date: null, formula: null, service: null, slot: null,
-    adults: 1, children: 0, transats: 0, firstRow: null,
+    grands: 1, presqueGrands: 0, petitsLoups: 0, toutDoux: 0, transats: 0, firstRow: null,
     prenom: '', nom: '', email: '', tel: '', note: ''
   });
+  document.getElementById('count-grands').textContent = '1';
+  document.getElementById('count-presqueGrands').textContent = '0';
+  document.getElementById('count-petitsLoups').textContent = '0';
+  document.getElementById('count-toutDoux').textContent = '0';
+  document.getElementById('count-transats').textContent = '0';
   document.querySelectorAll('.choice-card.selected').forEach(c => c.classList.remove('selected'));
   document.querySelectorAll('.slot-btn.selected').forEach(b => b.classList.remove('selected'));
   document.getElementById('f-prenom').value = '';
