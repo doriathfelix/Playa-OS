@@ -263,12 +263,8 @@ function crmMergeDay(date,rawBookings){
 }
 
 async function _crmFetchPage(page,dateMin,dateMax){
-  let url=ZC_API+'/bookings?limit=250';
-  if(dateMin) url+='&date_min='+dateMin+'&date_max='+(dateMax||dateMin);
-  if(page>1) url+='&page='+page;
-  const res=await fetch(url,{headers:{'auth-token':ZC_TOKEN,'restaurantId':ZC_RESTAURANT_ID,'Content-Type':'application/json'}});
-  if(!res.ok) throw new Error('HTTP '+res.status);
-  return await res.json();
+  // Import historique Zenchef désactivé — données maintenant dans Supabase (Brigade)
+  throw new Error('Import historique non disponible (Brigade)');
 }
 let _crmImporting=false;
 async function crmImportHistory(onProgress,onDone){
