@@ -93,3 +93,6 @@ const BED_SLOTS = [101, 102, 103, 220, 221, 222];
 // ── Brigade — identifiant restaurant de cette instance
 // Surchargeable par le build (ex: BRIGADE_RESTAURANT_ID = 'lebeach')
 const BRIGADE_RESTAURANT_ID = 'laplaya';
+
+// Capacité max PAX par service (seuil alerte couleur des badges)
+const SVC_PAX_MAX = 70;
