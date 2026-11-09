@@ -217,26 +217,24 @@ function renderStats(){
       .filter(x=>x.bed&&!x.ns&&isSubResa(x)&&x.row_transats===500)
       .reduce((s,x)=>s+(x.tr||1)*2,0);
 
-  // Nb de resas par service (pour info dans le badge)
-  const nS1   = reservations.s1.filter(x=>!x.ns&&!isSubResa(x)).length;
-  const nS2   = reservations.s2.filter(x=>!x.ns&&!isSubResa(x)).length;
-  const nSoir = reservations.soir.filter(x=>!x.ns&&!isSubResa(x)).length;
-  const nRT   = reservations.transats.filter(x=>x.repas_transat&&!x.ns).length;
+  // Capacité : code couleur selon SVC_PAX_MAX (défini dans config.js)
+  const PAX_MAX = typeof SVC_PAX_MAX !== 'undefined' ? SVC_PAX_MAX : 70;
+  const paxCls = (p) => p >= PAX_MAX ? 'pax-full' : p >= PAX_MAX * 0.85 ? 'pax-warn' : '';
 
   const nav = (tab) => `goModule('service');switchTab(${tab})`;
 
   document.getElementById('stats-bar').innerHTML=`
-    <div class="pax-circle pax-s1" onclick="${nav(0)}" style="cursor:pointer" title="${nS1} réservation${nS1>1?'s':''}">
-      <div class="pax-c-label">S1</div><div class="pax-c-val">${paxS1}</div><div class="pax-c-sub">${nS1} resas</div>
+    <div class="pax-circle pax-s1 ${paxCls(paxS1)}" onclick="${nav(0)}" style="cursor:pointer" title="S1 · ${paxS1}/${PAX_MAX} PAX">
+      <div class="pax-c-label">S1</div><div class="pax-c-val">${paxS1}</div><div class="pax-c-sub">/${PAX_MAX}</div>
     </div>
-    <div class="pax-circle pax-s2" onclick="${nav(1)}" style="cursor:pointer" title="${nS2} réservation${nS2>1?'s':''}">
-      <div class="pax-c-label">S2</div><div class="pax-c-val">${paxS2}</div><div class="pax-c-sub">${nS2} resas</div>
+    <div class="pax-circle pax-s2 ${paxCls(paxS2)}" onclick="${nav(1)}" style="cursor:pointer" title="S2 · ${paxS2}/${PAX_MAX} PAX">
+      <div class="pax-c-label">S2</div><div class="pax-c-val">${paxS2}</div><div class="pax-c-sub">/${PAX_MAX}</div>
     </div>
-    <div class="pax-circle pax-rt" onclick="${nav(2)}" style="cursor:pointer" title="${nRT} réservation${nRT>1?'s':''}">
-      <div class="pax-c-label">RT</div><div class="pax-c-val">${paxRT||0}</div><div class="pax-c-sub">${nRT} resas</div>
+    <div class="pax-circle pax-rt ${paxCls(paxRT||0)}" onclick="${nav(2)}" style="cursor:pointer" title="RT · ${paxRT||0}/${PAX_MAX} PAX">
+      <div class="pax-c-label">RT</div><div class="pax-c-val">${paxRT||0}</div><div class="pax-c-sub">/${PAX_MAX}</div>
     </div>
-    <div class="pax-circle pax-soir" onclick="${nav(3)}" style="cursor:pointer" title="${nSoir} réservation${nSoir>1?'s':''}">
-      <div class="pax-c-label">Soir</div><div class="pax-c-val">${paxSoir}</div><div class="pax-c-sub">${nSoir} resas</div>
+    <div class="pax-circle pax-soir ${paxCls(paxSoir)}" onclick="${nav(3)}" style="cursor:pointer" title="Soir · ${paxSoir}/${PAX_MAX} PAX">
+      <div class="pax-c-label">Soir</div><div class="pax-c-val">${paxSoir}</div><div class="pax-c-sub">/${PAX_MAX}</div>
     </div>
     <span class="stat-pill pill-blue" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Total transats journée (beds = 2 transats chacun)">
       <span class="transat-ico"></span> ${trGrandTotal}
