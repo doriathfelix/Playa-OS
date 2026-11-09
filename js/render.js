@@ -15,8 +15,8 @@ function render(){
   renderSidebar();
   renderStats();
   document.getElementById('persist-section').style.display = currentTab===2 ? 'block' : 'none';
-  if(rushMode) renderRushOverlay();
-  else currentTab===2 ? renderTransats() : renderTables();
+  _assistScan();
+  currentTab===2 ? renderTransats() : renderTables();
 }
 
 // ── Détecte les alertes importantes dans les commentaires/tags d'une résa

@@ -14,6 +14,7 @@
 // Initialiser le date picker avec aujourd'hui
 updateDateDisplay(currentDate);
 render();
+assistInit();
 // Mobile → service direct ; desktop → dashboard
 if(window.innerWidth <= 767) goModule('service');
 else goModule('dash');
