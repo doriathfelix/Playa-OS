@@ -251,13 +251,34 @@
 
 <!-- RUSH OVERLAY -->
 <div id="rush-overlay">
+  <!-- Header KPIs -->
   <div class="ro-header">
-    <div class="ro-title">⚡ Mode Rush — <span id="ro-tab-label">Service 1</span></div>
-    <button class="ro-close" onclick="toggleRushMode()">Quitter le rush</button>
+    <div class="ro-header-left">
+      <div class="ro-title">⚡ RUSH</div>
+      <div class="ro-service-chip" id="ro-tab-label">Service 1</div>
+    </div>
+    <div class="ro-kpis" id="ro-kpis"></div>
+    <button class="ro-close" onclick="toggleRushMode()">✕ Quitter</button>
   </div>
+  <!-- Barre incidents -->
+  <div class="ro-incident-bar">
+    <span class="ro-inc-label">Incident :</span>
+    <button class="ro-inc-btn" onclick="rushIncident('noshow')">🚫 No-show</button>
+    <button class="ro-inc-btn" onclick="rushIncident('wrong_day')">📅 Mauvais jour</button>
+    <button class="ro-inc-btn" onclick="rushIncident('table_down')">🪑 Table HS</button>
+    <button class="ro-inc-btn" onclick="rushIncident('staff_down')">👤 Effectif réduit</button>
+    <button class="ro-inc-btn" onclick="rushIncident('delay')">⏰ Retard général</button>
+    <button class="ro-inc-btn ro-inc-danger" onclick="rushIncident('power')">⚡ Panne</button>
+  </div>
+  <!-- Corps -->
   <div class="ro-body">
-    <div class="ro-left" id="ro-floor"></div>
-    <div class="ro-right" id="ro-resas"></div>
+    <div class="ro-col-alerts" id="ro-alerts"></div>
+    <div class="ro-col-floor" id="ro-floor"></div>
+    <div class="ro-col-waiting" id="ro-waiting"></div>
+  </div>
+  <!-- Panel incident (overlay interne) -->
+  <div class="ro-panel" id="ro-panel">
+    <div class="ro-panel-box" id="ro-panel-box"></div>
   </div>
 </div>
 
