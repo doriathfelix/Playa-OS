@@ -371,10 +371,11 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .pill-green{background:var(--s1bg);border-color:var(--s1bd);color:var(--s1t)}
 .pill-blue{background:var(--rtbg);border-color:var(--rtbd);color:var(--rtt)}
 .pill-red{background:var(--rbg);border-color:var(--rb);color:var(--rt)}
-.pax-circle{display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;border:1.5px solid;flex-shrink:0;transition:transform .15s}
+.pax-circle{display:flex;flex-direction:column;align-items:center;justify-content:center;width:62px;height:62px;border-radius:14px;border:1.5px solid;flex-shrink:0;transition:transform .15s;gap:1px}
 .pax-circle:hover{transform:scale(1.05)}
 .pax-c-label{font-size:9px;font-weight:800;letter-spacing:.06em;line-height:1;text-transform:uppercase}
 .pax-c-val{font-size:20px;font-weight:700;line-height:1.1;font-family:'DM Mono',monospace}
+.pax-c-sub{font-size:9px;font-weight:600;line-height:1;opacity:.7}
 .pax-s1{background:var(--s1bg);border-color:var(--s1bd);color:var(--s1t)}
 .pax-s2{background:var(--s2bg);border-color:var(--s2bd);color:var(--s2t)}
 .pax-rt{background:var(--rtbg);border-color:var(--rtbd);color:var(--rtt)}
@@ -1725,17 +1726,17 @@ function renderStats(){
   const nav = (tab) => `goModule('service');switchTab(${tab})`;
 
   document.getElementById('stats-bar').innerHTML=`
-    <div class="pax-circle pax-s1" onclick="${nav(0)}" style="cursor:pointer" title="Voir S1 · ${nS1} table${nS1>1?'s':''}">
-      <div class="pax-c-label">S1</div><div class="pax-c-val">${paxS1}</div>
+    <div class="pax-circle pax-s1" onclick="${nav(0)}" style="cursor:pointer" title="${paxS1} pax">
+      <div class="pax-c-label">S1</div><div class="pax-c-val">${nS1}</div><div class="pax-c-sub">${paxS1} pax</div>
     </div>
-    <div class="pax-circle pax-s2" onclick="${nav(1)}" style="cursor:pointer" title="Voir S2 · ${nS2} table${nS2>1?'s':''}">
-      <div class="pax-c-label">S2</div><div class="pax-c-val">${paxS2}</div>
+    <div class="pax-circle pax-s2" onclick="${nav(1)}" style="cursor:pointer" title="${paxS2} pax">
+      <div class="pax-c-label">S2</div><div class="pax-c-val">${nS2}</div><div class="pax-c-sub">${paxS2} pax</div>
     </div>
-    <div class="pax-circle pax-rt" onclick="${nav(2)}" style="cursor:pointer" title="Voir Repas Transats · ${nRT} resa${nRT>1?'s':''}">
-      <div class="pax-c-label">RT</div><div class="pax-c-val">${paxRT||0}</div>
+    <div class="pax-circle pax-rt" onclick="${nav(2)}" style="cursor:pointer" title="${paxRT} pax">
+      <div class="pax-c-label">RT</div><div class="pax-c-val">${nRT}</div><div class="pax-c-sub">${paxRT||0} pax</div>
     </div>
-    <div class="pax-circle pax-soir" onclick="${nav(3)}" style="cursor:pointer" title="Voir Soir · ${nSoir} table${nSoir>1?'s':''}">
-      <div class="pax-c-label">Soir</div><div class="pax-c-val">${paxSoir}</div>
+    <div class="pax-circle pax-soir" onclick="${nav(3)}" style="cursor:pointer" title="${paxSoir} pax">
+      <div class="pax-c-label">Soir</div><div class="pax-c-val">${nSoir}</div><div class="pax-c-sub">${paxSoir} pax</div>
     </div>
     <span class="stat-pill pill-blue" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Total transats journée (beds = 2 transats chacun)">
       <span class="transat-ico"></span> ${trGrandTotal}
