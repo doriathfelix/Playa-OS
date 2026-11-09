@@ -319,10 +319,11 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .pill-green{background:var(--s1bg);border-color:var(--s1bd);color:var(--s1t)}
 .pill-blue{background:var(--rtbg);border-color:var(--rtbd);color:var(--rtt)}
 .pill-red{background:var(--rbg);border-color:var(--rb);color:var(--rt)}
-.pax-circle{display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;height:56px;border-radius:14px;border:1.5px solid;flex-shrink:0;transition:transform .15s}
+.pax-circle{display:flex;flex-direction:column;align-items:center;justify-content:center;width:62px;height:62px;border-radius:14px;border:1.5px solid;flex-shrink:0;transition:transform .15s;gap:1px}
 .pax-circle:hover{transform:scale(1.05)}
 .pax-c-label{font-size:9px;font-weight:800;letter-spacing:.06em;line-height:1;text-transform:uppercase}
 .pax-c-val{font-size:20px;font-weight:700;line-height:1.1;font-family:'DM Mono',monospace}
+.pax-c-sub{font-size:9px;font-weight:600;line-height:1;opacity:.7}
 .pax-s1{background:var(--s1bg);border-color:var(--s1bd);color:var(--s1t)}
 .pax-s2{background:var(--s2bg);border-color:var(--s2bd);color:var(--s2t)}
 .pax-rt{background:var(--rtbg);border-color:var(--rtbd);color:var(--rtt)}

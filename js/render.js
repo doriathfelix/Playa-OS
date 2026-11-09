@@ -226,17 +226,17 @@ function renderStats(){
   const nav = (tab) => `goModule('service');switchTab(${tab})`;
 
   document.getElementById('stats-bar').innerHTML=`
-    <div class="pax-circle pax-s1" onclick="${nav(0)}" style="cursor:pointer" title="Voir S1 · ${nS1} table${nS1>1?'s':''}">
-      <div class="pax-c-label">S1</div><div class="pax-c-val">${paxS1}</div>
+    <div class="pax-circle pax-s1" onclick="${nav(0)}" style="cursor:pointer" title="${paxS1} pax">
+      <div class="pax-c-label">S1</div><div class="pax-c-val">${nS1}</div><div class="pax-c-sub">${paxS1} pax</div>
     </div>
-    <div class="pax-circle pax-s2" onclick="${nav(1)}" style="cursor:pointer" title="Voir S2 · ${nS2} table${nS2>1?'s':''}">
-      <div class="pax-c-label">S2</div><div class="pax-c-val">${paxS2}</div>
+    <div class="pax-circle pax-s2" onclick="${nav(1)}" style="cursor:pointer" title="${paxS2} pax">
+      <div class="pax-c-label">S2</div><div class="pax-c-val">${nS2}</div><div class="pax-c-sub">${paxS2} pax</div>
     </div>
-    <div class="pax-circle pax-rt" onclick="${nav(2)}" style="cursor:pointer" title="Voir Repas Transats · ${nRT} resa${nRT>1?'s':''}">
-      <div class="pax-c-label">RT</div><div class="pax-c-val">${paxRT||0}</div>
+    <div class="pax-circle pax-rt" onclick="${nav(2)}" style="cursor:pointer" title="${paxRT} pax">
+      <div class="pax-c-label">RT</div><div class="pax-c-val">${nRT}</div><div class="pax-c-sub">${paxRT||0} pax</div>
     </div>
-    <div class="pax-circle pax-soir" onclick="${nav(3)}" style="cursor:pointer" title="Voir Soir · ${nSoir} table${nSoir>1?'s':''}">
-      <div class="pax-c-label">Soir</div><div class="pax-c-val">${paxSoir}</div>
+    <div class="pax-circle pax-soir" onclick="${nav(3)}" style="cursor:pointer" title="${paxSoir} pax">
+      <div class="pax-c-label">Soir</div><div class="pax-c-val">${nSoir}</div><div class="pax-c-sub">${paxSoir} pax</div>
     </div>
     <span class="stat-pill pill-blue" onclick="${nav(2)}" style="margin-left:4px;cursor:pointer" title="Total transats journée (beds = 2 transats chacun)">
       <span class="transat-ico"></span> ${trGrandTotal}
