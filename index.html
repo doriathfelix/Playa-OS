@@ -35,7 +35,7 @@
       <button onclick="changeDate(1)" style="width:36px;height:36px;border:0.5px solid var(--sep2);background:var(--card);cursor:pointer;font-size:16px;color:var(--t2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)">›</button>
     </div>
     <div id="service-top-btns" style="display:flex;gap:6px;align-items:center">
-      <div class="ib" id="rush-btn" onclick="toggleRushMode()" title="Mode Rush">⚡</div>
+      <div class="ib" id="assist-btn" onclick="toggleAssistant()" title="Assistant"><span id="assist-badge-cnt" class="ab-cnt" style="display:none">0</span>⚡</div>
       <div class="ib" onclick="doUndo()" title="Annuler">↩</div>
       <button onclick="printServiceSheet()" title="Plan de salle Jour (S1+S2)" style="height:34px;padding:0 11px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--card);font-size:11px;font-weight:700;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;white-space:nowrap;transition:all .15s" onmouseenter="this.style.borderColor='var(--t3)';this.style.color='var(--t1)'" onmouseleave="this.style.borderColor='var(--sep)';this.style.color='var(--t2)'">⎙ Jour</button>
       <button onclick="printSoirSheet()" title="Plan de salle Soir" style="height:34px;padding:0 11px;border:1px solid var(--sep);border-radius:var(--r-sm);background:var(--card);font-size:11px;font-weight:700;color:var(--t2);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;white-space:nowrap;transition:all .15s" onmouseenter="this.style.borderColor='var(--t3)';this.style.color='var(--t1)'" onmouseleave="this.style.borderColor='var(--sep)';this.style.color='var(--t2)'">⎙ Soir</button>
@@ -49,7 +49,6 @@
   <div id="zc-load-bar" style="position:absolute;bottom:0;left:0;width:0;height:3px;background:var(--blue);border-radius:0;transition:width .35s ease;pointer-events:none;display:none"></div>
 </div>
 
-<div id="rush-banner" onclick="toggleRushMode()">⚡ MODE RUSH ACTIF — Tap pour revenir à la vue normale</div>
 
 <div id="os-shell">
 
@@ -249,34 +248,23 @@
   </div>
 </div>
 
-<!-- RUSH OVERLAY -->
-<div id="rush-overlay">
-  <!-- Header KPIs -->
-  <div class="ro-header">
-    <div class="ro-header-left">
-      <div class="ro-title">⚡ RUSH</div>
-      <div class="ro-service-chip" id="ro-tab-label">Service 1</div>
-    </div>
-    <div class="ro-kpis" id="ro-kpis"></div>
-    <button class="ro-close" onclick="toggleRushMode()">✕ Quitter</button>
+<!-- ASSISTANT DRAWER -->
+<div id="assist-backdrop" onclick="closeAssistant()"></div>
+<div id="assist-drawer">
+  <div class="ad-header">
+    <span class="ad-title">⚡ Assistant</span>
+    <button class="ad-close" onclick="closeAssistant()">✕</button>
   </div>
-  <!-- Barre incidents -->
-  <div class="ro-incident-bar">
-    <span class="ro-inc-label">Incident :</span>
-    <button class="ro-inc-btn" onclick="rushIncident('noshow')">🚫 No-show</button>
-    <button class="ro-inc-btn" onclick="rushIncident('wrong_day')">📅 Mauvais jour</button>
-    <button class="ro-inc-btn" onclick="rushIncident('table_down')">🪑 Table HS</button>
-    <button class="ro-inc-btn" onclick="rushIncident('staff_down')">👤 Effectif réduit</button>
-    <button class="ro-inc-btn" onclick="rushIncident('delay')">⏰ Retard général</button>
-    <button class="ro-inc-btn ro-inc-danger" onclick="rushIncident('power')">⚡ Panne</button>
+  <div class="ad-incidents">
+    <button class="ad-inc-btn" onclick="assistIncident('noshow')">🚫 No-show</button>
+    <button class="ad-inc-btn" onclick="assistIncident('wrong_day')">📅 Mauvais jour</button>
+    <button class="ad-inc-btn" onclick="assistIncident('table_down')">🪑 Table HS</button>
+    <button class="ad-inc-btn" onclick="assistIncident('staff_down')">👤 Effectif ↓</button>
+    <button class="ad-inc-btn" onclick="assistIncident('delay')">⏰ Retard</button>
+    <button class="ad-inc-btn ad-inc-danger" onclick="assistIncident('power')">⚡ Panne</button>
   </div>
-  <!-- Corps -->
-  <div class="ro-body">
-    <div class="ro-col-alerts" id="ro-alerts"></div>
-    <div class="ro-col-floor" id="ro-floor"></div>
-    <div class="ro-col-waiting" id="ro-waiting"></div>
-  </div>
-  <!-- Panel incident (overlay interne) -->
+  <div id="ad-body" class="ad-body"></div>
+  <!-- Panel incidents (overlay interne) -->
   <div class="ro-panel" id="ro-panel">
     <div class="ro-panel-box" id="ro-panel-box"></div>
   </div>
