@@ -560,35 +560,100 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .ps-reset{background:var(--rbg);border-color:var(--rb);color:var(--rt)}
 
 /* ══════════════════════════════════
-   ASSISTANT DRAWER
+   ASSISTANT — Centre de commandement
 ══════════════════════════════════ */
-#assist-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:148}
+#assist-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:148}
 #assist-backdrop.open{display:block}
-#assist-drawer{position:fixed;top:0;right:0;bottom:0;width:min(400px,96vw);background:var(--card);z-index:149;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);border-left:0.5px solid var(--sep2);box-shadow:-8px 0 32px rgba(0,0,0,.12)}
+#assist-drawer{position:fixed;top:0;right:0;bottom:0;width:min(720px,100vw);background:var(--card);z-index:149;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);border-left:0.5px solid var(--sep2);box-shadow:-12px 0 48px rgba(0,0,0,.18)}
 #assist-drawer.open{transform:translateX(0)}
-.ad-header{background:var(--bg);padding:14px 16px;display:flex;align-items:center;border-bottom:0.5px solid var(--sep2);flex-shrink:0}
+/* Header */
+.ad-header{background:var(--bg);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--sep2);flex-shrink:0}
 .ad-title{font-size:15px;font-weight:800;color:var(--t1);flex:1}
-.ad-close{background:transparent;border:none;font-size:18px;color:var(--t3);cursor:pointer;padding:4px 8px;border-radius:var(--r-sm);font-family:inherit}
+.ad-close{background:transparent;border:none;font-size:18px;color:var(--t3);cursor:pointer;padding:4px 8px;border-radius:var(--r-sm);font-family:inherit;line-height:1}
 .ad-close:hover{background:var(--card2);color:var(--t1)}
-.ad-incidents{padding:10px 12px;display:flex;flex-wrap:wrap;gap:5px;border-bottom:0.5px solid var(--sep2);flex-shrink:0;background:var(--bg)}
-.ad-inc-btn{padding:5px 11px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid var(--sep2);background:var(--card);color:var(--t2);cursor:pointer;font-family:inherit;transition:all .15s}
+/* Barre de recherche */
+.ad-search-wrap{padding:10px 14px;border-bottom:0.5px solid var(--sep2);flex-shrink:0;background:var(--bg)}
+.ad-search{width:100%;padding:10px 14px;border-radius:var(--r);border:1.5px solid var(--sep2);background:var(--card);font-size:14px;font-family:inherit;color:var(--t1);box-sizing:border-box;outline:none;transition:border-color .15s}
+.ad-search:focus{border-color:var(--blue)}
+/* Incidents rapides */
+.ad-incidents{padding:8px 14px;display:flex;flex-wrap:wrap;gap:5px;border-bottom:0.5px solid var(--sep2);flex-shrink:0;background:var(--bg)}
+.ad-inc-btn{padding:5px 10px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid var(--sep2);background:var(--card);color:var(--t2);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
 .ad-inc-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--bbg)}
 .ad-inc-danger{border-color:var(--rb)!important;color:var(--rt)!important}
 .ad-inc-danger:hover{background:var(--rbg)!important}
-.ad-body{flex:1;overflow-y:auto;padding:12px}
-.ad-empty{font-size:14px;color:var(--t3);text-align:center;padding:32px 0;line-height:1.6}
-.ad-alert{border-radius:var(--r);padding:10px 12px;margin-bottom:8px;border:1.5px solid}
+/* Corps */
+.ad-body{flex:1;overflow-y:auto;padding:0}
+/* Colonnes */
+.ad-cols{display:flex;height:100%;min-height:0}
+.ad-col-left{width:260px;flex-shrink:0;border-right:0.5px solid var(--sep2);padding:14px;overflow-y:auto}
+.ad-col-right{flex:1;padding:14px;overflow-y:auto}
+.ad-col-title{font-size:10px;font-weight:800;color:var(--t3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.ad-cnt-badge{background:var(--red);color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:20px}
+.ad-empty{font-size:13px;color:var(--t3);text-align:center;padding:28px 0;line-height:1.6}
+.ad-empty-sm{font-size:12px;color:var(--t4);padding:8px 0;line-height:1.5}
+/* Alertes */
+.ad-alert{border-radius:var(--r);padding:9px 11px;margin-bottom:7px;border:1.5px solid}
 .ad-danger{background:var(--rbg);border-color:var(--rb)}
 .ad-warn{background:var(--obg);border-color:var(--obd)}
 .ad-info{background:var(--bbg);border-color:var(--bbd)}
-.ad-resolved{background:var(--card2);border-color:var(--sep);opacity:.5;padding:7px 10px;margin-bottom:4px}
-.ad-msg{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:7px}
-.ad-resolved .ad-msg{font-size:12px;font-weight:600;color:var(--t3);margin-bottom:0}
-.ad-actions{display:flex;gap:5px;flex-wrap:wrap}
-.ad-act{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:var(--bbg);border:1.5px solid var(--bbd);color:var(--bt);cursor:pointer;font-family:inherit;transition:all .15s}
+.ad-msg{font-size:12px;font-weight:700;color:var(--t1);margin-bottom:6px;line-height:1.3}
+.ad-actions{display:flex;gap:4px;flex-wrap:wrap}
+.ad-act{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;background:var(--bbg);border:1.5px solid var(--bbd);color:var(--bt);cursor:pointer;font-family:inherit;transition:all .15s}
 .ad-act:hover{background:var(--blue);color:#fff;border-color:var(--blue)}
 .ad-resolve-btn{background:var(--gbg)!important;border-color:var(--gb)!important;color:var(--gt)!important}
-.ad-resolved-title{font-size:10px;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:.09em;margin:12px 0 6px}
+/* Plan de salle */
+.af-legend{display:flex;gap:8px;margin-bottom:10px}
+.af-leg{font-size:9px;font-weight:700;color:var(--t3);display:flex;align-items:center;gap:4px}
+.af-leg::before{content:'';display:inline-block;width:10px;height:10px;border-radius:3px}
+.af-leg-free::before{background:var(--card2);border:1px solid var(--sep2)}
+.af-leg-occ::before{background:var(--gbg);border:1px solid var(--gb)}
+.af-leg-late::before{background:var(--rbg);border:1px solid var(--rb)}
+.af-group-label{font-size:9px;font-weight:800;color:var(--t4);text-transform:uppercase;letter-spacing:.08em;margin:8px 0 5px}
+.af-grid{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px}
+.af-tbl{width:52px;height:52px;border-radius:var(--r-sm);border:1.5px solid var(--sep2);background:var(--card2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;text-align:center;position:relative;overflow:hidden}
+.af-tbl:hover{border-color:var(--blue);transform:scale(1.05)}
+.af-tbl-free{background:var(--card2);border-color:var(--sep2)}
+.af-tbl-occ{background:var(--gbg);border-color:var(--gb)}
+.af-tbl-late{background:var(--rbg);border-color:var(--rb);animation:af-pulse 1.5s ease-in-out infinite}
+.af-tbl-vip{box-shadow:0 0 0 2px gold}
+.af-tbl-num{font-size:14px;font-weight:800;color:var(--t1);line-height:1}
+.af-tbl-name{font-size:8px;font-weight:700;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46px;line-height:1}
+.af-tbl-cap{font-size:8px;color:var(--t4);line-height:1}
+.af-tbl-pax{font-size:8px;font-weight:600;color:var(--t3);line-height:1}
+.af-tbl-vip-dot{position:absolute;top:1px;right:2px;font-size:7px;line-height:1}
+@keyframes af-pulse{0%,100%{opacity:1}50%{opacity:.65}}
+.af-unplaced-bar{margin-top:10px;padding:8px 10px;background:var(--obg);border:1px solid var(--obd);border-radius:var(--r);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.af-unplaced-cnt{font-size:12px;font-weight:700;color:var(--ot)}
+.af-autoplace-btn{padding:5px 12px;border-radius:var(--r-sm);background:var(--blue);color:#fff;border:none;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+/* Résultats recherche */
+.arc-card{border-radius:var(--r);padding:12px 13px;margin-bottom:8px;border:1.5px solid var(--sep2);background:var(--card2)}
+.arc-ok{border-color:var(--gb);background:var(--gbg)}
+.arc-warn{border-color:var(--obd);background:var(--obg)}
+.arc-danger{border-color:var(--rb);background:var(--rbg)}
+.arc-ns{opacity:.45}
+.arc-top{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.arc-name{font-size:15px;font-weight:800;color:var(--t1);flex:1}
+.arc-pax{font-size:11px;font-weight:700;color:var(--t2);background:var(--card);border:0.5px solid var(--sep2);border-radius:20px;padding:1px 8px}
+.arc-status{font-size:11px;font-weight:700;color:var(--t3)}
+.arc-warn .arc-status,.arc-danger .arc-status{color:var(--rt);font-weight:800}
+.arc-comment{font-size:12px;color:var(--t3);margin-bottom:6px;font-style:italic}
+.arc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.arc-tag{font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px;background:var(--bbg);border:1px solid var(--bbd);color:var(--bt)}
+.arc-acts{display:flex;gap:6px;flex-wrap:wrap}
+.arc-btn{padding:6px 13px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s}
+.arc-btn-primary{background:var(--blue);color:#fff}
+.arc-btn-primary:hover{opacity:.85}
+.arc-btn{background:var(--card);border:1px solid var(--sep2);color:var(--t1)}
+.arc-btn:hover{border-color:var(--blue);color:var(--blue)}
+.arc-btn-ns{background:var(--rbg)!important;border:1px solid var(--rb)!important;color:var(--rt)!important}
+.arc-free-title{font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px}
+.arc-free-grid{display:flex;flex-wrap:wrap;gap:6px}
+.arc-free-tbl{width:60px;height:60px;border-radius:var(--r);border:1.5px solid var(--gb);background:var(--gbg);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.arc-free-tbl:hover{background:var(--green,#16A34A);border-color:var(--green,#16A34A)}
+.arc-free-tbl:hover .arc-free-num,.arc-free-tbl:hover .arc-free-cap{color:#fff}
+.arc-free-num{font-size:18px;font-weight:800;color:var(--t1);line-height:1}
+.arc-free-cap{font-size:9px;color:var(--t3)}
+.arc-free-tag{font-size:9px;line-height:1}
 /* Panel interne incidents (réutilisé) */
 .ro-panel{display:none;position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:10;align-items:center;justify-content:center}
 .ro-panel-box{background:var(--card);border-radius:var(--r-xl);padding:22px;width:min(420px,92vw);max-height:85vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
@@ -1084,6 +1149,9 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
   <div class="ad-header">
     <span class="ad-title">⚡ Assistant</span>
     <button class="ad-close" onclick="closeAssistant()">✕</button>
+  </div>
+  <div class="ad-search-wrap">
+    <input id="assist-search" class="ad-search" type="search" placeholder="Chercher client, table, retard, vip, libre…" oninput="renderAssistDrawer()" autocomplete="off" autocorrect="off" spellcheck="false">
   </div>
   <div class="ad-incidents">
     <button class="ad-inc-btn" onclick="assistIncident('noshow')">🚫 No-show</button>
@@ -4897,8 +4965,7 @@ function _gistUpdateStatus(){
 }
 
 // ══════════════════════════════════════════
-// ASSISTANT — Drawer latéral en temps réel
-// Remplace le mode Rush full-screen
+// ASSISTANT — Centre de commandement live
 // ══════════════════════════════════════════
 
 // ─── État
@@ -4906,13 +4973,13 @@ let assistAlerts = [];
 let assistSeq = 0;
 let assistOpen = false;
 
-// ─── Démarrage : scan toutes les 30s
+// ─── Démarrage
 function assistInit(){
   _assistScan();
   setInterval(_assistScan, 30000);
 }
 
-// ─── Scan principal : vérifie toutes les conditions automatiques
+// ─── Scan principal (toutes les 30s + à chaque render)
 function _assistScan(){
   _assistAutoResolve();
   _assistCheckLate();
@@ -4938,7 +5005,7 @@ function _assistNow(){
   return d.getHours()*60 + d.getMinutes();
 }
 
-// ─── Déduplication : crée l'alerte uniquement si key absente
+// ─── Déduplication
 function _assistEnsure(key, opts){
   if(assistAlerts.find(a => a.key === key && !a.resolved)) return;
   assistAlerts.push({
@@ -4955,7 +5022,7 @@ function _assistEnsure(key, opts){
   });
 }
 
-// ─── Auto-résolution : retire les alertes dont la condition a disparu
+// ─── Auto-résolution
 function _assistAutoResolve(){
   const all = [...reservations.s1,...reservations.s2,...reservations.transats,...reservations.soir];
   assistAlerts.forEach(a => {
@@ -4965,12 +5032,11 @@ function _assistAutoResolve(){
       if(!r || r.placed || r.ns) a.resolved = true;
     }
   });
-  // Nettoie les résolus de plus de 2 min
   const cutoff = Date.now() - 2*60*1000;
   assistAlerts = assistAlerts.filter(a => !a.resolved || a.ts > cutoff);
 }
 
-// ─── Vérifications automatiques ──────────────────────────────
+// ─── Checks automatiques ─────────────────────────────
 
 function _assistCheckLate(){
   const now = _assistNow();
@@ -4979,10 +5045,10 @@ function _assistCheckLate(){
     if(late >= 15 && late < 60){
       _assistEnsure(`late:${r.id}`, {
         severity: late >= 30 ? 'danger' : 'warn',
-        msg: `${r.name} (${r.pax} PAX) — ${late} min de retard · ${r.time}`,
+        msg: `${r.name} · ${r.pax} PAX · +${late}min`,
         resaId: r.id,
         actions: [
-          { label: 'Trouver table', fn: () => { closeAssistant(); _rushFindTable(r.id); }},
+          { label: '→ Table', fn: () => { closeAssistant(); _rushFindTable(r.id); }},
           { label: 'No-show', fn: () => _rushDoNoShow(r.id) }
         ]
       });
@@ -5011,13 +5077,13 @@ function _assistCheckOccasion(){
     if(/anniversaire|birthday/.test(raw))
       _assistEnsure(`occasion:birthday:${r.id}`, {
         severity: 'info',
-        msg: `🎂 ${r.name} — anniversaire à signaler en salle`,
+        msg: `🎂 ${r.name} — anniversaire`,
         resaId: r.id
       });
     if(/mariage|wedding|fian[cç]ailles/.test(raw))
       _assistEnsure(`occasion:wedding:${r.id}`, {
         severity: 'info',
-        msg: `💍 ${r.name} — occasion spéciale à noter`,
+        msg: `💍 ${r.name} — occasion spéciale`,
         resaId: r.id
       });
   });
@@ -5026,11 +5092,10 @@ function _assistCheckOccasion(){
 function _assistCheckHighchair(){
   gr().forEach(r => {
     if(r.ns) return;
-    const raw = (r.comment||'').toLowerCase();
-    if(/chaise\s*haute|rehausseur|b[ée]b[ée]|poussette|enfant/.test(raw))
+    if(/chaise\s*haute|rehausseur|b[ée]b[ée]|poussette|enfant/.test((r.comment||'').toLowerCase()))
       _assistEnsure(`highchair:${r.id}`, {
         severity: 'info',
-        msg: `🪑 ${r.name} — chaise haute / bébé à prévoir`,
+        msg: `🪑 ${r.name} — chaise haute`,
         resaId: r.id
       });
   });
@@ -5040,38 +5105,35 @@ function _assistCheckNoShows(){
   const now = _assistNow();
   gr().filter(r => !r.placed && !r.ns && r.time).forEach(r => {
     const late = now - _assistParseTime(r.time);
-    if(late >= 30){
+    if(late >= 30)
       _assistEnsure(`noshow_potential:${r.id}`, {
         severity: 'danger',
-        msg: `⚠ No-show probable : ${r.name} (${r.pax} PAX) — ${late} min d'absence`,
+        msg: `${r.name} · +${late}min · no-show probable`,
         resaId: r.id,
         actions: [
           { label: 'Confirmer NS', fn: () => _rushDoNoShow(r.id) },
-          { label: 'Trouver table', fn: () => { closeAssistant(); _rushFindTable(r.id); }}
+          { label: '→ Table', fn: () => { closeAssistant(); _rushFindTable(r.id); }}
         ]
       });
-    }
   });
 }
 
 function _assistCheckVIP(){
   gr().forEach(r => {
     if(r.ns) return;
-    const tags = (r.tags||[]).map(t => t.toLowerCase());
-    if(tags.includes('vip') && !r.placed)
+    if((r.tags||[]).map(t=>t.toLowerCase()).includes('vip') && !r.placed)
       _assistEnsure(`vip:${r.id}`, {
         severity: 'warn',
-        msg: `⭐ VIP : ${r.name} (${r.pax} PAX) — table de choix`,
+        msg: `⭐ VIP : ${r.name} · ${r.pax} PAX`,
         resaId: r.id,
-        actions: [{ label: 'Placer', fn: () => { closeAssistant(); _rushFindTable(r.id); }}]
+        actions: [{ label: '→ Placer', fn: () => { closeAssistant(); _rushFindTable(r.id); }}]
       });
   });
 }
 
 function _assistCheckDuplicates(){
-  const resas = gr();
   const seen = {};
-  resas.forEach(r => {
+  gr().forEach(r => {
     const key = r.name.trim().toLowerCase();
     if(!seen[key]) seen[key] = [];
     seen[key].push(r);
@@ -5080,13 +5142,13 @@ function _assistCheckDuplicates(){
     if(group.length > 1)
       _assistEnsure(`duplicate:${name}`, {
         severity: 'warn',
-        msg: `⚠ Doublon : "${group[0].name}" apparaît ${group.length}× — vérifier`,
+        msg: `⚠ Doublon : "${group[0].name}" ×${group.length}`,
         actions: []
       });
   });
 }
 
-// ─── Badge topbar ────────────────────────────────
+// ─── Badge topbar ─────────────────────────────────────
 function _updateAssistBadge(){
   const active = assistAlerts.filter(a => !a.resolved);
   const danger = active.filter(a => a.severity === 'danger').length;
@@ -5095,21 +5157,24 @@ function _updateAssistBadge(){
   const cnt = document.getElementById('assist-badge-cnt');
   if(!btn) return;
   btn.classList.remove('ab-red','ab-orange','ab-yellow');
-  if(danger)       btn.classList.add('ab-red');
-  else if(warn)    btn.classList.add('ab-orange');
-  else if(active.length) btn.classList.add('ab-yellow');
+  if(danger)            btn.classList.add('ab-red');
+  else if(warn)         btn.classList.add('ab-orange');
+  else if(active.length)btn.classList.add('ab-yellow');
   if(cnt){
     cnt.textContent = active.length || '';
     cnt.style.display = active.length ? 'inline-flex' : 'none';
   }
 }
 
-// ─── Drawer ──────────────────────────────────────
+// ─── Drawer open/close ────────────────────────────────
 function toggleAssistant(){
   assistOpen = !assistOpen;
   document.getElementById('assist-drawer').classList.toggle('open', assistOpen);
   document.getElementById('assist-backdrop').classList.toggle('open', assistOpen);
-  if(assistOpen) renderAssistDrawer();
+  if(assistOpen){
+    renderAssistDrawer();
+    setTimeout(() => document.getElementById('assist-search')?.focus(), 50);
+  }
 }
 function closeAssistant(){
   assistOpen = false;
@@ -5117,29 +5182,126 @@ function closeAssistant(){
   document.getElementById('assist-backdrop').classList.remove('open');
 }
 
+// ─── Rendu principal du drawer ────────────────────────
 function renderAssistDrawer(){
   const body = document.getElementById('ad-body');
   if(!body) return;
-  const active = assistAlerts.filter(a => !a.resolved);
-  const resolved = assistAlerts.filter(a => a.resolved).slice(-5);
-  if(!active.length && !resolved.length){
-    body.innerHTML = `<div class="ad-empty">✅ Tout est OK — aucune alerte active</div>`;
-    return;
+  const q = (document.getElementById('assist-search')?.value || '').trim().toLowerCase();
+  if(q){
+    body.innerHTML = _renderAssistSearch(q);
+  } else {
+    body.innerHTML = `
+      <div class="ad-cols">
+        <div class="ad-col-left">${_renderAssistAlertsList()}</div>
+        <div class="ad-col-right">${_renderAssistFloor()}</div>
+      </div>`;
   }
-  const sevOrder = { danger:0, warn:1, info:2 };
-  const sorted = [...active].sort((a,b) => (sevOrder[a.severity]??3) - (sevOrder[b.severity]??3));
-  body.innerHTML = sorted.map(a => _renderAlert(a, false)).join('') +
-    (resolved.length ? `<div class="ad-resolved-title">Résolues</div>` + resolved.map(a => _renderAlert(a, true)).join('') : '');
 }
 
-function _renderAlert(a, isResolved){
-  const cls = isResolved ? 'ad-alert ad-resolved' : `ad-alert ad-${a.severity}`;
-  const acts = !isResolved && a.actions.length
-    ? `<div class="ad-actions">${a.actions.map((act,i) =>
-        `<button class="ad-act" onclick="assistAlerts.find(x=>x.id===${a.id}).actions[${i}].fn();renderAssistDrawer()">${act.label}</button>`
-      ).join('')}<button class="ad-act ad-resolve-btn" onclick="_assistResolve(${a.id})">✓</button></div>`
-    : (!isResolved ? `<div class="ad-actions"><button class="ad-act ad-resolve-btn" onclick="_assistResolve(${a.id})">✓ Résolu</button></div>` : '');
-  return `<div class="${cls}"><div class="ad-msg">${a.msg}</div>${acts}</div>`;
+// ─── Recherche intelligente ───────────────────────────
+function _renderAssistSearch(q){
+  const resas = gr();
+  const now = _assistNow();
+  let results = [];
+
+  // Mots-clés spéciaux
+  if(/retard|late/.test(q)){
+    results = resas.filter(r => !r.placed && !r.ns && (now - _assistParseTime(r.time)) >= 10)
+      .sort((a,b) => (_assistParseTime(a.time)) - (_assistParseTime(b.time)));
+  } else if(/vip/.test(q)){
+    results = resas.filter(r => (r.tags||[]).map(t=>t.toLowerCase()).includes('vip'));
+  } else if(/libre|free/.test(q)){
+    return _renderFreeTablesSearch();
+  } else if(/attente|non.plac/.test(q)){
+    results = resas.filter(r => !r.placed && !r.ns);
+  } else if(/table\s*(\d+)/.test(q)){
+    const tid = parseInt(q.match(/table\s*(\d+)/)[1]);
+    return _renderTableSearch(tid);
+  } else if(/^\d+$/.test(q) && parseInt(q) <= 30){
+    return _renderTableSearch(parseInt(q));
+  } else {
+    // Recherche par nom
+    results = resas.filter(r => r.name.toLowerCase().includes(q));
+  }
+
+  if(!results.length)
+    return `<div class="ad-empty">Aucun résultat pour "${q}"</div>`;
+
+  return results.map(r => _renderResaCard(r, now)).join('');
+}
+
+function _renderResaCard(r, now){
+  const late = now - _assistParseTime(r.time);
+  const status = r.placed ? `✓ Table ${r.tableId}`
+    : r.ns ? '✗ No-show'
+    : late >= 15 ? `⚠ +${late}min`
+    : `${r.time}`;
+  const cls = r.placed ? 'arc-ok' : r.ns ? 'arc-ns' : late >= 30 ? 'arc-danger' : late >= 15 ? 'arc-warn' : '';
+  const tags = (r.tags||[]).map(t=>`<span class="arc-tag">${t}</span>`).join('');
+  const acts = !r.ns && !r.placed ? `
+    <div class="arc-acts">
+      <button class="arc-btn arc-btn-primary" onclick="closeAssistant();_rushFindTable(${r.id})">→ Trouver table</button>
+      <button class="arc-btn arc-btn-ns" onclick="_rushDoNoShow(${r.id})">No-show</button>
+    </div>` : r.placed ? `
+    <div class="arc-acts">
+      <button class="arc-btn" onclick="closeAssistant();_rushFindTable(${r.id})">↔ Changer table</button>
+      <button class="arc-btn arc-btn-ns" onclick="_rushDoNoShow(${r.id})">Libérer</button>
+    </div>` : '';
+  return `<div class="arc-card ${cls}">
+    <div class="arc-top">
+      <span class="arc-name">${r.name}</span>
+      <span class="arc-pax">${r.pax} PAX</span>
+      <span class="arc-status">${status}</span>
+    </div>
+    ${r.comment ? `<div class="arc-comment">${r.comment}</div>` : ''}
+    ${tags ? `<div class="arc-tags">${tags}</div>` : ''}
+    ${acts}
+  </div>`;
+}
+
+function _renderFreeTablesSearch(){
+  const placed = new Set(gr().filter(r=>r.placed).map(r=>r.tableId));
+  const free = Object.entries(TABLE_DATA)
+    .map(([id,d]) => ({id:+id,...d}))
+    .filter(t => t.id < SALON_ID_MIN && !placed.has(t.id))
+    .sort((a,b) => a.hi - b.hi);
+  if(!free.length) return `<div class="ad-empty">Aucune table libre</div>`;
+  return `<div class="arc-free-title">Tables libres (${free.length})</div>` +
+    `<div class="arc-free-grid">${free.map(t => `
+      <div class="arc-free-tbl" onclick="closeAssistant()">
+        <div class="arc-free-num">${t.id}</div>
+        <div class="arc-free-cap">${t.hi} PAX</div>
+        ${t.p ? '<div class="arc-free-tag">⛅</div>' : ''}
+      </div>`).join('')}</div>`;
+}
+
+function _renderTableSearch(tableId){
+  const t = TABLE_DATA[tableId];
+  if(!t) return `<div class="ad-empty">Table ${tableId} inconnue</div>`;
+  const r = gr().find(x => x.placed && x.tableId === tableId);
+  if(!r) return `<div class="arc-card arc-ok">
+    <div class="arc-top"><span class="arc-name">Table ${tableId}</span><span class="arc-pax">${t.hi} PAX max</span><span class="arc-status">Libre ✓</span></div>
+  </div>`;
+  return _renderResaCard(r, _assistNow());
+}
+
+// ─── Liste alertes ────────────────────────────────────
+function _renderAssistAlertsList(){
+  const active = assistAlerts.filter(a => !a.resolved);
+  if(!active.length)
+    return `<div class="ad-col-title">Alertes</div><div class="ad-empty-sm">✅ Tout est OK</div>`;
+  const sevOrder = { danger:0, warn:1, info:2 };
+  const sorted = [...active].sort((a,b) => (sevOrder[a.severity]??3)-(sevOrder[b.severity]??3));
+  return `<div class="ad-col-title">Alertes <span class="ad-cnt-badge">${active.length}</span></div>` +
+    sorted.map(a => {
+      const cls = `ad-alert ad-${a.severity}`;
+      const acts = a.actions.length
+        ? `<div class="ad-actions">${a.actions.map((act,i)=>
+            `<button class="ad-act" onclick="assistAlerts.find(x=>x.id===${a.id}).actions[${i}].fn();renderAssistDrawer()">${act.label}</button>`
+          ).join('')}<button class="ad-act ad-resolve-btn" onclick="_assistResolve(${a.id})">✓</button></div>`
+        : `<div class="ad-actions"><button class="ad-act ad-resolve-btn" onclick="_assistResolve(${a.id})">✓ OK</button></div>`;
+      return `<div class="${cls}"><div class="ad-msg">${a.msg}</div>${acts}</div>`;
+    }).join('');
 }
 
 function _assistResolve(id){
@@ -5149,12 +5311,97 @@ function _assistResolve(id){
   renderAssistDrawer();
 }
 
-// ─── Incidents manuels ───────────────────────────
+// ─── Plan de salle compact ────────────────────────────
+function _renderAssistFloor(){
+  if(currentTab === 2) return _renderAssistTransatsSummary();
+  const resas = gr();
+  const now = _assistNow();
+  const placed = {};
+  resas.filter(r => r.placed && r.tableId).forEach(r => { placed[r.tableId] = r; });
+
+  const tableIds = Object.keys(TABLE_DATA).map(Number).sort((a,b) => TABLE_DATA[a].prio - TABLE_DATA[b].prio);
+  const terrasse = tableIds.filter(id => TABLE_DATA[id].p && id < SALON_ID_MIN);
+  const salle    = tableIds.filter(id => !TABLE_DATA[id].p && id < SALON_ID_MIN);
+  const salons   = tableIds.filter(id => id >= SALON_ID_MIN);
+
+  const renderGroup = (ids, label) => {
+    if(!ids.length) return '';
+    return `<div class="af-group-label">${label}</div>
+      <div class="af-grid">${ids.map(id => _renderFloorTile(id, placed[id], now)).join('')}</div>`;
+  };
+
+  const unplaced = resas.filter(r => !r.placed && !r.ns);
+  const pax = resas.filter(r=>r.placed).reduce((s,r)=>s+r.pax,0);
+
+  return `
+    <div class="ad-col-title">Plan de salle · <span style="font-weight:600;color:var(--t2)">${pax} PAX · ${Object.keys(placed).length} tables</span></div>
+    <div class="af-legend">
+      <span class="af-leg af-leg-free">Libre</span>
+      <span class="af-leg af-leg-occ">Occupée</span>
+      <span class="af-leg af-leg-late">Retard</span>
+    </div>
+    ${renderGroup(terrasse, '⛅ Terrasse')}
+    ${renderGroup(salle, '🏠 Salle')}
+    ${renderGroup(salons, '🚪 Salons')}
+    ${unplaced.length ? `<div class="af-unplaced-bar">
+      <span class="af-unplaced-cnt">${unplaced.length} non placée${unplaced.length>1?'s':''}</span>
+      <button class="af-autoplace-btn" onclick="closeAssistant();autoPlace()">✦ Auto-placer</button>
+    </div>` : ''}`;
+}
+
+function _renderFloorTile(tableId, resa, now){
+  const t = TABLE_DATA[tableId];
+  const lbl = t.lbl || String(tableId);
+  if(!resa){
+    return `<div class="af-tbl af-tbl-free" onclick="assistFloorClick(${tableId})" title="Table ${tableId} — libre">
+      <span class="af-tbl-num">${lbl}</span>
+      <span class="af-tbl-cap">${t.hi}</span>
+    </div>`;
+  }
+  const late = now - _assistParseTime(resa.time);
+  const cls = late >= 20 ? 'af-tbl-late' : 'af-tbl-occ';
+  const tags = (resa.tags||[]).map(t=>t.toLowerCase());
+  const isVip = tags.includes('vip');
+  return `<div class="af-tbl ${cls}${isVip?' af-tbl-vip':''}" onclick="assistFloorClick(${tableId})" title="${resa.name} · ${resa.pax} PAX${late>=20?' · +'+late+'min':''}">
+    <span class="af-tbl-num">${lbl}</span>
+    <span class="af-tbl-name">${resa.name.split(' ')[0]}</span>
+    <span class="af-tbl-pax">${resa.pax}p</span>
+    ${isVip ? '<span class="af-tbl-vip-dot">⭐</span>' : ''}
+  </div>`;
+}
+
+function assistFloorClick(tableId){
+  const resa = gr().find(r => r.placed && r.tableId === tableId);
+  if(!resa){
+    // Table libre — rien à faire, ou on pourrait proposer d'y placer une resa
+    toast(`Table ${tableId} libre · ${TABLE_DATA[tableId]?.hi || '?'} PAX max`);
+    return;
+  }
+  _rushShowPanel(`
+    <div class="ro-panel-title">Table ${tableId} — ${resa.name}</div>
+    <div class="ro-panel-subtitle">${resa.pax} PAX · ${resa.time}</div>
+    ${resa.comment ? `<div class="ro-panel-note">${resa.comment}</div>` : ''}
+    <div class="ro-panel-btns">
+      <button class="ro-panel-btn" onclick="_rushFindTable(${resa.id});_rushClosePanel()">↔ Changer de table</button>
+      <button class="ro-panel-btn ro-panel-btn-danger" onclick="_rushDoNoShow(${resa.id});_rushClosePanel()">× No-show / Libérer</button>
+    </div>
+    <button class="ro-panel-cancel" onclick="_rushClosePanel()">Fermer</button>`);
+}
+
+function _renderAssistTransatsSummary(){
+  const resas = reservations.transats;
+  const placed = resas.filter(r=>r.placed).length;
+  const pax = resas.filter(r=>r.placed).reduce((s,r)=>s+r.pax,0);
+  return `<div class="ad-col-title">Transats · ${placed} resas · ${pax} PAX</div>
+    <div class="ad-empty-sm">Vue transats — plan détaillé dans l'onglet ⛱</div>`;
+}
+
+// ─── Incidents manuels ─────────────────────────────────
 function assistIncident(type){
   if(type === 'noshow'){
     _rushShowPanel(`
       <div class="ro-panel-title">🚫 No-show</div>
-      <div class="ro-panel-subtitle">Quelle réservation marquer no-show ?</div>
+      <div class="ro-panel-subtitle">Quelle réservation ?</div>
       <div class="ro-panel-list">${gr().filter(r=>!r.placed&&!r.ns).map(r=>`
         <div class="ro-panel-item" onclick="_rushDoNoShow(${r.id});_rushClosePanel()">
           <div class="ro-pi-name">${r.name}</div>
@@ -5165,7 +5412,6 @@ function assistIncident(type){
   else if(type === 'wrong_day'){
     _rushShowPanel(`
       <div class="ro-panel-title">📅 Mauvais jour</div>
-      <div class="ro-panel-subtitle">Rechercher la réservation</div>
       <input class="ro-panel-search" id="ro-wd-input" placeholder="Nom client…" oninput="_rushWrongDaySearch()">
       <div id="ro-wd-results"></div>
       <button class="ro-panel-cancel" onclick="_rushClosePanel()">Annuler</button>`);
@@ -5174,7 +5420,7 @@ function assistIncident(type){
     const tables = gr().filter(r=>r.placed).map(r=>r.tableId).filter((v,i,a)=>a.indexOf(v)===i);
     _rushShowPanel(`
       <div class="ro-panel-title">🪑 Table HS</div>
-      <div class="ro-panel-subtitle">Quelle table mettre hors service ?</div>
+      <div class="ro-panel-subtitle">Quelle table ?</div>
       <div class="ro-panel-grid">${tables.map(tid=>`
         <div class="ro-panel-tbl" onclick="_rushDeclareTableDown(${tid});_rushClosePanel()">
           <div style="font-size:18px;font-weight:800">${tid}</div>
@@ -5182,18 +5428,14 @@ function assistIncident(type){
       <button class="ro-panel-cancel" onclick="_rushClosePanel()">Annuler</button>`);
   }
   else if(type === 'staff_down'){
-    _assistEnsure('staff_down:'+Date.now(), {
-      severity: 'warn',
-      msg: '👤 Effectif réduit — adaptation du service en cours',
-      actions: []
-    });
-    toast('⚠ Alerte effectif réduit enregistrée');
+    _assistEnsure('staff_down:'+Date.now(), { severity:'warn', msg:'👤 Effectif réduit', actions:[] });
+    toast('⚠ Effectif réduit enregistré');
     _updateAssistBadge(); renderAssistDrawer();
   }
   else if(type === 'delay'){
     _rushShowPanel(`
       <div class="ro-panel-title">⏰ Retard général</div>
-      <div class="ro-panel-subtitle">Décaler toutes les resas non placées de :</div>
+      <div class="ro-panel-subtitle">Décaler les resas non placées de :</div>
       <div class="ro-panel-btns">
         <button class="ro-panel-btn" onclick="_rushPushAll(15)">+15 min</button>
         <button class="ro-panel-btn" onclick="_rushPushAll(30)">+30 min</button>
@@ -5203,30 +5445,26 @@ function assistIncident(type){
       <button class="ro-panel-cancel" onclick="_rushClosePanel()">Annuler</button>`);
   }
   else if(type === 'power'){
-    _assistEnsure('power:'+Date.now(), {
-      severity: 'danger',
-      msg: '⚡ Panne signalée — données locales actives, synchronisation suspendue',
-      actions: []
-    });
+    _assistEnsure('power:'+Date.now(), { severity:'danger', msg:'⚡ Panne — données locales actives', actions:[] });
     toast('⚡ Mode dégradé activé');
     _updateAssistBadge(); renderAssistDrawer();
     setTimeout(() => window.print(), 400);
   }
 }
 
-// ─── Rétro-compatibilité ─────────────────────────
+// ─── Rétro-compatibilité
 function toggleRushMode(){ toggleAssistant(); }
-function renderRushOverlay(){ /* remplacé par renderAssistDrawer */ }
+function renderRushOverlay(){ /* remplacé */ }
 
-// ─── Helpers placement ───────────────────────────
+// ─── Helpers placement ─────────────────────────────────
 function _rushDoNoShow(resaId){
   const all = [...reservations.s1,...reservations.s2,...reservations.transats,...reservations.soir];
   const r = all.find(x => x.id === resaId);
   if(!r) return;
   saveUndo();
-  if(r.placed){ r.placed = false; r.tableId = null; r.slot = null; }
+  if(r.placed){ r.placed=false; r.tableId=null; r.slot=null; }
   r.ns = true;
-  assistAlerts.forEach(a => { if(a.resaId === resaId) a.resolved = true; });
+  assistAlerts.forEach(a => { if(a.resaId===resaId) a.resolved=true; });
   toast(`${r.name} marqué no-show`);
   _updateAssistBadge();
   render();
@@ -5236,19 +5474,18 @@ function _rushFindTable(resaId){
   const all = [...reservations.s1,...reservations.s2,...reservations.transats,...reservations.soir];
   const r = all.find(x => x.id === resaId);
   if(!r) return;
-  const avail = TABLE_DATA.filter(t => {
-    if(t.cap < r.pax) return false;
-    if(t.id >= SALON_ID_MIN) return false;
-    return !gr().find(x => x.placed && x.tableId === t.id && x.id !== resaId);
-  }).sort((a,b) => a.cap - b.cap);
+  const avail = Object.entries(TABLE_DATA)
+    .map(([id,d]) => ({id:+id,...d}))
+    .filter(t => t.hi >= r.pax && t.id < SALON_ID_MIN && !gr().find(x=>x.placed&&x.tableId===t.id&&x.id!==resaId))
+    .sort((a,b) => a.hi - b.hi);
   _rushShowPanel(`
     <div class="ro-panel-title">Placer ${r.name}</div>
     <div class="ro-panel-subtitle">${r.pax} PAX · ${r.time}</div>
     ${!avail.length ? `<div class="ro-panel-note">Aucune table libre avec capacité suffisante</div>` : ''}
-    <div class="ro-panel-grid">${avail.map(t => `
+    <div class="ro-panel-grid">${avail.map(t=>`
       <div class="ro-panel-tbl" onclick="_rushPlaceOn(${resaId},${t.id})">
         <div style="font-size:16px;font-weight:800;color:var(--t1)">${t.id}</div>
-        <div style="font-size:9px;color:var(--t3)">${t.cap} PAX</div>
+        <div style="font-size:9px;color:var(--t3)">${t.hi} PAX</div>
       </div>`).join('')}</div>
     <button class="ro-panel-cancel" onclick="_rushClosePanel()">Annuler</button>`);
 }
@@ -5258,10 +5495,10 @@ function _rushPlaceOn(resaId, tableId){
   const r = all.find(x => x.id === resaId);
   if(!r) return;
   saveUndo();
-  const prev = gr().find(x => x.placed && x.tableId === tableId && x.id !== resaId);
-  if(prev){ prev.placed = false; prev.tableId = null; }
-  r.placed = true; r.tableId = tableId;
-  assistAlerts.forEach(a => { if(a.resaId === resaId) a.resolved = true; });
+  const prev = gr().find(x => x.placed && x.tableId===tableId && x.id!==resaId);
+  if(prev){ prev.placed=false; prev.tableId=null; }
+  r.placed=true; r.tableId=tableId;
+  assistAlerts.forEach(a => { if(a.resaId===resaId) a.resolved=true; });
   _rushClosePanel();
   toast(`${r.name} → table ${tableId}`);
   _updateAssistBadge();
@@ -5269,12 +5506,12 @@ function _rushPlaceOn(resaId, tableId){
 }
 
 function _rushDeclareTableDown(tableId){
-  const r = gr().find(x => x.tableId === tableId && x.placed);
-  if(r){ saveUndo(); r.placed = false; r.tableId = null; }
+  const r = gr().find(x => x.tableId===tableId && x.placed);
+  if(r){ saveUndo(); r.placed=false; r.tableId=null; }
   _assistEnsure(`table_down:${tableId}`, {
     severity: 'danger',
-    msg: `Table ${tableId} hors service${r ? ` — ${r.name} (${r.pax} PAX) à replacer` : ''}`,
-    actions: r ? [{ label: 'Trouver table', fn: () => _rushFindTable(r.id) }] : []
+    msg: `Table ${tableId} HS${r?` — ${r.name} à replacer`:''}`,
+    actions: r ? [{ label: '→ Replacer', fn: () => _rushFindTable(r.id) }] : []
   });
   _rushClosePanel();
   _updateAssistBadge();
@@ -5282,13 +5519,13 @@ function _rushDeclareTableDown(tableId){
 }
 
 function _rushWrongDaySearch(){
-  const q = (document.getElementById('ro-wd-input')?.value||'').toLowerCase().trim();
-  const res = document.getElementById('ro-wd-results');
-  if(!q){ res.innerHTML = ''; return; }
-  const all = [...reservations.s1,...reservations.s2,...reservations.transats,...reservations.soir];
-  const found = all.filter(r => r.name.toLowerCase().includes(q)).slice(0, 8);
-  if(!found.length){ res.innerHTML = `<div class="ro-panel-empty">Aucun résultat</div>`; return; }
-  res.innerHTML = found.map(r => `
+  const q=(document.getElementById('ro-wd-input')?.value||'').toLowerCase().trim();
+  const res=document.getElementById('ro-wd-results');
+  if(!q){ res.innerHTML=''; return; }
+  const all=[...reservations.s1,...reservations.s2,...reservations.transats,...reservations.soir];
+  const found=all.filter(r=>r.name.toLowerCase().includes(q)).slice(0,8);
+  if(!found.length){ res.innerHTML=`<div class="ro-panel-empty">Aucun résultat</div>`; return; }
+  res.innerHTML=found.map(r=>`
     <div class="ro-panel-item" onclick="_rushClosePanel();_rushFindTable(${r.id})">
       <div class="ro-pi-name">${r.name}</div>
       <div class="ro-pi-info">${r.pax} PAX · ${r.svc.toUpperCase()} · ${r.time}${r.date?' · '+r.date:''}</div>
@@ -5297,44 +5534,39 @@ function _rushWrongDaySearch(){
 
 function _rushPushAll(minutes){
   saveUndo();
-  gr().filter(r => !r.placed && !r.ns).forEach(r => {
-    const min = _assistParseTime(r.time) + minutes;
-    r.time = `${Math.floor(min/60)}h${String(min%60).padStart(2,'0')}`;
+  gr().filter(r=>!r.placed&&!r.ns).forEach(r=>{
+    const min=_assistParseTime(r.time)+minutes;
+    r.time=`${Math.floor(min/60)}h${String(min%60).padStart(2,'0')}`;
   });
-  _assistEnsure('delay:'+Date.now(), {
-    severity: 'info',
-    msg: `Resas décalées de +${minutes} min`,
-    actions: []
-  });
+  _assistEnsure('delay:'+Date.now(), { severity:'info', msg:`Resas décalées +${minutes}min`, actions:[] });
   _rushClosePanel();
-  toast(`+${minutes} min appliqué`);
+  toast(`+${minutes}min appliqué`);
   _updateAssistBadge();
   render(); if(assistOpen) renderAssistDrawer();
 }
 
-// ─── Panel incidents (overlay interne) ───────────
 function _rushShowPanel(html){
-  const p = document.getElementById('ro-panel');
-  document.getElementById('ro-panel-box').innerHTML = html;
-  p.style.display = 'flex';
+  const p=document.getElementById('ro-panel');
+  document.getElementById('ro-panel-box').innerHTML=html;
+  p.style.display='flex';
 }
 function _rushClosePanel(){
-  document.getElementById('ro-panel').style.display = 'none';
+  document.getElementById('ro-panel').style.display='none';
 }
 
-// ─── Tab switching ────────────────────────────────
+// ─── Tab switching ─────────────────────────────────────
 function switchTab(i){
-  currentTab = i;
-  document.querySelectorAll('.tab').forEach((t, j) => {
+  currentTab=i;
+  document.querySelectorAll('.tab').forEach((t,j)=>{
     t.classList.remove('on');
-    if(j === i) t.classList.add('on');
+    if(j===i) t.classList.add('on');
   });
-  document.getElementById('search-input').value = '';
-  selectedId = null; fuseMode = false; fuseTargets = [];
-  document.getElementById('rp-content').innerHTML = '<div class="rp-empty">Tap sur une réservation</div>';
-  document.getElementById('rp-actions').style.display = 'none';
-  const btn = document.getElementById('fuse-btn');
-  btn.className = 'tbtn tbtn-fuse'; btn.textContent = '⊕ Fusionner'; btn.onclick = toggleFuse;
+  document.getElementById('search-input').value='';
+  selectedId=null; fuseMode=false; fuseTargets=[];
+  document.getElementById('rp-content').innerHTML='<div class="rp-empty">Tap sur une réservation</div>';
+  document.getElementById('rp-actions').style.display='none';
+  const btn=document.getElementById('fuse-btn');
+  btn.className='tbtn tbtn-fuse'; btn.textContent='⊕ Fusionner'; btn.onclick=toggleFuse;
   render();
 }
 

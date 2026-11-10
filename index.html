@@ -255,6 +255,9 @@
     <span class="ad-title">⚡ Assistant</span>
     <button class="ad-close" onclick="closeAssistant()">✕</button>
   </div>
+  <div class="ad-search-wrap">
+    <input id="assist-search" class="ad-search" type="search" placeholder="Chercher client, table, retard, vip, libre…" oninput="renderAssistDrawer()" autocomplete="off" autocorrect="off" spellcheck="false">
+  </div>
   <div class="ad-incidents">
     <button class="ad-inc-btn" onclick="assistIncident('noshow')">🚫 No-show</button>
     <button class="ad-inc-btn" onclick="assistIncident('wrong_day')">📅 Mauvais jour</button>
