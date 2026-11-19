@@ -21,6 +21,7 @@ function _assistScan(){
   _assistCheckOccasion();
   _assistCheckHighchair();
   _assistCheckAllergenes();
+  _assistCheckRegimes();
   _assistCheckPMR();
   _assistCheckNoShows();
   _assistCheckVIP();
@@ -75,7 +76,7 @@ function _assistAutoResolve(){
 // ─── Patterns commentaires ───────────────────────────
 
 const _ALLERGEN_PATTERNS = [
-  [/allergi|allergique/,                           null],           // contexte général
+  [/allergi|allergique/,                           null],
   [/arachide|cacahu[eè]te|peanut/,                 'Arachides'],
   [/noix|noisette|amande|pistache|cajou|p[eé]can/, 'Fruits secs'],
   [/gluten|bl[eé]|orge|seigle|avoine|[eé]peautre/, 'Gluten'],
@@ -88,9 +89,20 @@ const _ALLERGEN_PATTERNS = [
   [/c[eé]leri\b/,                                  'Céleri'],
   [/moutarde/,                                     'Moutarde'],
   [/sulfite|soufre/,                               'Sulfites'],
-  [/v[eé]gan|v[eé]g[eé]talien/,                   'Vegan'],
-  [/v[eé]g[eé]tarien/,                             'Végétarien'],
-  [/sans (porc|alcool|sel|sucre|viande)/,          null],           // captures "sans X"
+];
+
+// Régimes alimentaires (sévérité info, pas danger)
+const _REGIME_PATTERNS = [
+  [/v[eé]g[eé]tarien(?:ne)?/i,                 'Végétarien'],
+  [/v[eé]g[eé]talien|vegan|végan/i,            'Végan'],
+  [/halal/i,                                    'Halal'],
+  [/casher|kosher/i,                            'Halal'],     // traité comme Halal
+  [/sans[\s\-]?porc|no[\s]?pork/i,             'Sans porc'],
+  [/sans[\s\-]?alcool|no[\s]?alcohol/i,        'Sans alcool'],
+  [/flexitarien/i,                              'Flexitarien'],
+  [/pescatarien|pescetarien/i,                  'Pescatarien'],
+  [/sans\s+(viande|meat)/i,                     'Végétarien'],
+  [/régime\s+(végé|veggie|veg\b)/i,             'Végétarien'],
 ];
 
 const _PMR_PATTERN   = /fauteuil|handicap|pmr|mobilit[eé] r[eé]duite|canne|canne b/i;
@@ -200,13 +212,17 @@ function _extractAllergenName(raw){
   return null;
 }
 
-function _assistShowMenuRecos(resa, allergenLabels){
-  if(typeof getMenuRecos !== 'function'){
-    toast('Menu non configuré');
-    return;
-  }
-  const { safe, adaptable } = getMenuRecos(allergenLabels);
-  const allergenStr = allergenLabels.join(', ');
+// Panneau unifié allergènes + régimes
+function _assistShowDishRecos(resa, allergenLabels, regimeLabels){
+  if(typeof getCompatibleDishes !== 'function'){ toast('Menu non configuré'); return; }
+  allergenLabels = allergenLabels || [];
+  regimeLabels   = regimeLabels   || [];
+  const { safe, adaptable } = getCompatibleDishes(allergenLabels, regimeLabels);
+
+  const constraints = [
+    ...allergenLabels.map(l => `<span class="mr-tag mr-tag-allergen">🚨 ${l}</span>`),
+    ...regimeLabels.map(l  => `<span class="mr-tag mr-tag-regime">🌿 ${l}</span>`)
+  ].join('');
 
   const renderDishRow = (d) =>
     `<div class="mr-dish">
@@ -222,25 +238,29 @@ function _assistShowMenuRecos(resa, allergenLabels){
     </div>`;
 
   const safeHtml = safe.length
-    ? `<div class="mr-section-title">✓ Plats OK sans modification (${safe.length})</div>` +
+    ? `<div class="mr-section-title">✓ Plats compatibles (${safe.length})</div>` +
       safe.map(renderDishRow).join('')
-    : `<div class="mr-empty">Aucun plat entièrement sans ${allergenStr}</div>`;
+    : '';
 
   const adaptHtml = adaptable.length
-    ? `<div class="mr-section-title mr-adapt-title">✦ Plats OK si adaptés (${adaptable.length})</div>` +
+    ? `<div class="mr-section-title mr-adapt-title">✦ Si adaptés (${adaptable.length})</div>` +
       adaptable.map(renderAdaptRow).join('')
     : '';
 
+  const emptyHtml = !safe.length && !adaptable.length
+    ? `<div class="mr-empty">Aucun plat compatible — à adapter avec le chef.</div>` : '';
+
   _rushShowPanel(`
-    <div class="ro-panel-title">🍽 Recommandations — ${resa.name}</div>
-    <div class="ro-panel-subtitle">Allergie : <strong>${allergenStr}</strong></div>
-    <div class="mr-list">
-      ${safeHtml}
-      ${adaptHtml}
-      ${!safe.length && !adaptable.length ? `<div class="mr-empty">Aucun plat compatible trouvé pour ces allergènes.</div>` : ''}
-    </div>
-    <div class="ro-panel-note" style="margin-top:8px">Menu éditable dans <code>js/menu.js</code></div>
+    <div class="ro-panel-title">🍽 Plats recommandés — ${resa.name||''}</div>
+    <div class="mr-constraints">${constraints}</div>
+    <div class="mr-list">${safeHtml}${adaptHtml}${emptyHtml}</div>
+    <div class="ro-panel-note" style="margin-top:8px">Carte éditable dans <code>js/menu.js</code></div>
     <button class="ro-panel-cancel" onclick="_rushClosePanel()">Fermer</button>`);
+}
+
+// Alias legacy pour alertes allergie existantes
+function _assistShowMenuRecos(resa, allergenLabels){
+  _assistShowDishRecos(resa, allergenLabels, []);
 }
 
 function _assistCheckPMR(){
@@ -254,6 +274,45 @@ function _assistCheckPMR(){
         actions: []
       });
   });
+}
+
+function _assistCheckRegimes(){
+  gr().forEach(r => {
+    if(r.ns) return;
+    const raw = (r.comment||'').toLowerCase() + ' ' + (r.tags||[]).join(' ').toLowerCase();
+    const detected = [];
+    _REGIME_PATTERNS.forEach(([re, label]) => {
+      if(!re.test(raw)) return;
+      if(!detected.includes(label)) detected.push(label);
+    });
+    if(!detected.length) return;
+    // Une alerte par régime + bouton recos combinées
+    detected.forEach(label => {
+      _assistEnsure(`regime:${label}:${r.id}`, {
+        severity: 'info',
+        msg: `🌿 ${r.name} — ${label}`,
+        resaId: r.id,
+        actions: [{
+          label: '🍽 Plats OK',
+          fn: () => {
+            const allergenLabels = _getResaAllergenLabels(r);
+            _assistShowDishRecos(r, allergenLabels, detected);
+          }
+        }]
+      });
+    });
+  });
+}
+
+function _getResaAllergenLabels(r){
+  const raw = (r.comment||'').toLowerCase();
+  const labels = [];
+  _ALLERGEN_PATTERNS.forEach(([re, label]) => {
+    if(!re.test(raw)) return;
+    const name = label || _extractAllergenName(raw);
+    if(name && !labels.includes(name)) labels.push(name);
+  });
+  return labels;
 }
 
 function _assistCheckNoShows(){
@@ -409,6 +468,26 @@ function _renderAssistSearch(q){
       return `<div class="ad-empty">Aucune allergie détectée dans les commentaires</div>`;
     return `<div class="arc-results-header">${header}</div>` +
       results.map(r => _renderResaCardWithRecos(r, now)).join('');
+  } else if(/v[eé]g[eé]|vegan|halal|casher|sans[\s-]?porc|sans[\s-]?alcool|pescatari|flexitari|r[eé]gime/.test(q)){
+    // Régimes alimentaires
+    const matchedRegimes = [];
+    _REGIME_PATTERNS.forEach(([re, label]) => {
+      if(re.test(q) && !matchedRegimes.includes(label)) matchedRegimes.push(label);
+    });
+    const regimesToTest = matchedRegimes.length ? matchedRegimes : REGIME_TYPES;
+    results = resas.filter(r => {
+      const raw = (r.comment||'').toLowerCase() + ' ' + (r.tags||[]).join(' ');
+      return _REGIME_PATTERNS.some(([re]) => re.test(raw));
+    });
+    if(matchedRegimes.length) results = results.filter(r => {
+      const raw = (r.comment||'').toLowerCase() + ' ' + (r.tags||[]).join(' ');
+      return matchedRegimes.some(label => _REGIME_PATTERNS.some(([re, l]) => l === label && re.test(raw)));
+    });
+    header = `🌿 Régimes (${results.length})`;
+    if(!results.length)
+      return `<div class="ad-empty">Aucun régime alimentaire détecté dans les commentaires</div>`;
+    return `<div class="arc-results-header">${header}</div>` +
+      results.map(r => _renderResaCardWithRecos(r, now)).join('');
   } else if(/pmr|fauteuil|handicap|mobilit/.test(q)){
     results = resas.filter(r => _PMR_PATTERN.test(r.comment||''));
     header = `♿ PMR (${results.length})`;
@@ -466,31 +545,38 @@ function _renderResaCard(r, now){
 
 function _renderResaCardWithRecos(r, now){
   const base = _renderResaCard(r, now);
-  if(typeof getMenuRecos !== 'function') return base;
+  if(typeof getCompatibleDishes !== 'function') return base;
 
-  const raw = (r.comment||'').toLowerCase();
-  const detectedLabels = [];
-  _ALLERGEN_PATTERNS.forEach(([re, label]) => {
-    if(!re.test(raw)) return;
-    const name = label || _extractAllergenName(raw);
-    if(name && !detectedLabels.includes(name)) detectedLabels.push(name);
+  const raw = (r.comment||'').toLowerCase() + ' ' + (r.tags||[]).join(' ').toLowerCase();
+
+  const allergenLabels = _getResaAllergenLabels(r);
+  const regimeLabels = [];
+  _REGIME_PATTERNS.forEach(([re, label]) => {
+    if(re.test(raw) && !regimeLabels.includes(label)) regimeLabels.push(label);
   });
-  if(!detectedLabels.length) return base;
 
-  const { safe, adaptable } = getMenuRecos(detectedLabels);
-  const topSafe = safe.slice(0, 3);
+  if(!allergenLabels.length && !regimeLabels.length) return base;
+
+  const { safe, adaptable } = getCompatibleDishes(allergenLabels, regimeLabels);
+  const topSafe  = safe.slice(0, 3);
   const topAdapt = adaptable.slice(0, 2);
 
+  const tags = [
+    ...allergenLabels.map(l => `<span class="arc-reco-tag arc-reco-tag-al">🚨 ${l}</span>`),
+    ...regimeLabels.map(l  => `<span class="arc-reco-tag arc-reco-tag-rg">🌿 ${l}</span>`)
+  ].join('');
+
+  const resaRef = `gr().find(x=>x.id===${r.id})||{}`;
   const recoHtml = `
     <div class="arc-recos">
+      <div class="arc-reco-tags">${tags}</div>
       <div class="arc-reco-label">🍽 Plats compatibles :</div>
       ${topSafe.map(d => `<span class="arc-reco-chip arc-reco-ok">${d.name}</span>`).join('')}
-      ${topAdapt.map(({dish, remove}) => `<span class="arc-reco-chip arc-reco-adapt" title="sans ${remove.join(', ')}">${dish.name} ✦</span>`).join('')}
+      ${topAdapt.map(({dish,remove}) => `<span class="arc-reco-chip arc-reco-adapt" title="sans ${remove.join(', ')}">${dish.name} ✦</span>`).join('')}
       ${!topSafe.length && !topAdapt.length ? `<span class="arc-reco-chip arc-reco-none">Aucun plat compatible</span>` : ''}
-      <button class="arc-reco-more" onclick="_assistShowMenuRecos(gr().find(x=>x.id===${r.id})||{name:'',comment:''},${JSON.stringify(detectedLabels)})">Voir tous →</button>
+      <button class="arc-reco-more" onclick="_assistShowDishRecos(${resaRef},${JSON.stringify(allergenLabels)},${JSON.stringify(regimeLabels)})">Voir tous →</button>
     </div>`;
 
-  // Insérer avant la fermeture de .arc-card
   return base.replace('</div>', recoHtml + '</div>');
 }
 

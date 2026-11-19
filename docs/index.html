@@ -646,8 +646,12 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .arc-btn{background:var(--card);border:1px solid var(--sep2);color:var(--t1)}
 .arc-btn:hover{border-color:var(--blue);color:var(--blue)}
 .arc-btn-ns{background:var(--rbg)!important;border:1px solid var(--rb)!important;color:var(--rt)!important}
-/* ── Recommandations menu dans les cartes allergie ── */
+/* ── Recommandations menu dans les cartes allergie/régime ── */
 .arc-recos{margin-top:10px;padding-top:10px;border-top:1px solid var(--sep2);display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.arc-reco-tags{width:100%;display:flex;flex-wrap:wrap;gap:4px;margin-bottom:4px}
+.arc-reco-tag{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+.arc-reco-tag-al{background:var(--rbg);color:var(--rt);border:1px solid var(--rb)}
+.arc-reco-tag-rg{background:var(--gbg);color:var(--green,#15803D);border:1px solid var(--gb)}
 .arc-reco-label{font-size:10px;font-weight:700;color:var(--t3);width:100%;margin-bottom:2px}
 .arc-reco-chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;white-space:nowrap}
 .arc-reco-ok{background:var(--gbg);color:var(--green,#15803D);border:1px solid var(--gb)}
@@ -655,14 +659,18 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .arc-reco-none{background:var(--rbg);color:var(--rt);border:1px solid var(--rb);font-size:10px;padding:3px 8px;border-radius:20px}
 .arc-reco-more{margin-left:auto;font-size:10px;font-weight:700;color:var(--blue,#2563EB);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline}
 /* ── Panel recommandations ── */
-.mr-list{max-height:60vh;overflow-y:auto;padding-top:8px}
-.mr-section-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--green,#15803D);margin:12px 0 6px;padding-top:4px}
+.mr-constraints{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.mr-tag{font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.mr-tag-allergen{background:var(--rbg);color:var(--rt);border:1px solid var(--rb)}
+.mr-tag-regime{background:var(--gbg);color:var(--green,#15803D);border:1px solid var(--gb)}
+.mr-list{max-height:60vh;overflow-y:auto;padding-top:4px}
+.mr-section-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--green,#15803D);margin:12px 0 6px}
 .mr-adapt-title{color:var(--amber,#B45309)}
 .mr-dish{display:flex;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--sep2)}
 .mr-dish:last-child{border-bottom:none}
 .mr-cat{font-size:9px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;width:60px;flex-shrink:0}
 .mr-name{font-size:13px;font-weight:600;color:var(--t1);flex:1}
-.mr-remove{font-size:11px;color:var(--amber,#B45309);font-style:italic;text-align:right}
+.mr-remove{font-size:11px;color:var(--amber,#B45309);font-style:italic;text-align:right;max-width:140px}
 .mr-empty{font-size:12px;color:var(--t3);padding:12px 0;text-align:center}
 .arc-results-header{font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
 .arc-action-banner{background:var(--amber-bg,#FEF3C7);border:1.5px solid var(--amber,#F59E0B);border-radius:var(--r);padding:14px 16px;margin-bottom:8px}
@@ -4986,15 +4994,18 @@ function _gistUpdateStatus(){
 }
 
 // ══════════════════════════════════════════
-// MENU — Carte La Playa + allergènes
-// Éditer ce fichier pour mettre à jour la carte.
-// allergens[] = allergènes présents dans le plat de base
-// elements[]  = éléments retirables avec leurs allergènes
+// MENU — Carte La Playa · allergènes + régimes
+//
+// allergens[]      : allergènes dans le plat de base (non retirables)
+// elements[]       : éléments retirables avec leurs allergènes
+// regimes[]        : régimes compatibles avec le plat tel quel
+// regimes_adapt[]  : régimes compatibles si on retire certains éléments
+//
+// Régimes supportés : 'Végétarien' | 'Végan' | 'Halal' | 'Sans porc' |
+//                     'Sans alcool' | 'Pescatarien' | 'Flexitarien'
 // ══════════════════════════════════════════
 
-// Labels d'allergènes — doivent correspondre aux labels de _ALLERGEN_PATTERNS dans rush.js
-// 'Gluten' | 'Lait' | 'Lactose' | 'Oeufs' | 'Poisson' | 'Crustacés' | 'Mollusques' |
-// 'Arachides' | 'Fruits secs' | 'Soja' | 'Sésame' | 'Céleri' | 'Moutarde' | 'Sulfites'
+const REGIME_TYPES = ['Végétarien','Végan','Halal','Sans porc','Sans alcool','Pescatarien','Flexitarien'];
 
 const MENU_DATA = {
 
@@ -5011,7 +5022,10 @@ const MENU_DATA = {
       elements: [
         { name: 'moutarde maison', allergens: ['Moutarde'] },
         { name: 'pain grillé',    allergens: ['Gluten'] }
-      ]
+      ],
+      regimes: ['Sans alcool'],
+      regimes_adapt: []
+      // Charcuterie = porc → incompatible Halal, Sans porc, Végétarien, Végan
     },
     {
       id: 'e2',
@@ -5020,8 +5034,12 @@ const MENU_DATA = {
       allergens: ['Oeufs'],
       elements: [
         { name: 'anchois',  allergens: ['Poisson'] },
-        { name: 'olives',   allergens: [] },
         { name: 'oeuf dur', allergens: ['Oeufs'] }
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: [
+        { regime: 'Végétarien', remove: ['anchois'] },
+        { regime: 'Végan',      remove: ['anchois', 'oeuf dur'] }
       ]
     },
     {
@@ -5031,7 +5049,9 @@ const MENU_DATA = {
       allergens: ['Mollusques', 'Céleri'],
       elements: [
         { name: 'chips de céleri', allergens: ['Céleri'] }
-      ]
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'e4',
@@ -5042,7 +5062,9 @@ const MENU_DATA = {
         { name: 'pain au seigle', allergens: ['Gluten'] },
         { name: 'beurre',        allergens: ['Lait'] },
         { name: 'mayonnaise',    allergens: ['Oeufs', 'Moutarde'] }
-      ]
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'e5',
@@ -5050,8 +5072,12 @@ const MENU_DATA = {
       cat: 'Entrées',
       allergens: [],
       elements: [
-        { name: 'croutons',     allergens: ['Gluten'] },
+        { name: 'croutons',      allergens: ['Gluten'] },
         { name: 'crème fraîche', allergens: ['Lait'] }
+      ],
+      regimes: ['Végétarien', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: [
+        { regime: 'Végan', remove: ['croutons', 'crème fraîche'] }
       ]
     },
     {
@@ -5061,8 +5087,10 @@ const MENU_DATA = {
       allergens: ['Poisson'],
       elements: [
         { name: 'chips sésame', allergens: ['Sésame', 'Gluten'] },
-        { name: 'avocat',      allergens: [] }
-      ]
+        { name: 'avocat',       allergens: [] }
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'e7',
@@ -5070,9 +5098,12 @@ const MENU_DATA = {
       cat: 'Entrées',
       allergens: ['Lait'],
       elements: [
-        { name: 'burrata',    allergens: ['Lait'] },
-        { name: 'basilic',    allergens: [] },
+        { name: 'burrata',     allergens: ['Lait'] },
         { name: 'pain grillé', allergens: ['Gluten'] }
+      ],
+      regimes: ['Végétarien', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: [
+        { regime: 'Végan', remove: ['burrata'] }
       ]
     },
     {
@@ -5081,10 +5112,12 @@ const MENU_DATA = {
       cat: 'Entrées',
       allergens: ['Poisson', 'Mollusques'],
       elements: [
-        { name: 'rouille',    allergens: ['Oeufs', 'Gluten', 'Moutarde'] },
-        { name: 'croûtons',   allergens: ['Gluten'] },
-        { name: 'gruyère râpé', allergens: ['Lait'] }
-      ]
+        { name: 'rouille',       allergens: ['Oeufs', 'Gluten', 'Moutarde'] },
+        { name: 'croûtons',      allergens: ['Gluten'] },
+        { name: 'gruyère râpé',  allergens: ['Lait'] }
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
 
     // ─── PLATS ──────────────────────────────────────────
@@ -5094,9 +5127,11 @@ const MENU_DATA = {
       cat: 'Plats',
       allergens: ['Poisson'],
       elements: [
-        { name: 'beurre citron',  allergens: ['Lait'] },
+        { name: 'beurre citron',   allergens: ['Lait'] },
         { name: 'légumes grillés', allergens: [] }
-      ]
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'p2',
@@ -5104,8 +5139,12 @@ const MENU_DATA = {
       cat: 'Plats',
       allergens: ['Poisson'],
       elements: [
-        { name: 'sauce vierge', allergens: [] },
+        { name: 'sauce vierge',           allergens: [] },
         { name: 'pommes de terre rôties', allergens: [] }
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: [
+        { regime: 'Végan', remove: [] }  // sauce vierge = huile+herbes+tomate, OK vegan
       ]
     },
     {
@@ -5115,15 +5154,19 @@ const MENU_DATA = {
       allergens: ['Mollusques'],
       elements: [
         { name: 'pommes de terre écrasées', allergens: [] },
-        { name: 'huile pimentée', allergens: [] }
-      ]
+        { name: 'huile pimentée',           allergens: [] }
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'p4',
       name: 'Paëlla marinière',
       cat: 'Plats',
       allergens: ['Crustacés', 'Mollusques', 'Gluten'],
-      elements: []
+      elements: [],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'p5',
@@ -5133,6 +5176,10 @@ const MENU_DATA = {
       elements: [
         { name: 'parmesan', allergens: ['Lait'] },
         { name: 'beurre',   allergens: ['Lait'] }
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: [
+        { regime: 'Végan', remove: ['parmesan', 'beurre'] }
       ]
     },
     {
@@ -5141,10 +5188,14 @@ const MENU_DATA = {
       cat: 'Plats',
       allergens: [],
       elements: [
-        { name: 'sauce béarnaise', allergens: ['Oeufs', 'Lait'] },
-        { name: 'sauce poivre',    allergens: ['Lait'] },
-        { name: 'beurre maître d\'hôtel', allergens: ['Lait'] }
-      ]
+        { name: 'sauce béarnaise',          allergens: ['Oeufs', 'Lait'] },
+        { name: 'sauce poivre',             allergens: ['Lait'] },
+        { name: "beurre maître d'hôtel",    allergens: ['Lait'] }
+      ],
+      regimes: ['Sans porc', 'Sans alcool'],
+      regimes_adapt: []
+      // Boeuf = viande → incompatible Végétarien, Végan, Flexitarien
+      // Halal dépend de la provenance — à vérifier avec le chef
     },
     {
       id: 'p7',
@@ -5153,8 +5204,11 @@ const MENU_DATA = {
       allergens: [],
       elements: [
         { name: 'sauce moutarde-crème', allergens: ['Moutarde', 'Lait'] },
-        { name: 'légumes du soleil', allergens: [] }
-      ]
+        { name: 'légumes du soleil',    allergens: [] }
+      ],
+      regimes: ['Sans porc', 'Sans alcool'],
+      regimes_adapt: []
+      // Volaille = viande → incompatible Végétarien, Végan, Flexitarien
     },
     {
       id: 'p8',
@@ -5162,10 +5216,12 @@ const MENU_DATA = {
       cat: 'Plats',
       allergens: ['Gluten', 'Oeufs', 'Lait'],
       elements: [
-        { name: 'bun brioche',   allergens: ['Gluten', 'Oeufs', 'Lait'] },
-        { name: 'cheddar',       allergens: ['Lait'] },
-        { name: 'sauce burger',  allergens: ['Oeufs', 'Moutarde'] }
-      ]
+        { name: 'bun brioche',  allergens: ['Gluten', 'Oeufs', 'Lait'] },
+        { name: 'cheddar',      allergens: ['Lait'] },
+        { name: 'sauce burger', allergens: ['Oeufs', 'Moutarde'] }
+      ],
+      regimes: ['Sans porc', 'Sans alcool'],
+      regimes_adapt: []
     },
     {
       id: 'p9',
@@ -5174,6 +5230,10 @@ const MENU_DATA = {
       allergens: ['Gluten', 'Crustacés', 'Mollusques'],
       elements: [
         { name: 'parmesan', allergens: ['Lait'] }
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: [
+        { regime: 'Végan', remove: ['parmesan'] }
       ]
     },
     {
@@ -5185,6 +5245,11 @@ const MENU_DATA = {
         { name: 'anchois marinés', allergens: ['Poisson'] },
         { name: 'oeuf poché',      allergens: ['Oeufs'] },
         { name: 'croûtons ail',    allergens: ['Gluten'] }
+      ],
+      regimes: ['Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: [
+        { regime: 'Végétarien', remove: ['anchois marinés'] },
+        { regime: 'Végan',      remove: ['anchois marinés', 'oeuf poché'] }
       ]
     },
     {
@@ -5196,6 +5261,10 @@ const MENU_DATA = {
         { name: 'feta',      allergens: ['Lait'] },
         { name: 'houmous',   allergens: ['Sésame'] },
         { name: 'pain pita', allergens: ['Gluten'] }
+      ],
+      regimes: ['Végétarien', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: [
+        { regime: 'Végan', remove: ['feta'] }
       ]
     },
 
@@ -5205,14 +5274,18 @@ const MENU_DATA = {
       name: 'Tarte au citron meringuée',
       cat: 'Desserts',
       allergens: ['Gluten', 'Oeufs', 'Lait'],
-      elements: []
+      elements: [],
+      regimes: ['Végétarien', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'd2',
       name: 'Crème brûlée vanille',
       cat: 'Desserts',
       allergens: ['Oeufs', 'Lait'],
-      elements: []
+      elements: [],
+      regimes: ['Végétarien', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'd3',
@@ -5222,21 +5295,27 @@ const MENU_DATA = {
       elements: [
         { name: 'noisettes torréfiées', allergens: ['Fruits secs'] },
         { name: 'glace vanille',        allergens: ['Lait', 'Oeufs'] }
-      ]
+      ],
+      regimes: ['Végétarien', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'd4',
       name: 'Sorbet pastèque',
       cat: 'Desserts',
       allergens: [],
-      elements: []
+      elements: [],
+      regimes: ['Végétarien', 'Végan', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'd5',
       name: 'Sorbet citron basilic',
       cat: 'Desserts',
       allergens: [],
-      elements: []
+      elements: [],
+      regimes: ['Végétarien', 'Végan', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'd6',
@@ -5246,6 +5325,10 @@ const MENU_DATA = {
       elements: [
         { name: 'chantilly', allergens: ['Lait'] },
         { name: 'coulis',    allergens: [] }
+      ],
+      regimes: ['Végétarien', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: [
+        { regime: 'Végan', remove: ['chantilly'] }
       ]
     },
     {
@@ -5255,25 +5338,26 @@ const MENU_DATA = {
       allergens: ['Oeufs'],
       elements: [
         { name: 'chantilly', allergens: ['Lait'] }
-      ]
+      ],
+      regimes: ['Végétarien', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     },
     {
       id: 'd8',
       name: 'Cheese-cake spéculoos',
       cat: 'Desserts',
       allergens: ['Gluten', 'Lait', 'Oeufs'],
-      elements: []
+      elements: [],
+      regimes: ['Végétarien', 'Halal', 'Sans porc', 'Sans alcool', 'Flexitarien', 'Pescatarien'],
+      regimes_adapt: []
     }
   ]
 };
 
 // ─── Matching allergen label → labels dans MENU_DATA ──
-// Quelques alias pour normaliser les labels détectés vs labels menu
 const _ALLERGEN_ALIASES = {
-  'Lactose':     'Lait',
-  'Fruits de mer': null,  // pas un label menu (= Crustacés + Mollusques)
-  'Vegan':       null,    // préférence, pas un allergène à matcher sur le menu
-  'Végétarien':  null,
+  'Lactose': 'Lait',
+  'Fruits de mer': null,  // = Crustacés + Mollusques, géré par les deux séparément
 };
 
 function _normalizeAllergenLabel(label){
@@ -5281,35 +5365,101 @@ function _normalizeAllergenLabel(label){
   return label;
 }
 
-// ─── Moteur de recommandations ────────────────────────
-// allergenLabels : string[] — labels des allergènes détectés (ex: ['Gluten','Poisson'])
-// Retourne { safe: [...], adaptable: [{dish, remove:[...]}] }
+// ─── Recommandations allergènes ───────────────────────
+// allergenLabels : string[] — ex: ['Gluten', 'Poisson']
 function getMenuRecos(allergenLabels){
-  const normalized = allergenLabels
-    .map(_normalizeAllergenLabel)
-    .filter(l => l !== null);
-
+  const normalized = allergenLabels.map(_normalizeAllergenLabel).filter(l => l !== null);
   if(!normalized.length) return { safe: MENU_DATA.dishes, adaptable: [] };
 
-  const safe = [];
-  const adaptable = [];
-
+  const safe = [], adaptable = [];
   MENU_DATA.dishes.forEach(dish => {
-    // Allergènes qui posent problème dans ce plat
     const coreConflicts = dish.allergens.filter(a => normalized.includes(a));
     const elemConflicts = dish.elements.filter(el =>
       el.allergens.some(a => normalized.includes(a))
     );
-
     if(coreConflicts.length === 0 && elemConflicts.length === 0){
+      safe.push(dish);
+    } else if(coreConflicts.length === 0 && elemConflicts.length > 0){
+      adaptable.push({ dish, remove: elemConflicts.map(el => el.name) });
+    }
+  });
+  return { safe, adaptable };
+}
+
+// ─── Recommandations régimes ──────────────────────────
+// regimeLabels : string[] — ex: ['Végétarien', 'Sans alcool']
+function getRegimeRecos(regimeLabels){
+  if(!regimeLabels.length) return { safe: MENU_DATA.dishes, adaptable: [] };
+
+  const safe = [], adaptable = [];
+  MENU_DATA.dishes.forEach(dish => {
+    const allOk = regimeLabels.every(reg => dish.regimes.includes(reg));
+    if(allOk){
       safe.push(dish);
       return;
     }
-    if(coreConflicts.length === 0 && elemConflicts.length > 0){
-      adaptable.push({ dish, remove: elemConflicts.map(el => el.name) });
-      return;
+    // Vérifie si adaptable pour TOUS les régimes demandés
+    const allAdaptable = regimeLabels.every(reg =>
+      dish.regimes.includes(reg) ||
+      dish.regimes_adapt.some(a => a.regime === reg)
+    );
+    if(allAdaptable){
+      const toRemove = [];
+      regimeLabels.forEach(reg => {
+        if(!dish.regimes.includes(reg)){
+          const adapt = dish.regimes_adapt.find(a => a.regime === reg);
+          if(adapt) adapt.remove.forEach(r => { if(!toRemove.includes(r)) toRemove.push(r); });
+        }
+      });
+      if(toRemove.length) adaptable.push({ dish, remove: toRemove });
+      else safe.push(dish); // adaptable sans rien retirer = safe
     }
-    // Sinon : plat déconseillé → ignoré
+  });
+  return { safe, adaptable };
+}
+
+// ─── Combinaison allergen + régime ────────────────────
+// Intersection des deux contraintes : un plat doit satisfaire les deux
+function getCompatibleDishes(allergenLabels, regimeLabels){
+  const allergenRes = getMenuRecos(allergenLabels);
+  const regimeRes   = getRegimeRecos(regimeLabels);
+
+  if(!allergenLabels.length && !regimeLabels.length)
+    return { safe: MENU_DATA.dishes, adaptable: [] };
+
+  const allergenSafeIds  = new Set(allergenRes.safe.map(d => d.id));
+  const allergenAdaptIds = new Map(allergenRes.adaptable.map(({dish,remove}) => [dish.id, remove]));
+  const regimeSafeIds    = new Set(regimeRes.safe.map(d => d.id));
+  const regimeAdaptIds   = new Map(regimeRes.adaptable.map(({dish,remove}) => [dish.id, remove]));
+
+  const allDishIds = new Set([
+    ...allergenSafeIds, ...allergenAdaptIds.keys(),
+    ...regimeSafeIds,   ...regimeAdaptIds.keys()
+  ]);
+
+  const safe = [], adaptable = [];
+
+  allDishIds.forEach(id => {
+    const dish = MENU_DATA.dishes.find(d => d.id === id);
+    if(!dish) return;
+
+    const okForAllergen = allergenSafeIds.has(id) || allergenAdaptIds.has(id) || !allergenLabels.length;
+    const okForRegime   = regimeSafeIds.has(id)   || regimeAdaptIds.has(id)   || !regimeLabels.length;
+    if(!okForAllergen || !okForRegime) return;
+
+    const isAllergenSafe  = allergenSafeIds.has(id)  || !allergenLabels.length;
+    const isRegimeSafe    = regimeSafeIds.has(id)     || !regimeLabels.length;
+
+    const toRemove = [
+      ...(allergenAdaptIds.get(id) || []),
+      ...(regimeAdaptIds.get(id)   || [])
+    ].filter((v,i,a) => a.indexOf(v) === i);
+
+    if(isAllergenSafe && isRegimeSafe){
+      safe.push(dish);
+    } else {
+      adaptable.push({ dish, remove: toRemove });
+    }
   });
 
   return { safe, adaptable };
@@ -5338,6 +5488,7 @@ function _assistScan(){
   _assistCheckOccasion();
   _assistCheckHighchair();
   _assistCheckAllergenes();
+  _assistCheckRegimes();
   _assistCheckPMR();
   _assistCheckNoShows();
   _assistCheckVIP();
@@ -5392,7 +5543,7 @@ function _assistAutoResolve(){
 // ─── Patterns commentaires ───────────────────────────
 
 const _ALLERGEN_PATTERNS = [
-  [/allergi|allergique/,                           null],           // contexte général
+  [/allergi|allergique/,                           null],
   [/arachide|cacahu[eè]te|peanut/,                 'Arachides'],
   [/noix|noisette|amande|pistache|cajou|p[eé]can/, 'Fruits secs'],
   [/gluten|bl[eé]|orge|seigle|avoine|[eé]peautre/, 'Gluten'],
@@ -5405,9 +5556,20 @@ const _ALLERGEN_PATTERNS = [
   [/c[eé]leri\b/,                                  'Céleri'],
   [/moutarde/,                                     'Moutarde'],
   [/sulfite|soufre/,                               'Sulfites'],
-  [/v[eé]gan|v[eé]g[eé]talien/,                   'Vegan'],
-  [/v[eé]g[eé]tarien/,                             'Végétarien'],
-  [/sans (porc|alcool|sel|sucre|viande)/,          null],           // captures "sans X"
+];
+
+// Régimes alimentaires (sévérité info, pas danger)
+const _REGIME_PATTERNS = [
+  [/v[eé]g[eé]tarien(?:ne)?/i,                 'Végétarien'],
+  [/v[eé]g[eé]talien|vegan|végan/i,            'Végan'],
+  [/halal/i,                                    'Halal'],
+  [/casher|kosher/i,                            'Halal'],     // traité comme Halal
+  [/sans[\s\-]?porc|no[\s]?pork/i,             'Sans porc'],
+  [/sans[\s\-]?alcool|no[\s]?alcohol/i,        'Sans alcool'],
+  [/flexitarien/i,                              'Flexitarien'],
+  [/pescatarien|pescetarien/i,                  'Pescatarien'],
+  [/sans\s+(viande|meat)/i,                     'Végétarien'],
+  [/régime\s+(végé|veggie|veg\b)/i,             'Végétarien'],
 ];
 
 const _PMR_PATTERN   = /fauteuil|handicap|pmr|mobilit[eé] r[eé]duite|canne|canne b/i;
@@ -5517,13 +5679,17 @@ function _extractAllergenName(raw){
   return null;
 }
 
-function _assistShowMenuRecos(resa, allergenLabels){
-  if(typeof getMenuRecos !== 'function'){
-    toast('Menu non configuré');
-    return;
-  }
-  const { safe, adaptable } = getMenuRecos(allergenLabels);
-  const allergenStr = allergenLabels.join(', ');
+// Panneau unifié allergènes + régimes
+function _assistShowDishRecos(resa, allergenLabels, regimeLabels){
+  if(typeof getCompatibleDishes !== 'function'){ toast('Menu non configuré'); return; }
+  allergenLabels = allergenLabels || [];
+  regimeLabels   = regimeLabels   || [];
+  const { safe, adaptable } = getCompatibleDishes(allergenLabels, regimeLabels);
+
+  const constraints = [
+    ...allergenLabels.map(l => `<span class="mr-tag mr-tag-allergen">🚨 ${l}</span>`),
+    ...regimeLabels.map(l  => `<span class="mr-tag mr-tag-regime">🌿 ${l}</span>`)
+  ].join('');
 
   const renderDishRow = (d) =>
     `<div class="mr-dish">
@@ -5539,25 +5705,29 @@ function _assistShowMenuRecos(resa, allergenLabels){
     </div>`;
 
   const safeHtml = safe.length
-    ? `<div class="mr-section-title">✓ Plats OK sans modification (${safe.length})</div>` +
+    ? `<div class="mr-section-title">✓ Plats compatibles (${safe.length})</div>` +
       safe.map(renderDishRow).join('')
-    : `<div class="mr-empty">Aucun plat entièrement sans ${allergenStr}</div>`;
+    : '';
 
   const adaptHtml = adaptable.length
-    ? `<div class="mr-section-title mr-adapt-title">✦ Plats OK si adaptés (${adaptable.length})</div>` +
+    ? `<div class="mr-section-title mr-adapt-title">✦ Si adaptés (${adaptable.length})</div>` +
       adaptable.map(renderAdaptRow).join('')
     : '';
 
+  const emptyHtml = !safe.length && !adaptable.length
+    ? `<div class="mr-empty">Aucun plat compatible — à adapter avec le chef.</div>` : '';
+
   _rushShowPanel(`
-    <div class="ro-panel-title">🍽 Recommandations — ${resa.name}</div>
-    <div class="ro-panel-subtitle">Allergie : <strong>${allergenStr}</strong></div>
-    <div class="mr-list">
-      ${safeHtml}
-      ${adaptHtml}
-      ${!safe.length && !adaptable.length ? `<div class="mr-empty">Aucun plat compatible trouvé pour ces allergènes.</div>` : ''}
-    </div>
-    <div class="ro-panel-note" style="margin-top:8px">Menu éditable dans <code>js/menu.js</code></div>
+    <div class="ro-panel-title">🍽 Plats recommandés — ${resa.name||''}</div>
+    <div class="mr-constraints">${constraints}</div>
+    <div class="mr-list">${safeHtml}${adaptHtml}${emptyHtml}</div>
+    <div class="ro-panel-note" style="margin-top:8px">Carte éditable dans <code>js/menu.js</code></div>
     <button class="ro-panel-cancel" onclick="_rushClosePanel()">Fermer</button>`);
+}
+
+// Alias legacy pour alertes allergie existantes
+function _assistShowMenuRecos(resa, allergenLabels){
+  _assistShowDishRecos(resa, allergenLabels, []);
 }
 
 function _assistCheckPMR(){
@@ -5571,6 +5741,45 @@ function _assistCheckPMR(){
         actions: []
       });
   });
+}
+
+function _assistCheckRegimes(){
+  gr().forEach(r => {
+    if(r.ns) return;
+    const raw = (r.comment||'').toLowerCase() + ' ' + (r.tags||[]).join(' ').toLowerCase();
+    const detected = [];
+    _REGIME_PATTERNS.forEach(([re, label]) => {
+      if(!re.test(raw)) return;
+      if(!detected.includes(label)) detected.push(label);
+    });
+    if(!detected.length) return;
+    // Une alerte par régime + bouton recos combinées
+    detected.forEach(label => {
+      _assistEnsure(`regime:${label}:${r.id}`, {
+        severity: 'info',
+        msg: `🌿 ${r.name} — ${label}`,
+        resaId: r.id,
+        actions: [{
+          label: '🍽 Plats OK',
+          fn: () => {
+            const allergenLabels = _getResaAllergenLabels(r);
+            _assistShowDishRecos(r, allergenLabels, detected);
+          }
+        }]
+      });
+    });
+  });
+}
+
+function _getResaAllergenLabels(r){
+  const raw = (r.comment||'').toLowerCase();
+  const labels = [];
+  _ALLERGEN_PATTERNS.forEach(([re, label]) => {
+    if(!re.test(raw)) return;
+    const name = label || _extractAllergenName(raw);
+    if(name && !labels.includes(name)) labels.push(name);
+  });
+  return labels;
 }
 
 function _assistCheckNoShows(){
@@ -5726,6 +5935,26 @@ function _renderAssistSearch(q){
       return `<div class="ad-empty">Aucune allergie détectée dans les commentaires</div>`;
     return `<div class="arc-results-header">${header}</div>` +
       results.map(r => _renderResaCardWithRecos(r, now)).join('');
+  } else if(/v[eé]g[eé]|vegan|halal|casher|sans[\s-]?porc|sans[\s-]?alcool|pescatari|flexitari|r[eé]gime/.test(q)){
+    // Régimes alimentaires
+    const matchedRegimes = [];
+    _REGIME_PATTERNS.forEach(([re, label]) => {
+      if(re.test(q) && !matchedRegimes.includes(label)) matchedRegimes.push(label);
+    });
+    const regimesToTest = matchedRegimes.length ? matchedRegimes : REGIME_TYPES;
+    results = resas.filter(r => {
+      const raw = (r.comment||'').toLowerCase() + ' ' + (r.tags||[]).join(' ');
+      return _REGIME_PATTERNS.some(([re]) => re.test(raw));
+    });
+    if(matchedRegimes.length) results = results.filter(r => {
+      const raw = (r.comment||'').toLowerCase() + ' ' + (r.tags||[]).join(' ');
+      return matchedRegimes.some(label => _REGIME_PATTERNS.some(([re, l]) => l === label && re.test(raw)));
+    });
+    header = `🌿 Régimes (${results.length})`;
+    if(!results.length)
+      return `<div class="ad-empty">Aucun régime alimentaire détecté dans les commentaires</div>`;
+    return `<div class="arc-results-header">${header}</div>` +
+      results.map(r => _renderResaCardWithRecos(r, now)).join('');
   } else if(/pmr|fauteuil|handicap|mobilit/.test(q)){
     results = resas.filter(r => _PMR_PATTERN.test(r.comment||''));
     header = `♿ PMR (${results.length})`;
@@ -5783,31 +6012,38 @@ function _renderResaCard(r, now){
 
 function _renderResaCardWithRecos(r, now){
   const base = _renderResaCard(r, now);
-  if(typeof getMenuRecos !== 'function') return base;
+  if(typeof getCompatibleDishes !== 'function') return base;
 
-  const raw = (r.comment||'').toLowerCase();
-  const detectedLabels = [];
-  _ALLERGEN_PATTERNS.forEach(([re, label]) => {
-    if(!re.test(raw)) return;
-    const name = label || _extractAllergenName(raw);
-    if(name && !detectedLabels.includes(name)) detectedLabels.push(name);
+  const raw = (r.comment||'').toLowerCase() + ' ' + (r.tags||[]).join(' ').toLowerCase();
+
+  const allergenLabels = _getResaAllergenLabels(r);
+  const regimeLabels = [];
+  _REGIME_PATTERNS.forEach(([re, label]) => {
+    if(re.test(raw) && !regimeLabels.includes(label)) regimeLabels.push(label);
   });
-  if(!detectedLabels.length) return base;
 
-  const { safe, adaptable } = getMenuRecos(detectedLabels);
-  const topSafe = safe.slice(0, 3);
+  if(!allergenLabels.length && !regimeLabels.length) return base;
+
+  const { safe, adaptable } = getCompatibleDishes(allergenLabels, regimeLabels);
+  const topSafe  = safe.slice(0, 3);
   const topAdapt = adaptable.slice(0, 2);
 
+  const tags = [
+    ...allergenLabels.map(l => `<span class="arc-reco-tag arc-reco-tag-al">🚨 ${l}</span>`),
+    ...regimeLabels.map(l  => `<span class="arc-reco-tag arc-reco-tag-rg">🌿 ${l}</span>`)
+  ].join('');
+
+  const resaRef = `gr().find(x=>x.id===${r.id})||{}`;
   const recoHtml = `
     <div class="arc-recos">
+      <div class="arc-reco-tags">${tags}</div>
       <div class="arc-reco-label">🍽 Plats compatibles :</div>
       ${topSafe.map(d => `<span class="arc-reco-chip arc-reco-ok">${d.name}</span>`).join('')}
-      ${topAdapt.map(({dish, remove}) => `<span class="arc-reco-chip arc-reco-adapt" title="sans ${remove.join(', ')}">${dish.name} ✦</span>`).join('')}
+      ${topAdapt.map(({dish,remove}) => `<span class="arc-reco-chip arc-reco-adapt" title="sans ${remove.join(', ')}">${dish.name} ✦</span>`).join('')}
       ${!topSafe.length && !topAdapt.length ? `<span class="arc-reco-chip arc-reco-none">Aucun plat compatible</span>` : ''}
-      <button class="arc-reco-more" onclick="_assistShowMenuRecos(gr().find(x=>x.id===${r.id})||{name:'',comment:''},${JSON.stringify(detectedLabels)})">Voir tous →</button>
+      <button class="arc-reco-more" onclick="_assistShowDishRecos(${resaRef},${JSON.stringify(allergenLabels)},${JSON.stringify(regimeLabels)})">Voir tous →</button>
     </div>`;
 
-  // Insérer avant la fermeture de .arc-card
   return base.replace('</div>', recoHtml + '</div>');
 }
 
