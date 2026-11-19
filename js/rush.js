@@ -172,15 +172,21 @@ function _assistCheckAllergenes(){
     if(r.ns) return;
     const raw = (r.comment||'').toLowerCase();
     if(!raw) return;
+    const detectedLabels = [];
     _ALLERGEN_PATTERNS.forEach(([re, label]) => {
       if(!re.test(raw)) return;
       const name = label || _extractAllergenName(raw);
       if(!name) return;
+      if(!detectedLabels.includes(name)) detectedLabels.push(name);
       _assistEnsure(`allergen:${name}:${r.id}`, {
         severity: 'danger',
         msg: `🚨 Allergie · ${r.name} — ${name}`,
         resaId: r.id,
-        actions: []
+        allergenLabels: detectedLabels,
+        actions: [{
+          label: '🍽 Plats OK',
+          fn: () => _assistShowMenuRecos(r, detectedLabels)
+        }]
       });
     });
   });
@@ -192,6 +198,49 @@ function _extractAllergenName(raw){
   const m2 = raw.match(/sans\s+([a-zéàèêïîôûù]{3,15})/);
   if(m2) return m2[1];
   return null;
+}
+
+function _assistShowMenuRecos(resa, allergenLabels){
+  if(typeof getMenuRecos !== 'function'){
+    toast('Menu non configuré');
+    return;
+  }
+  const { safe, adaptable } = getMenuRecos(allergenLabels);
+  const allergenStr = allergenLabels.join(', ');
+
+  const renderDishRow = (d) =>
+    `<div class="mr-dish">
+      <span class="mr-cat">${d.cat}</span>
+      <span class="mr-name">${d.name}</span>
+    </div>`;
+
+  const renderAdaptRow = ({dish, remove}) =>
+    `<div class="mr-dish mr-adapt">
+      <span class="mr-cat">${dish.cat}</span>
+      <span class="mr-name">${dish.name}</span>
+      <span class="mr-remove">sans ${remove.join(', ')}</span>
+    </div>`;
+
+  const safeHtml = safe.length
+    ? `<div class="mr-section-title">✓ Plats OK sans modification (${safe.length})</div>` +
+      safe.map(renderDishRow).join('')
+    : `<div class="mr-empty">Aucun plat entièrement sans ${allergenStr}</div>`;
+
+  const adaptHtml = adaptable.length
+    ? `<div class="mr-section-title mr-adapt-title">✦ Plats OK si adaptés (${adaptable.length})</div>` +
+      adaptable.map(renderAdaptRow).join('')
+    : '';
+
+  _rushShowPanel(`
+    <div class="ro-panel-title">🍽 Recommandations — ${resa.name}</div>
+    <div class="ro-panel-subtitle">Allergie : <strong>${allergenStr}</strong></div>
+    <div class="mr-list">
+      ${safeHtml}
+      ${adaptHtml}
+      ${!safe.length && !adaptable.length ? `<div class="mr-empty">Aucun plat compatible trouvé pour ces allergènes.</div>` : ''}
+    </div>
+    <div class="ro-panel-note" style="margin-top:8px">Menu éditable dans <code>js/menu.js</code></div>
+    <button class="ro-panel-cancel" onclick="_rushClosePanel()">Fermer</button>`);
 }
 
 function _assistCheckPMR(){
@@ -355,7 +404,11 @@ function _renderAssistSearch(q){
     header = `Non placées (${results.length})`;
   } else if(/allergi|allergi[eè]|intol[eé]r/.test(q)){
     results = resas.filter(r => _ALLERGEN_PATTERNS.some(([re]) => re.test((r.comment||'').toLowerCase())));
-    header = `🚨 Allergies (${results.length})`;
+    header = `🚨 Allergies — ${results.length} resa${results.length>1?'s':''}`;
+    if(!results.length)
+      return `<div class="ad-empty">Aucune allergie détectée dans les commentaires</div>`;
+    return `<div class="arc-results-header">${header}</div>` +
+      results.map(r => _renderResaCardWithRecos(r, now)).join('');
   } else if(/pmr|fauteuil|handicap|mobilit/.test(q)){
     results = resas.filter(r => _PMR_PATTERN.test(r.comment||''));
     header = `♿ PMR (${results.length})`;
@@ -409,6 +462,36 @@ function _renderResaCard(r, now){
     ${tags ? `<div class="arc-tags">${tags}</div>` : ''}
     ${acts}
   </div>`;
+}
+
+function _renderResaCardWithRecos(r, now){
+  const base = _renderResaCard(r, now);
+  if(typeof getMenuRecos !== 'function') return base;
+
+  const raw = (r.comment||'').toLowerCase();
+  const detectedLabels = [];
+  _ALLERGEN_PATTERNS.forEach(([re, label]) => {
+    if(!re.test(raw)) return;
+    const name = label || _extractAllergenName(raw);
+    if(name && !detectedLabels.includes(name)) detectedLabels.push(name);
+  });
+  if(!detectedLabels.length) return base;
+
+  const { safe, adaptable } = getMenuRecos(detectedLabels);
+  const topSafe = safe.slice(0, 3);
+  const topAdapt = adaptable.slice(0, 2);
+
+  const recoHtml = `
+    <div class="arc-recos">
+      <div class="arc-reco-label">🍽 Plats compatibles :</div>
+      ${topSafe.map(d => `<span class="arc-reco-chip arc-reco-ok">${d.name}</span>`).join('')}
+      ${topAdapt.map(({dish, remove}) => `<span class="arc-reco-chip arc-reco-adapt" title="sans ${remove.join(', ')}">${dish.name} ✦</span>`).join('')}
+      ${!topSafe.length && !topAdapt.length ? `<span class="arc-reco-chip arc-reco-none">Aucun plat compatible</span>` : ''}
+      <button class="arc-reco-more" onclick="_assistShowMenuRecos(gr().find(x=>x.id===${r.id})||{name:'',comment:''},${JSON.stringify(detectedLabels)})">Voir tous →</button>
+    </div>`;
+
+  // Insérer avant la fermeture de .arc-card
+  return base.replace('</div>', recoHtml + '</div>');
 }
 
 function _renderFreeTablesSearch(){

@@ -28,7 +28,7 @@ body_content = m.group(1).strip()
 # JS — ordre exact (miroir de build.ps1)
 js_files = [
     'js/config.js', 'js/state.js', 'js/utils.js', 'js/render.js',
-    'js/placement.js', 'js/gist.js', 'js/rush.js', 'js/modal.js',
+    'js/placement.js', 'js/gist.js', 'js/menu.js', 'js/rush.js', 'js/modal.js',
     'js/export.js', 'js/zenchef.js',
     'js/modules/shared.js', 'js/modules/nav.js', 'js/modules/equipe.js',
     'js/modules/stocks.js', 'js/modules/analyse.js', 'js/modules/ai.js',
