@@ -646,6 +646,9 @@ body{font-family:'DM Sans',system-ui,-apple-system,sans-serif;color:var(--t1);fo
 .arc-btn{background:var(--card);border:1px solid var(--sep2);color:var(--t1)}
 .arc-btn:hover{border-color:var(--blue);color:var(--blue)}
 .arc-btn-ns{background:var(--rbg)!important;border:1px solid var(--rb)!important;color:var(--rt)!important}
+.arc-results-header{font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em}
+.arc-action-banner{background:var(--amber-bg,#FEF3C7);border:1.5px solid var(--amber,#F59E0B);border-radius:var(--r);padding:14px 16px;margin-bottom:8px}
+.arc-action-banner .arc-action-title{font-weight:700;font-size:14px;color:var(--t1);margin-bottom:10px}
 .arc-free-title{font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px}
 .arc-free-grid{display:flex;flex-wrap:wrap;gap:6px}
 .arc-free-tbl{width:60px;height:60px;border-radius:var(--r);border:1.5px solid var(--gb);background:var(--gbg);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
@@ -4986,6 +4989,8 @@ function _assistScan(){
   _assistCheckOverflow();
   _assistCheckOccasion();
   _assistCheckHighchair();
+  _assistCheckAllergenes();
+  _assistCheckPMR();
   _assistCheckNoShows();
   _assistCheckVIP();
   _assistCheckDuplicates();
@@ -5036,6 +5041,40 @@ function _assistAutoResolve(){
   assistAlerts = assistAlerts.filter(a => !a.resolved || a.ts > cutoff);
 }
 
+// ─── Patterns commentaires ───────────────────────────
+
+const _ALLERGEN_PATTERNS = [
+  [/allergi|allergique/,                           null],           // contexte général
+  [/arachide|cacahu[eè]te|peanut/,                 'Arachides'],
+  [/noix|noisette|amande|pistache|cajou|p[eé]can/, 'Fruits secs'],
+  [/gluten|bl[eé]|orge|seigle|avoine|[eé]peautre/, 'Gluten'],
+  [/lactose|intolérant.*lait/,                     'Lactose'],
+  [/crustac[eé]|crevette|homard|crabe|langouste/,  'Crustacés'],
+  [/fruits de mer|huître|moule|cal[ae]mar/,        'Fruits de mer'],
+  [/poisson\b/,                                    'Poisson'],
+  [/soja\b|soy\b/,                                 'Soja'],
+  [/[sé]same|tahini/,                              'Sésame'],
+  [/c[eé]leri\b/,                                  'Céleri'],
+  [/moutarde/,                                     'Moutarde'],
+  [/sulfite|soufre/,                               'Sulfites'],
+  [/v[eé]gan|v[eé]g[eé]talien/,                   'Vegan'],
+  [/v[eé]g[eé]tarien/,                             'Végétarien'],
+  [/sans (porc|alcool|sel|sucre|viande)/,          null],           // captures "sans X"
+];
+
+const _PMR_PATTERN   = /fauteuil|handicap|pmr|mobilit[eé] r[eé]duite|canne|canne b/i;
+const _OCCASION_EXT  = [
+  [/anniversaire|birthday/,          '🎂 Anniversaire'],
+  [/mariage|wedding/,                '💍 Mariage'],
+  [/fian[cç]aille/,                  '💍 Fiançailles'],
+  [/evjf|enterrement.*vie.*jeune/,   '🎉 EVJF'],
+  [/evg\b|enterrement.*vie.*gar/,    '🎉 EVG'],
+  [/st.valentin|saint.valentin/,     '❤️ St-Valentin'],
+  [/surprise/,                       '🎊 Surprise'],
+  [/fête|f[eê]te\b/,                 '🥳 Fête'],
+  [/anniversaire.*entreprise|séminaire/, '🏢 Événement pro'],
+];
+
 // ─── Checks automatiques ─────────────────────────────
 
 function _assistCheckLate(){
@@ -5074,29 +5113,65 @@ function _assistCheckOccasion(){
   gr().forEach(r => {
     if(r.ns) return;
     const raw = (r.comment||'').toLowerCase() + ' ' + (r.tags||[]).join(' ').toLowerCase();
-    if(/anniversaire|birthday/.test(raw))
-      _assistEnsure(`occasion:birthday:${r.id}`, {
-        severity: 'info',
-        msg: `🎂 ${r.name} — anniversaire`,
-        resaId: r.id
-      });
-    if(/mariage|wedding|fian[cç]ailles/.test(raw))
-      _assistEnsure(`occasion:wedding:${r.id}`, {
-        severity: 'info',
-        msg: `💍 ${r.name} — occasion spéciale`,
-        resaId: r.id
-      });
+    _OCCASION_EXT.forEach(([re, label]) => {
+      if(re.test(raw))
+        _assistEnsure(`occasion:${label}:${r.id}`, {
+          severity: 'info',
+          msg: `${label} · ${r.name}`,
+          resaId: r.id
+        });
+    });
   });
 }
 
 function _assistCheckHighchair(){
   gr().forEach(r => {
     if(r.ns) return;
-    if(/chaise\s*haute|rehausseur|b[ée]b[ée]|poussette|enfant/.test((r.comment||'').toLowerCase()))
+    if(/chaise\s*haute|rehausseur|si[eè]ge\s*b[eé]b[eé]|b[ée]b[ée]|poussette|nourrisson|enfant\s*en\s*bas/.test((r.comment||'').toLowerCase()))
       _assistEnsure(`highchair:${r.id}`, {
         severity: 'info',
         msg: `🪑 ${r.name} — chaise haute`,
         resaId: r.id
+      });
+  });
+}
+
+function _assistCheckAllergenes(){
+  gr().forEach(r => {
+    if(r.ns) return;
+    const raw = (r.comment||'').toLowerCase();
+    if(!raw) return;
+    _ALLERGEN_PATTERNS.forEach(([re, label]) => {
+      if(!re.test(raw)) return;
+      const name = label || _extractAllergenName(raw);
+      if(!name) return;
+      _assistEnsure(`allergen:${name}:${r.id}`, {
+        severity: 'danger',
+        msg: `🚨 Allergie · ${r.name} — ${name}`,
+        resaId: r.id,
+        actions: []
+      });
+    });
+  });
+}
+
+function _extractAllergenName(raw){
+  const m = raw.match(/allergi[a-zéàèê]*\s+(?:[àa]\s+)?(?:la\s+|au\s+|aux\s+|l[e']?\s+)?([a-zéàèêïîôûù\s]{2,20})/);
+  if(m) return m[1].trim().replace(/\s+et\s+.*/, '');
+  const m2 = raw.match(/sans\s+([a-zéàèêïîôûù]{3,15})/);
+  if(m2) return m2[1];
+  return null;
+}
+
+function _assistCheckPMR(){
+  gr().forEach(r => {
+    if(r.ns) return;
+    if(_PMR_PATTERN.test(r.comment||''))
+      _assistEnsure(`pmr:${r.id}`, {
+        severity: 'warn',
+        msg: `♿ ${r.name} — mobilité réduite · placement adapté`,
+        resaId: r.id,
+        actions: []
       });
   });
 }
@@ -5203,17 +5278,62 @@ function _renderAssistSearch(q){
   const resas = gr();
   const now = _assistNow();
   let results = [];
+  let header = '';
 
-  // Mots-clés spéciaux
+  // ── Actions directes ──────────────────────────────────
+  // "retard 15" / "push 30" → décaler toutes les resas
+  const pushMatch = q.match(/(?:retard|push|d[eé]caler?)\s+(\d+)/);
+  if(pushMatch){
+    const mins = parseInt(pushMatch[1]);
+    return `<div class="arc-action-banner">
+      <div class="arc-action-title">Décaler toutes les resas non placées de +${mins} min ?</div>
+      <div class="arc-acts">
+        <button class="arc-btn arc-btn-primary" onclick="_rushPushAll(${mins});document.getElementById('assist-search').value='';renderAssistDrawer()">✓ Appliquer +${mins}min</button>
+        <button class="arc-btn" onclick="document.getElementById('assist-search').value='';renderAssistDrawer()">Annuler</button>
+      </div>
+    </div>`;
+  }
+
+  // "table 5 libre" / "libérer table 5" → libérer table
+  const freeMatch = q.match(/(?:lib[eé]rer?|free|libère)\s+(?:table\s*)?(\d+)/);
+  if(freeMatch){
+    const tid = parseInt(freeMatch[1]);
+    const r = gr().find(x => x.placed && x.tableId === tid);
+    if(!r) return `<div class="arc-action-banner"><div class="arc-action-title">Table ${tid} déjà libre ✓</div></div>`;
+    return `<div class="arc-action-banner">
+      <div class="arc-action-title">Libérer table ${tid} — ${r.name} ?</div>
+      <div class="arc-acts">
+        <button class="arc-btn arc-btn-ns" onclick="_rushDoNoShow(${r.id});document.getElementById('assist-search').value='';renderAssistDrawer()">Libérer (no-show)</button>
+        <button class="arc-btn" onclick="document.getElementById('assist-search').value='';renderAssistDrawer()">Annuler</button>
+      </div>
+    </div>`;
+  }
+
+  // ── Filtres par catégorie ─────────────────────────────
   if(/retard|late/.test(q)){
     results = resas.filter(r => !r.placed && !r.ns && (now - _assistParseTime(r.time)) >= 10)
-      .sort((a,b) => (_assistParseTime(a.time)) - (_assistParseTime(b.time)));
+      .sort((a,b) => _assistParseTime(a.time) - _assistParseTime(b.time));
+    header = `Retards (${results.length})`;
   } else if(/vip/.test(q)){
     results = resas.filter(r => (r.tags||[]).map(t=>t.toLowerCase()).includes('vip'));
+    header = `VIP (${results.length})`;
   } else if(/libre|free/.test(q)){
     return _renderFreeTablesSearch();
   } else if(/attente|non.plac/.test(q)){
     results = resas.filter(r => !r.placed && !r.ns);
+    header = `Non placées (${results.length})`;
+  } else if(/allergi|allergi[eè]|intol[eé]r/.test(q)){
+    results = resas.filter(r => _ALLERGEN_PATTERNS.some(([re]) => re.test((r.comment||'').toLowerCase())));
+    header = `🚨 Allergies (${results.length})`;
+  } else if(/pmr|fauteuil|handicap|mobilit/.test(q)){
+    results = resas.filter(r => _PMR_PATTERN.test(r.comment||''));
+    header = `♿ PMR (${results.length})`;
+  } else if(/chaise|b[eé]b[eé]|enfant|poussette/.test(q)){
+    results = resas.filter(r => /chaise\s*haute|rehausseur|si[eè]ge\s*b[eé]b[eé]|b[ée]b[ée]|poussette|nourrisson/.test((r.comment||'').toLowerCase()));
+    header = `🪑 Chaises hautes (${results.length})`;
+  } else if(/occasion|anniversaire|mariage|evjf|evg|surprise|f[eê]te/.test(q)){
+    results = resas.filter(r => _OCCASION_EXT.some(([re]) => re.test((r.comment||'').toLowerCase() + ' ' + (r.tags||[]).join(' '))));
+    header = `🎉 Occasions (${results.length})`;
   } else if(/table\s*(\d+)/.test(q)){
     const tid = parseInt(q.match(/table\s*(\d+)/)[1]);
     return _renderTableSearch(tid);
@@ -5225,9 +5345,10 @@ function _renderAssistSearch(q){
   }
 
   if(!results.length)
-    return `<div class="ad-empty">Aucun résultat pour "${q}"</div>`;
+    return `<div class="ad-empty">Aucun résultat pour "${q}"<br><small style="color:var(--t3);font-size:11px;margin-top:6px;display:block">Essayez : retard · vip · libre · allergi · pmr · chaise · occasion · table 5 · "retard 20"</small></div>`;
 
-  return results.map(r => _renderResaCard(r, now)).join('');
+  const headerHtml = header ? `<div class="arc-results-header">${header}</div>` : '';
+  return headerHtml + results.map(r => _renderResaCard(r, now)).join('');
 }
 
 function _renderResaCard(r, now){
