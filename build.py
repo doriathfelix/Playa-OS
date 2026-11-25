@@ -32,7 +32,7 @@ js_files = [
     'js/export.js', 'js/zenchef.js',
     'js/modules/shared.js', 'js/modules/nav.js', 'js/modules/equipe.js',
     'js/modules/stocks.js', 'js/modules/analyse.js', 'js/modules/ai.js',
-    'js/modules/caisse.js', 'js/modules/prestataires.js', 'js/modules/cuisine.js',
+    'js/modules/commandes.js', 'js/modules/caisse.js', 'js/modules/prestataires.js', 'js/modules/cuisine.js',
     'js/modules/bar.js', 'js/modules/haccp.js', 'js/modules/urgences.js',
     'js/modules/resas.js', 'js/modules/settings.js', 'js/modules/clients.js',
     'js/modules/groupes.js', 'js/init.js'

@@ -20,7 +20,7 @@ function goModule(mod){
   document.getElementById('service-tabs').style.display=isService?'flex':'none';
   document.getElementById('module-topbar-title').style.display=isService?'none':'block';
   document.getElementById('service-top-btns').style.display=isService?'flex':'none';
-  const titles={dash:'Accueil',equipe:'Équipe & RH',stocks:'Stocks & Commandes',analyse:'Analyse',caisse:'Caisse · L\'Addition',admin:'Admin & Finances',resas:'Réservations',settings:'Réglages',ai:'Playa AI',cuisine:'Cuisine',bar:'Bar',haccp:'HACCP & Hygiène',prestataires:'Prestataires & Fournisseurs',event:'Événementiel & Privatisations',urgences:'Urgences & Sécurité',clients:'Clients & Fidélité'};
+  const titles={dash:'Accueil',equipe:'Équipe & RH',stocks:'Stocks & Commandes',analyse:'Analyse',caisse:'Caisse · L\'Addition',commandes:'Prise de commande',admin:'Admin & Finances',resas:'Réservations',settings:'Réglages',ai:'Playa AI',cuisine:'Cuisine',bar:'Bar',haccp:'HACCP & Hygiène',prestataires:'Prestataires & Fournisseurs',event:'Événementiel & Privatisations',urgences:'Urgences & Sécurité',clients:'Clients & Fidélité'};
   if(!isService) document.getElementById('module-topbar-title').textContent=titles[mod]||mod;
 
   document.getElementById('app').style.display=isService?'flex':'none';
@@ -34,6 +34,7 @@ function goModule(mod){
     else if(mod==='stocks') renderStocks(mc);
     else if(mod==='analyse') renderAnalyse(mc);
     else if(mod==='admin') renderAnalyse(mc);
+    else if(mod==='commandes') renderCommandes(mc);
     else if(mod==='caisse') renderCaisse(mc);
     else if(mod==='resas') renderResasModule(mc);
     else if(mod==='settings') renderSettings(mc);
